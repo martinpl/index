@@ -32,7 +32,7 @@ class InstallCommand extends Command
         }
 
         $validator = Validator::make(['name' => $name], [
-            'name' => ['required', 'string'],
+            'name' => ['required'],
         ]);
 
         if ($validator->fails()) {
