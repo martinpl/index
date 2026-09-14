@@ -31,14 +31,13 @@ class OptionGetCommand extends Command
             return self::FAILURE;
         }
 
-        $option = Option::where('key', $key)->first();
-        if (! $option) {
+        if (! Option::exists($key)) {
             $this->error("Option [$key] does not exist.");
 
             return self::FAILURE;
         }
 
-        $this->line($option->value);
+        $this->line(Option::get($key));
 
         return self::SUCCESS;
     }

@@ -8,9 +8,9 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
-#[Signature('option:add {key?} {value?}')]
-#[Description('Adds a new option')]
-class OptionAddCommand extends Command
+#[Signature('option:set {key?} {value?}')]
+#[Description('Sets an option value')]
+class OptionSetCommand extends Command
 {
     public function handle(): int
     {
@@ -37,14 +37,8 @@ class OptionAddCommand extends Command
             return self::FAILURE;
         }
 
-        if (Option::where('key', $key)->exists()) {
-            $this->error("Option [$key] already exists.");
-
-            return self::FAILURE;
-        }
-
-        Option::create(['key' => $key, 'value' => $value]);
-        $this->info("Added option [$key].");
+        Option::set($key, $value);
+        $this->info("Set option [$key].");
 
         return self::SUCCESS;
     }

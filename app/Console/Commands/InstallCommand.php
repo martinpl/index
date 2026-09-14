@@ -44,7 +44,7 @@ class InstallCommand extends Command
         }
 
         Site::create();
-        Option::create(['key' => 'site_name', 'value' => $name]);
+        Option::set('site_name', $name);
         $this->info('Site installed successfully.');
 
         return self::SUCCESS;

@@ -20,5 +20,5 @@ test('runs migrations and installs a site on an empty database', function () {
 
     assertDatabaseCount('sites', 1);
     assertDatabaseCount('options', 1);
-    assertDatabaseHas('options', ['key' => 'site_name', 'value' => 'My site']);
+    assertDatabaseHas('options', ['key' => 'site_name', 'value' => json_encode('My site')]);
 });

@@ -31,14 +31,13 @@ class OptionDeleteCommand extends Command
             return self::FAILURE;
         }
 
-        $option = Option::where('key', $key)->first();
-        if (! $option) {
+        if (! Option::exists($key)) {
             $this->error("Option [$key] does not exist.");
 
             return self::FAILURE;
         }
 
-        $option->delete();
+        Option::forget($key);
         $this->info("Deleted option [$key].");
 
         return self::SUCCESS;
