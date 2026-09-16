@@ -1,0 +1,15 @@
+{
+    "name": "index/hello-index",
+    "version": "1.0.0",
+    "description": "Adds a simple welcome endpoint to Index.",
+    "autoload": {
+        "psr-4": {
+            "HelloIndex\\": "src/"
+        }
+    },
+    "extra": {
+        "index": {
+            "name": "Hello Index"
+        }
+    }
+}
