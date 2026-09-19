@@ -9,11 +9,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
-// TODO: Perfs we could cache list() in memory and use that in helpers
-// TODO: Value object for plugin?
-class Plugin extends Package
+class Theme extends Package
 {
-    private const activePlugins = 'active_plugins';
+    private const activeTheme = 'active_theme';
 
     public function boot(): void
     {
@@ -22,43 +20,48 @@ class Plugin extends Package
             return;
         }
 
-        foreach ($this->active() as $name) {
-            app()->register($this->pluginClass($this->path($name)));
+        $name = $this->active();
+        if (! $name) {
+            return;
         }
+
+        app()->register($this->themeClass($this->path($name)));
     }
 
     public function isActive(string $name): bool
     {
-        return in_array($name, $this->active());
+        return $this->active() === $name;
     }
 
     public function activate(string $name): void
     {
-        Option::set(self::activePlugins, array_unique([...$this->active(), $name]));
+        Option::set(self::activeTheme, $name);
     }
 
     public function deactivate(string $name): void
     {
-        Option::set(self::activePlugins, array_diff($this->active(), [$name]));
+        if ($this->isActive($name)) {
+            Option::forget(self::activeTheme);
+        }
     }
 
     protected function directory(): string
     {
-        return 'plugins';
+        return 'themes';
     }
 
-    private function active(): array
+    private function active(): ?string
     {
-        return Option::get(self::activePlugins, []);
+        return Option::get(self::activeTheme);
     }
 
-    private function pluginClass(string $path): string
+    private function themeClass(string $path): string
     {
         $slug = $this->manifest($path)['slug'];
         $class = Str::studly($slug).'\\'.Str::studly($slug).'ServiceProvider';
 
         if (! class_exists($class) || ! is_subclass_of($class, ServiceProvider::class)) {
-            throw new DomainException("Plugin [$path] must define [$class] as a service provider.");
+            throw new DomainException("Theme [$path] must define [$class] as a service provider.");
         }
 
         return $class;

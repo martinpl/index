@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Facades\Plugin as PluginFacade;
+use App\Facades\Theme as ThemeFacade;
 use App\Foundation\Plugin;
+use App\Foundation\Theme;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,13 +16,15 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(Plugin::class);
+        $this->app->singleton(Theme::class);
     }
 
     /**
      * Bootstrap any application services.
      */
-    public function boot(Plugin $plugins): void
+    public function boot(): void
     {
-        $plugins->boot();
+        PluginFacade::boot();
+        ThemeFacade::boot();
     }
 }

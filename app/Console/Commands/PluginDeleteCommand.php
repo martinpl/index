@@ -8,7 +8,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 #[Signature('plugin:delete {plugin}')]
-#[Description('Deletes an inactive plugin')]
+#[Description('Deletes a plugin')]
 class PluginDeleteCommand extends Command
 {
     public function handle(): int

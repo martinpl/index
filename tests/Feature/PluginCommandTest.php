@@ -13,29 +13,22 @@ pest()->use(LazilyRefreshDatabase::class);
 
 afterEach(function (): void {
     File::deleteDirectory(base_path('plugins/analytics'));
-    File::deleteDirectory(base_path('plugins/cache'));
     File::deleteDirectory(base_path('plugins/seo'));
 });
 
-test('manages a plugin through commands', function () {
+function pluginArchive(string $slug): string
+{
     $archive = tempnam(sys_get_temp_dir(), 'index-plugin-');
     $zip = new ZipArchive;
     $zip->open($archive, ZipArchive::OVERWRITE);
-    $zip->addFromString('seo/composer.json', <<<'JSON'
-{
-    "name": "index/seo",
-    "version": "1.0.0",
-    "description": "Search engine optimization."
-}
-JSON);
-    $zip->addFromString('seo/src/Seo.php', <<<'PHP'
-<?php
-
-namespace Seo;
-
-class SeoServiceProvider extends \Illuminate\Support\ServiceProvider {}
-PHP);
+    $zip->addFromString("$slug/composer.json", json_encode(['name' => "index/$slug"]));
     $zip->close();
+
+    return $archive;
+}
+
+test('manages a plugin through commands', function () {
+    $archive = pluginArchive('seo');
 
     artisan('plugin:install', ['source' => $archive])
         ->expectsOutput('Installed plugin [seo].')
@@ -74,37 +67,11 @@ PHP);
 
     expect(base_path('plugins/seo'))->not->toBeDirectory();
 
-    File::ensureDirectoryExists(base_path('plugins/cache'));
-    File::put(base_path('plugins/cache/composer.json'), <<<'JSON'
-{"name":"index/cache"}
-JSON);
-    File::ensureDirectoryExists(base_path('plugins/cache/src'));
-    File::put(base_path('plugins/cache/src/Cache.php'), <<<'PHP'
-<?php
-
-namespace Cache;
-
-class CacheServiceProvider extends \Illuminate\Support\ServiceProvider {}
-PHP);
-
     File::delete($archive);
 });
 
 test('installs a plugin from an URL', function () {
-    $archive = tempnam(sys_get_temp_dir(), 'index-plugin-');
-    $zip = new ZipArchive;
-    $zip->open($archive, ZipArchive::OVERWRITE);
-    $zip->addFromString('analytics/composer.json', <<<'JSON'
-{"name":"index/analytics"}
-JSON);
-    $zip->addFromString('analytics/src/Analytics.php', <<<'PHP'
-<?php
-
-namespace Analytics;
-
-class AnalyticsServiceProvider extends \Illuminate\Support\ServiceProvider {}
-PHP);
-    $zip->close();
+    $archive = pluginArchive('analytics');
 
     Http::fake(['https://plugins.example.com/analytics.zip' => Http::response(File::get($archive))]);
 
