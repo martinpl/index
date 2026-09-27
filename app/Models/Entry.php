@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\EntryStatus;
+use Database\Factories\EntryFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+/**
+ * @method static Builder<static> withAnyStatus()
+ */
+#[Fillable(['type', 'status', 'slug', 'name', 'content'])]
+class Entry extends Model
+{
+    /** @use HasFactory<EntryFactory> */
+    use HasFactory;
+
+    const CREATED_AT = 'date';
+
+    const UPDATED_AT = 'modified';
+
+    protected $attributes = [
+        'status' => EntryStatus::Draft->value,
+    ];
+
+    protected bool $forceDeleting = false;
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('published', function (Builder $query): void {
+            $query->where($query->qualifyColumn('status'), EntryStatus::Publish);
+        });
+    }
+
+    /**
+     * @return BelongsToMany<Term, $this>
+     */
+    public function terms(): BelongsToMany
+    {
+        return $this->belongsToMany(Term::class);
+    }
+
+    public function trashed(): bool
+    {
+        return $this->status === EntryStatus::Trash->value;
+    }
+
+    public function forceDelete(): ?bool
+    {
+        $this->forceDeleting = true;
+
+        return tap($this->delete(), fn () => $this->forceDeleting = false);
+    }
+
+    protected function performDeleteOnModel(): void
+    {
+        if ($this->forceDeleting) {
+            parent::performDeleteOnModel();
+
+            return;
+        }
+
+        $this->update(['status' => EntryStatus::Trash->value]);
+    }
+
+    #[Scope]
+    protected function withAnyStatus(Builder $query): void
+    {
+        $query->withoutGlobalScope('published');
+    }
+}
