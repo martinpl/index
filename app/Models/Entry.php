@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\EntryStatus;
 use App\Models\Concerns\BelongsToSite;
+use App\Models\Concerns\HasMeta;
 use Database\Factories\EntryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -22,6 +23,8 @@ class Entry extends Model
 
     /** @use HasFactory<EntryFactory> */
     use HasFactory;
+
+    use HasMeta;
 
     const CREATED_AT = 'date';
 
@@ -58,6 +61,11 @@ class Entry extends Model
         $this->forceDeleting = true;
 
         return tap($this->delete(), fn () => $this->forceDeleting = false);
+    }
+
+    public function isForceDeleting(): bool
+    {
+        return $this->forceDeleting;
     }
 
     protected function performDeleteOnModel(): void

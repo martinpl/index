@@ -8,8 +8,11 @@ use App\Foundation\EntryType;
 use App\Foundation\Plugin;
 use App\Foundation\TermType;
 use App\Foundation\Theme;
+use App\Models\Entry;
 use App\Models\Site;
+use App\Models\Term;
 use Illuminate\Console\Application as Artisan;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -33,6 +36,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Relation::enforceMorphMap([
+            'entry' => Entry::class,
+            'term' => Term::class,
+        ]);
+
         EntryTypeFacade::register('page');
         EntryTypeFacade::register('post');
         TermTypeFacade::register('category', ['entry_types' => ['post']]);

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToSite;
+use App\Models\Concerns\HasMeta;
 use Database\Factories\TermFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,8 @@ class Term extends Model
 
     /** @use HasFactory<TermFactory> */
     use HasFactory;
+
+    use HasMeta;
 
     public $timestamps = false;
 
