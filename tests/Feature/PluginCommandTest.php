@@ -2,6 +2,7 @@
 
 use App\Facades\Plugin;
 use App\Models\Option;
+use App\Models\Site;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -85,6 +86,7 @@ test('installs a plugin from an URL', function () {
 });
 
 test('boots an active plugin', function () {
+    Site::factory()->create(['domain' => 'localhost']);
     Option::set('active_plugins', ['hello-index']);
 
     Plugin::boot();

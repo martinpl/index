@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EntryStatus;
+use App\Models\Concerns\BelongsToSite;
 use Database\Factories\EntryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 #[Fillable(['type', 'status', 'slug', 'name', 'content'])]
 class Entry extends Model
 {
+    use BelongsToSite;
+
     /** @use HasFactory<EntryFactory> */
     use HasFactory;
 
@@ -42,7 +45,7 @@ class Entry extends Model
      */
     public function terms(): BelongsToMany
     {
-        return $this->belongsToMany(Term::class);
+        return $this->belongsToMany(Term::class, $this->siteTable('entry_term'));
     }
 
     public function trashed(): bool

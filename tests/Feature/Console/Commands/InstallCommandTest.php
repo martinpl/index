@@ -14,10 +14,12 @@ test('runs migrations and installs a site on an empty database', function () {
         Schema::drop($table);
     }
 
-    artisan('index:install', ['--name' => 'My site', '--no-interaction' => true])
+    artisan('index:install', ['--name' => 'My site'])
+        ->expectsQuestion('Site domain', 'example.com')
         ->expectsOutput('Site installed successfully.')
         ->assertSuccessful();
 
+    assertDatabaseHas('sites', ['domain' => 'example.com', 'path' => '/']);
     assertDatabaseCount('sites', 1);
     assertDatabaseCount('options', 1);
     assertDatabaseHas('options', ['key' => 'site_name', 'value' => json_encode('My site')]);

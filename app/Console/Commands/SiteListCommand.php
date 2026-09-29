@@ -20,7 +20,7 @@ class SiteListCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->table(['id'], $sites->map(fn (Site $site): array => [$site->id]));
+        $this->table(['id', 'domain', 'path'], $sites->map(fn (Site $site): array => [$site->id, $site->domain, $site->path]));
 
         return self::SUCCESS;
     }

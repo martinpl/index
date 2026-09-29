@@ -9,7 +9,9 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
-#[Signature('index:install {--name= : The name of the site}')]
+#[Signature('index:install
+    {--name= : The name of the site}
+    {--domain= : The domain of the site}')]
 #[Description('Runs installation process')]
 class InstallCommand extends Command
 {
@@ -31,8 +33,14 @@ class InstallCommand extends Command
             $name = $this->ask('Site name');
         }
 
-        $validator = Validator::make(['name' => $name], [
+        $domain = $this->option('domain');
+        if (! $domain) {
+            $domain = $this->ask('Site domain', 'localhost');
+        }
+
+        $validator = Validator::make(['name' => $name, 'domain' => $domain], [
             'name' => ['required'],
+            'domain' => ['required', 'string', 'max:255'],
         ]);
 
         if ($validator->fails()) {
@@ -43,7 +51,9 @@ class InstallCommand extends Command
             return self::FAILURE;
         }
 
-        Site::create();
+        Site::create([
+            'domain' => $domain,
+        ]);
         Option::set('site_name', $name);
         $this->info('Site installed successfully.');
 

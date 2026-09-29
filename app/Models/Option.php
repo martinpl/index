@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToSite;
 use Database\Factories\OptionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['key', 'value'])]
 class Option extends Model
 {
+    use BelongsToSite;
+
     /** @use HasFactory<OptionFactory> */
     use HasFactory;
 

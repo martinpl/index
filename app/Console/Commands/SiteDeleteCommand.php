@@ -21,6 +21,12 @@ class SiteDeleteCommand extends Command
             return self::FAILURE;
         }
 
+        if ($site->isMain()) {
+            $this->error('The main site cannot be deleted.');
+
+            return self::FAILURE;
+        }
+
         $site->delete();
         $this->info("Deleted site [$siteId].");
 

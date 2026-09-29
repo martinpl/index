@@ -39,7 +39,7 @@ class EntryCreateCommand extends Command
 
         $validator = Validator::make($attributes, [
             'status' => ['required', 'alpha_dash', 'max:255'],
-            'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique('entries')->where('type', $type)],
+            'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique(Entry::class)->where('type', $type)],
             'name' => ['required', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
         ]);
