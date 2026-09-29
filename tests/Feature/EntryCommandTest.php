@@ -226,3 +226,33 @@ test('does not assign terms of an unrelated term type to an entry', function () 
         ->expectsOutput('Term type [category] is not registered for entry type [page].')
         ->assertFailed();
 });
+
+test('manages the meta of an entry', function () {
+    $entry = Entry::factory()->create();
+    $entry->setMeta('tags', ['laravel', 'index']);
+
+    artisan('entry:meta', ['action' => 'set', 'entry' => $entry->id, 'key' => 'color', 'value' => 'red'])
+        ->expectsOutput("Set meta [color] of entry [$entry->id].")
+        ->assertSuccessful();
+
+    artisan('entry:meta', ['action' => 'get', 'entry' => $entry->id, 'key' => 'color'])
+        ->expectsOutput('red')
+        ->assertSuccessful();
+
+    artisan('entry:meta', ['action' => 'list', 'entry' => $entry->id])
+        ->expectsTable(['key', 'value'], [
+            ['color', 'red'],
+            ['tags', '["laravel","index"]'],
+        ])
+        ->assertSuccessful();
+
+    artisan('entry:meta', ['action' => 'delete', 'entry' => $entry->id, 'key' => 'color'])
+        ->expectsOutput("Deleted meta [color] of entry [$entry->id].")
+        ->assertSuccessful();
+
+    expect($entry->hasMeta('color'))->toBeFalse();
+
+    artisan('entry:meta', ['action' => 'get', 'entry' => $entry->id, 'key' => 'color'])
+        ->expectsOutput("Meta [color] of entry [$entry->id] does not exist.")
+        ->assertFailed();
+});

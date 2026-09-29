@@ -107,3 +107,29 @@ test('deletes a term', function () {
     assertDatabaseMissing('terms', ['id' => $term->id]);
     assertDatabaseMissing('entry_term', ['term_id' => $term->id]);
 });
+
+test('manages the meta of a term', function () {
+    $term = Term::factory()->create(['type' => 'category']);
+
+    artisan('term:meta', ['action' => 'list', 'type' => 'category', 'term' => $term->id])
+        ->expectsOutput('No meta found.')
+        ->assertSuccessful();
+
+    artisan('term:meta', ['action' => 'set', 'type' => 'category', 'term' => $term->id, 'key' => 'color', 'value' => 'red'])
+        ->expectsOutput("Set meta [color] of term [$term->id].")
+        ->assertSuccessful();
+
+    artisan('term:meta', ['action' => 'get', 'type' => 'category', 'term' => $term->id, 'key' => 'color'])
+        ->expectsOutput('red')
+        ->assertSuccessful();
+
+    artisan('term:meta', ['action' => 'delete', 'type' => 'category', 'term' => $term->id, 'key' => 'color'])
+        ->expectsOutput("Deleted meta [color] of term [$term->id].")
+        ->assertSuccessful();
+
+    expect($term->hasMeta('color'))->toBeFalse();
+
+    artisan('term:meta', ['action' => 'list', 'type' => 'tag', 'term' => $term->id])
+        ->expectsOutput("Term [$term->id] does not exist.")
+        ->assertFailed();
+});
