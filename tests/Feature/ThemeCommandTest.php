@@ -5,6 +5,7 @@ use App\Models\Option;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\View;
 use Theme\ThemeServiceProvider;
 
 use function Pest\Laravel\artisan;
@@ -90,5 +91,6 @@ test('boots the active theme', function () {
 
     Theme::boot();
 
-    expect(app()->getProviders(ThemeServiceProvider::class))->toHaveCount(1);
+    expect(app()->getProviders(ThemeServiceProvider::class))->toHaveCount(1)
+        ->and(View::getFinder()->getPaths()[0])->toBe(base_path('themes/theme/resources/views'));
 });

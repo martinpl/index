@@ -14,9 +14,11 @@ pest()->use(LazilyRefreshDatabase::class);
 
 test('serves entries of the site matching the domain and path', function () {
     Site::create(['domain' => 'example.com']);
+    Option::set('active_theme', 'theme');
     Entry::factory()->published()->create(['slug' => 'hello', 'name' => 'Main hello']);
 
     Site::create(['domain' => 'example.com', 'path' => 'blog'])->makeCurrent();
+    Option::set('active_theme', 'theme');
     Entry::factory()->published()->create(['slug' => 'hello', 'name' => 'Blog hello']);
 
     get('http://example.com/hello')->assertOk()->assertSee('Main hello');

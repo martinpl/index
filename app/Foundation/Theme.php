@@ -6,6 +6,7 @@ use App\Models\Option;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -25,7 +26,10 @@ class Theme extends Package
             return;
         }
 
-        app()->register($this->themeClass($this->path($name)));
+        $path = $this->path($name);
+        View::prependLocation($path.'/resources/views');
+
+        app()->register($this->themeClass($path));
     }
 
     public function isActive(string $name): bool
