@@ -46,4 +46,3 @@ test('keeps meta of trashed entries', function () {
 
     assertDatabaseMissing('meta', ['metable_id' => $entry->id]);
 });
-

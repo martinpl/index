@@ -67,3 +67,17 @@ test('returns not found when a parent is not published', function () {
 
     get('/company/team')->assertNotFound();
 });
+
+test('redirects non-canonical urls permanently', function () {
+    get('/Posts/Hello?Ref=X')
+        ->assertMovedPermanently()
+        ->assertRedirect('/posts/hello?Ref=X');
+
+    get('http://localhost/posts/hello/?page=2')
+        ->assertMovedPermanently()
+        ->assertRedirect('http://localhost/posts/hello?page=2');
+
+    get('http://localhost/Posts/Hello/')
+        ->assertMovedPermanently()
+        ->assertRedirect('http://localhost/posts/hello');
+});

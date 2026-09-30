@@ -43,7 +43,7 @@ class TermUpdateCommand extends Command
         }
 
         $validator = Validator::make($attributes, [
-            'slug' => ['sometimes', 'required', 'alpha_dash', 'max:255', Rule::unique(Term::class)->where('type', $term->type)->ignore($term)],
+            'slug' => ['sometimes', 'required', 'alpha_dash', 'lowercase', 'max:255', Rule::unique(Term::class)->where('type', $term->type)->ignore($term)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'string'],
             'parent_id' => ['sometimes', 'integer', Rule::notIn([$term->id]), Rule::exists(Term::class, 'id')->where('type', $term->type)],

@@ -18,7 +18,7 @@ test('manages sites through commands', function () {
         ->expectsOutput('Created site [2].')
         ->assertSuccessful();
 
-    assertDatabaseHas('sites', ['id' => 2, 'domain' => 'example.com', 'path' => '/blog/']);
+    assertDatabaseHas('sites', ['id' => 2, 'domain' => 'example.com', 'path' => '/blog']);
     expect(Schema::hasTable('site_2_entries'))->toBeTrue()
         ->and(Schema::hasTable('site_2_sites'))->toBeFalse();
 
@@ -29,7 +29,7 @@ test('manages sites through commands', function () {
     artisan('site:list')
         ->expectsTable(['id', 'domain', 'path'], [
             [1, 'example.com', '/'],
-            [2, 'example.com', '/blog/'],
+            [2, 'example.com', '/blog'],
         ])
         ->assertSuccessful();
 

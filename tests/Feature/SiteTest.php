@@ -16,6 +16,7 @@ test('serves entries of the site matching the domain and path', function () {
     Site::create(['domain' => 'example.com']);
     Option::set('active_theme', 'theme');
     Entry::factory()->published()->create(['type' => 'page', 'slug' => 'hello', 'name' => 'Main hello']);
+    Entry::factory()->published()->create(['type' => 'page', 'slug' => 'blogger', 'name' => 'Main blogger']);
 
     Site::create(['domain' => 'example.com', 'path' => 'blog'])->makeCurrent();
     Option::set('active_theme', 'theme');
@@ -23,6 +24,7 @@ test('serves entries of the site matching the domain and path', function () {
 
     get('http://example.com/hello')->assertOk()->assertSee('Main hello');
     get('http://example.com/blog/hello')->assertOk()->assertSee('Blog hello');
+    get('http://example.com/blogger')->assertOk()->assertSee('Main blogger');
     get('http://example.com/blog/missing')->assertNotFound();
 });
 

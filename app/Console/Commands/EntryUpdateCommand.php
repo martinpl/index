@@ -50,7 +50,7 @@ class EntryUpdateCommand extends Command
 
         $validator = Validator::make($attributes, [
             'status' => ['sometimes', 'required', 'alpha_dash', 'max:255'],
-            'slug' => ['sometimes', 'required', 'alpha_dash', 'max:255', Rule::unique(Entry::class)->where('type', $entry->type)->ignore($entry)],
+            'slug' => ['sometimes', 'required', 'alpha_dash', 'lowercase', 'max:255', Rule::unique(Entry::class)->where('type', $entry->type)->ignore($entry)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'content' => ['sometimes', 'string'],
             'user_id' => ['sometimes', 'integer', Rule::exists(User::class, 'id')],

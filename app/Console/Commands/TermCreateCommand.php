@@ -38,7 +38,7 @@ class TermCreateCommand extends Command
         ];
 
         $validator = Validator::make($attributes, [
-            'slug' => ['required', 'alpha_dash', 'max:255', Rule::unique(Term::class)->where('type', $type)],
+            'slug' => ['required', 'alpha_dash', 'lowercase', 'max:255', Rule::unique(Term::class)->where('type', $type)],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'parent_id' => ['nullable', 'integer', Rule::exists(Term::class, 'id')->where('type', $type)],

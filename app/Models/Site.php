@@ -50,12 +50,12 @@ class Site extends Model
 
     public static function findForRequest(Request $request): ?static
     {
-        $path = Str::finish('/'.ltrim($request->path(), '/'), '/');
+        $path = Str::start($request->path(), '/');
 
         return static::query()
             ->where('domain', $request->getHost())
             ->get()
-            ->filter(fn (Site $site): bool => str_starts_with($path, $site->path))
+            ->filter(fn (Site $site): bool => $path === $site->path || str_starts_with($path, rtrim($site->path, '/').'/'))
             ->sortByDesc(fn (Site $site): int => strlen($site->path))
             ->first();
     }
@@ -122,7 +122,7 @@ class Site extends Model
     protected function path(): Attribute
     {
         return Attribute::make(
-            set: fn (string $value): string => Str::of($value)->trim('/')->finish('/')->start('/')->toString(),
+            set: fn (string $value): string => Str::of($value)->trim('/')->start('/')->toString(),
         );
     }
 }
