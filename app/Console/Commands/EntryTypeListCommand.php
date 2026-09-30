@@ -20,8 +20,8 @@ class EntryTypeListCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->table(['key', 'name'], $entryTypes
-            ->map(fn (array $entryType): array => [$entryType['key'], $entryType['name']]));
+        $this->table(['key', 'name', 'slug'], $entryTypes
+            ->map(fn (array $entryType): array => [$entryType['key'], $entryType['name'], $entryType['slug']]));
 
         return self::SUCCESS;
     }

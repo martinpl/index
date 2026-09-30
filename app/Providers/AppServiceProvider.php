@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
             'term' => Term::class,
         ]);
 
-        EntryTypeFacade::register('page');
+        EntryTypeFacade::register('page', ['slug' => '']);
         EntryTypeFacade::register('post');
         TermTypeFacade::register('category', ['entry_types' => ['post']]);
         TermTypeFacade::register('tag', ['entry_types' => ['post']]);

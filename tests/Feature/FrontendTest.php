@@ -1,5 +1,6 @@
 <?php
 
+use App\Facades\EntryType;
 use App\Models\Entry;
 use App\Models\Option;
 use App\Models\Site;
@@ -30,4 +31,39 @@ test('returns not found when entry is not published', function () {
     Option::set('home_entry', $entry->id);
 
     get('/')->assertNotFound();
+});
+
+test('renders an entry under its entry type slug', function () {
+    Entry::factory()->published()->create(['type' => 'page', 'slug' => 'about', 'name' => 'About']);
+    Entry::factory()->published()->create(['type' => 'post', 'slug' => 'hello', 'name' => 'Hello']);
+
+    get('/about')->assertOk()->assertSee('About');
+    get('/posts/hello')->assertOk()->assertSee('Hello');
+    get('/hello')->assertNotFound();
+    get('/posts/about')->assertNotFound();
+});
+
+test('renders an entry under a custom entry type slug', function () {
+    EntryType::register('product', ['slug' => 'shop/products']);
+    Entry::factory()->published()->create(['type' => 'product', 'slug' => 'chair', 'name' => 'Chair']);
+
+    get('/shop/products/chair')->assertOk()->assertSee('Chair');
+    get('/products/chair')->assertNotFound();
+});
+
+test('renders a nested entry under its parents', function () {
+    $parent = Entry::factory()->published()->create(['type' => 'page', 'slug' => 'company']);
+    $child = Entry::factory()->published()->create(['type' => 'page', 'slug' => 'team', 'parent_id' => $parent->id]);
+    Entry::factory()->published()->create(['type' => 'page', 'slug' => 'history', 'name' => 'History', 'parent_id' => $child->id]);
+
+    get('/company/team/history')->assertOk()->assertSee('History');
+    get('/history')->assertNotFound();
+    get('/team/history')->assertNotFound();
+});
+
+test('returns not found when a parent is not published', function () {
+    $parent = Entry::factory()->create(['type' => 'page', 'slug' => 'company', 'status' => 'draft']);
+    Entry::factory()->published()->create(['type' => 'page', 'slug' => 'team', 'parent_id' => $parent->id]);
+
+    get('/company/team')->assertNotFound();
 });

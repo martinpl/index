@@ -19,6 +19,7 @@ class EntryType
         $this->types[$key] = [
             'key' => $key,
             'name' => $attributes['name'] ?? Str::headline($key),
+            'slug' => $attributes['slug'] ?? Str::plural($key),
         ];
     }
 

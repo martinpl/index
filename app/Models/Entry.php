@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EntryStatus;
+use App\Facades\EntryType;
 use App\Models\Concerns\BelongsToSite;
 use App\Models\Concerns\HasMeta;
 use Database\Factories\EntryFactory;
@@ -67,6 +68,16 @@ class Entry extends Model
     public function terms(): BelongsToMany
     {
         return $this->belongsToMany(Term::class, $this->siteTable('entry_term'));
+    }
+
+    public function path(): string
+    {
+        $slugs = [];
+        for ($entry = $this; $entry; $entry = $entry->parent) {
+            array_unshift($slugs, $entry->slug);
+        }
+
+        return ltrim((EntryType::get($this->type)['slug'] ?? '').'/'.implode('/', $slugs), '/');
     }
 
     public function trashed(): bool

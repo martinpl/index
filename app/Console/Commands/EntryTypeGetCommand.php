@@ -24,6 +24,7 @@ class EntryTypeGetCommand extends Command
         $this->table(['field', 'value'], [
             ['key', $entryType['key']],
             ['name', $entryType['name']],
+            ['slug', $entryType['slug']],
         ]);
 
         return self::SUCCESS;
