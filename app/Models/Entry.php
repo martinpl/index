@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @method static Builder<static> withAnyStatus()
  */
-#[Fillable(['type', 'status', 'slug', 'name', 'content'])]
+#[Fillable(['type', 'status', 'slug', 'name', 'content', 'user_id', 'parent_id', 'order'])]
 class Entry extends Model
 {
     use BelongsToSite;
@@ -32,6 +33,7 @@ class Entry extends Model
 
     protected $attributes = [
         'status' => EntryStatus::Draft->value,
+        'order' => 0,
     ];
 
     protected bool $forceDeleting = false;
@@ -41,6 +43,22 @@ class Entry extends Model
         static::addGlobalScope('published', function (Builder $query): void {
             $query->where($query->qualifyColumn('status'), EntryStatus::Publish);
         });
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo<Entry, $this>
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Entry::class);
     }
 
     /**

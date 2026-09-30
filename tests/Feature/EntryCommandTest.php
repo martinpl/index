@@ -2,6 +2,7 @@
 
 use App\Models\Entry;
 use App\Models\Term;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\artisan;
@@ -11,27 +12,33 @@ use function Pest\Laravel\assertDatabaseMissing;
 pest()->use(LazilyRefreshDatabase::class);
 
 test('creates an entry', function () {
-    artisan('entry:create', ['type' => 'post', 'name' => 'Hello World', '--content' => 'Welcome to Index.', '--status' => 'publish'])
-        ->expectsOutput('Created entry [1].')
+    $user = User::factory()->create();
+    $parent = Entry::factory()->create(['type' => 'post']);
+
+    artisan('entry:create', ['type' => 'post', 'name' => 'Hello World', '--content' => 'Welcome to Index.', '--status' => 'publish', '--user' => $user->id, '--parent' => $parent->id, '--order' => 3])
+        ->expectsOutput('Created entry [2].')
         ->assertSuccessful();
 
     assertDatabaseHas('entries', [
-        'id' => 1,
+        'id' => 2,
         'type' => 'post',
         'name' => 'Hello World',
         'slug' => 'hello-world',
         'content' => 'Welcome to Index.',
         'status' => 'publish',
+        'user_id' => $user->id,
+        'parent_id' => $parent->id,
+        'order' => 3,
     ]);
 
-    expect(Entry::find(1)->date)->not->toBeNull();
+    expect(Entry::find(2)->date)->not->toBeNull();
 });
 
 test('creates a draft entry by default', function () {
     artisan('entry:create', ['type' => 'post', 'name' => 'Hello World'])
         ->assertSuccessful();
 
-    assertDatabaseHas('entries', ['name' => 'Hello World', 'status' => 'draft']);
+    assertDatabaseHas('entries', ['name' => 'Hello World', 'status' => 'draft', 'user_id' => null, 'parent_id' => null, 'order' => 0]);
 });
 
 test('does not create an entry of an unknown type', function () {
@@ -54,7 +61,9 @@ test('does not create an entry with a duplicate slug', function () {
 });
 
 test('gets an entry', function () {
-    $entry = Entry::factory()->published()->create()->fresh();
+    $user = User::factory()->create();
+    $parent = Entry::factory()->create();
+    $entry = Entry::factory()->published()->create(['user_id' => $user->id, 'parent_id' => $parent->id, 'order' => 2])->fresh();
 
     artisan('entry:get', ['entry' => $entry->id])
         ->expectsTable(['field', 'value'], [
@@ -64,6 +73,9 @@ test('gets an entry', function () {
             ['slug', $entry->slug],
             ['name', $entry->name],
             ['content', $entry->content],
+            ['user', $user->id],
+            ['parent', $parent->id],
+            ['order', 2],
             ['date', $entry->date],
             ['modified', $entry->modified],
         ])
@@ -114,9 +126,11 @@ test('queries only published entries by default', function () {
 });
 
 test('updates an entry', function () {
-    $entry = Entry::factory()->create();
+    $user = User::factory()->create();
+    $parent = Entry::factory()->create(['type' => 'post']);
+    $entry = Entry::factory()->create(['type' => 'post']);
 
-    artisan('entry:update', ['entry' => $entry->id, '--name' => 'Updated', '--slug' => 'updated', '--status' => 'publish'])
+    artisan('entry:update', ['entry' => $entry->id, '--name' => 'Updated', '--slug' => 'updated', '--status' => 'publish', '--user' => $user->id, '--parent' => $parent->id, '--order' => 5])
         ->expectsOutput("Updated entry [$entry->id].")
         ->assertSuccessful();
 
@@ -124,12 +138,23 @@ test('updates an entry', function () {
 
     expect($entry->name)->toBe('Updated')
         ->and($entry->slug)->toBe('updated')
-        ->and($entry->status)->toBe('publish');
+        ->and($entry->status)->toBe('publish')
+        ->and($entry->user_id)->toBe($user->id)
+        ->and($entry->parent_id)->toBe($parent->id)
+        ->and($entry->order)->toBe(5);
 
     artisan('entry:update', ['entry' => $entry->id, '--status' => 'draft'])
         ->assertSuccessful();
 
     expect($entry->refresh()->status)->toBe('draft');
+});
+
+test('does not make an entry its own parent', function () {
+    $entry = Entry::factory()->create(['type' => 'page']);
+
+    artisan('entry:update', ['entry' => $entry->id, '--parent' => $entry->id])
+        ->expectsOutput('The selected parent is invalid.')
+        ->assertFailed();
 });
 
 test('restores a trashed entry', function () {

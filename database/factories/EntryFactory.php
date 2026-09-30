@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class EntryFactory extends Factory
 {
     /**
-     * @return array{type: string, status: string, slug: string, name: string, content: string}
+     * @return array{type: string, status: string, slug: string, name: string, content: string, user_id: null, parent_id: null, order: int}
      */
     public function definition(): array
     {
@@ -25,6 +25,9 @@ class EntryFactory extends Factory
             'slug' => Str::slug($name),
             'name' => $name,
             'content' => fake()->paragraph(),
+            'user_id' => null,
+            'parent_id' => null,
+            'order' => 0,
         ];
     }
 

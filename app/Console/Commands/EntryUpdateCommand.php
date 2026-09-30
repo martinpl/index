@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Entry;
+use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -14,7 +15,10 @@ use Illuminate\Validation\Rule;
     {--status= : The status of the entry, e.g. publish, draft or trash}
     {--slug= : The slug of the entry}
     {--name= : The name of the entry}
-    {--content= : The content of the entry}')]
+    {--content= : The content of the entry}
+    {--user= : The ID of the user who authored the entry}
+    {--parent= : The ID of the parent entry}
+    {--order= : The order of the entry}')]
 #[Description('Updates an entry')]
 class EntryUpdateCommand extends Command
 {
@@ -33,6 +37,9 @@ class EntryUpdateCommand extends Command
             'slug' => $this->option('slug'),
             'name' => $this->option('name'),
             'content' => $this->option('content'),
+            'user_id' => $this->option('user'),
+            'parent_id' => $this->option('parent'),
+            'order' => $this->option('order'),
         ], fn (?string $value): bool => $value !== null);
 
         if (empty($attributes)) {
@@ -46,7 +53,10 @@ class EntryUpdateCommand extends Command
             'slug' => ['sometimes', 'required', 'alpha_dash', 'max:255', Rule::unique(Entry::class)->where('type', $entry->type)->ignore($entry)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'content' => ['sometimes', 'string'],
-        ]);
+            'user_id' => ['sometimes', 'integer', Rule::exists(User::class, 'id')],
+            'parent_id' => ['sometimes', 'integer', Rule::notIn([$entry->id]), Rule::exists(Entry::class, 'id')->where('type', $entry->type)],
+            'order' => ['sometimes', 'integer'],
+        ], attributes: ['user_id' => 'user', 'parent_id' => 'parent']);
 
         if ($validator->fails()) {
             foreach ($validator->errors()->all() as $error) {

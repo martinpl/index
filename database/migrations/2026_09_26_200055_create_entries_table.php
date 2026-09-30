@@ -15,6 +15,9 @@ return new class extends Migration
             $table->string('slug');
             $table->string('name');
             $table->longText('content')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('entries')->nullOnDelete();
+            $table->integer('order')->default(0);
             $table->timestamp('date')->nullable();
             $table->timestamp('modified')->nullable();
 

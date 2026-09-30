@@ -28,6 +28,9 @@ class EntryGetCommand extends Command
             ['slug', $entry->slug],
             ['name', $entry->name],
             ['content', $entry->content],
+            ['user', $entry->user_id],
+            ['parent', $entry->parent_id],
+            ['order', $entry->order],
             ['date', $entry->date],
             ['modified', $entry->modified],
         ]);
