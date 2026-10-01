@@ -32,6 +32,13 @@ class Entry extends Model
 
     const UPDATED_AT = 'modified';
 
+    /**
+     * The entry type key, required in entry type classes.
+     */
+    public static string $type;
+
+    protected $table = 'entries';
+
     protected $attributes = [
         'status' => EntryStatus::Draft->value,
         'order' => 0,
@@ -44,6 +51,50 @@ class Entry extends Model
         static::addGlobalScope('published', function (Builder $query): void {
             $query->where($query->qualifyColumn('status'), EntryStatus::Publish);
         });
+
+        if (static::class !== self::class) {
+            static::addGlobalScope('type', function (Builder $query): void {
+                $query->where($query->qualifyColumn('type'), static::$type);
+            });
+
+            static::creating(function (Entry $entry): void {
+                $entry->type ??= static::$type;
+            });
+        }
+    }
+
+    /**
+     * The entry type config when this class is registered as an entry type.
+     *
+     * @return array{name?: string, slug?: string}
+     */
+    public static function config(): array
+    {
+        return [];
+    }
+
+    /**
+     * Hydrate each row as the class registered for its entry type.
+     */
+    public function newFromBuilder($attributes = [], $connection = null): static
+    {
+        $model = EntryType::get(((array) $attributes)['type'] ?? '')['model'] ?? null;
+
+        if ($model && is_subclass_of($model, static::class)) {
+            return (new $model)->newFromBuilder($attributes, $connection);
+        }
+
+        return parent::newFromBuilder($attributes, $connection);
+    }
+
+    public function getMorphClass(): string
+    {
+        return 'entry';
+    }
+
+    public function getForeignKey(): string
+    {
+        return 'entry_id';
     }
 
     /**

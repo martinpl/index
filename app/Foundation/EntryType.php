@@ -2,24 +2,37 @@
 
 namespace App\Foundation;
 
+use App\Models\Entry;
 use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use ReflectionClass;
 
 class EntryType
 {
     private array $types = [];
 
-    public function register(string $key, array $attributes = []): void
+    /**
+     * @param  string|class-string<Entry>  $key
+     * @param  array{name?: string, slug?: string, model?: class-string<Entry>}  $config
+     */
+    public function register(string $key, array $config = []): void
     {
+        // Class lookup is case-insensitive, so key "product" would match class "Product".
+        if (is_subclass_of($key, Entry::class) && (new ReflectionClass($key))->getName() === $key) {
+            $config = ['model' => $key, ...$key::config(), ...$config];
+            $key = $key::$type;
+        }
+
         if ($this->has($key)) {
             throw new DomainException("Entry type [$key] is already registered.");
         }
 
         $this->types[$key] = [
             'key' => $key,
-            'name' => $attributes['name'] ?? Str::headline($key),
-            'slug' => $attributes['slug'] ?? Str::plural($key),
+            'name' => $config['name'] ?? Str::headline($key),
+            'slug' => $config['slug'] ?? Str::plural($key),
+            'model' => $config['model'] ?? Entry::class,
         ];
     }
 

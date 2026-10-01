@@ -8,8 +8,12 @@ use App\Foundation\EntryType;
 use App\Foundation\Plugin;
 use App\Foundation\TermType;
 use App\Foundation\Theme;
+use App\Models\Category;
 use App\Models\Entry;
+use App\Models\Page;
+use App\Models\Post;
 use App\Models\Site;
+use App\Models\Tag;
 use App\Models\Term;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -41,10 +45,10 @@ class AppServiceProvider extends ServiceProvider
             'term' => Term::class,
         ]);
 
-        EntryTypeFacade::register('page', ['slug' => '']);
-        EntryTypeFacade::register('post');
-        TermTypeFacade::register('category', ['entry_types' => ['post']]);
-        TermTypeFacade::register('tag', ['entry_types' => ['post']]);
+        EntryTypeFacade::register(Page::class);
+        EntryTypeFacade::register(Post::class);
+        TermTypeFacade::register(Category::class);
+        TermTypeFacade::register(Tag::class);
 
         if ($this->app->runningInConsole()) {
             $this->bootConsoleSite();

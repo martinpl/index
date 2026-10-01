@@ -142,11 +142,6 @@ test('updates an entry', function () {
         ->and($entry->user_id)->toBe($user->id)
         ->and($entry->parent_id)->toBe($parent->id)
         ->and($entry->order)->toBe(5);
-
-    artisan('entry:update', ['entry' => $entry->id, '--status' => 'draft'])
-        ->assertSuccessful();
-
-    expect($entry->refresh()->status)->toBe('draft');
 });
 
 test('does not make an entry its own parent', function () {

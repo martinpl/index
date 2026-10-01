@@ -2,24 +2,37 @@
 
 namespace App\Foundation;
 
+use App\Models\Term;
 use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use ReflectionClass;
 
 class TermType
 {
     private array $types = [];
 
-    public function register(string $key, array $attributes = []): void
+    /**
+     * @param  string|class-string<Term>  $key
+     * @param  array{name?: string, entry_types?: list<string>, model?: class-string<Term>}  $config
+     */
+    public function register(string $key, array $config = []): void
     {
+        // Class lookup is case-insensitive, so key "genre" would match class "Genre".
+        if (is_subclass_of($key, Term::class) && (new ReflectionClass($key))->getName() === $key) {
+            $config = ['model' => $key, ...$key::config(), ...$config];
+            $key = $key::$type;
+        }
+
         if ($this->has($key)) {
             throw new DomainException("Term type [$key] is already registered.");
         }
 
         $this->types[$key] = [
             'key' => $key,
-            'name' => $attributes['name'] ?? Str::headline($key),
-            'entry_types' => $attributes['entry_types'] ?? [],
+            'name' => $config['name'] ?? Str::headline($key),
+            'entry_types' => $config['entry_types'] ?? [],
+            'model' => $config['model'] ?? Term::class,
         ];
     }
 
