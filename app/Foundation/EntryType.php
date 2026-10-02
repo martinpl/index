@@ -34,6 +34,8 @@ class EntryType
             'slug' => $config['slug'] ?? Str::plural($key),
             'model' => $config['model'] ?? Entry::class,
         ];
+
+        $this->types[$key]['model']::registered();
     }
 
     public function has(string $key): bool

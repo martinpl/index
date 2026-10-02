@@ -74,6 +74,14 @@ class Entry extends Model
     }
 
     /**
+     * Called after this class is registered as an entry type.
+     */
+    public static function registered(): void
+    {
+        //
+    }
+
+    /**
      * Hydrate each row as the class registered for its entry type.
      */
     public function newFromBuilder($attributes = [], $connection = null): static
@@ -119,6 +127,11 @@ class Entry extends Model
     public function terms(): BelongsToMany
     {
         return $this->belongsToMany(Term::class, $this->siteTable('entry_term'));
+    }
+
+    public function url(): string
+    {
+        return url(rtrim(Site::current()?->path ?? '/', '/').'/'.$this->path());
     }
 
     public function path(): string

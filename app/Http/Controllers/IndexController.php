@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\EntryTypes\Page;
 use App\Facades\EntryType;
 use App\Models\Entry;
-use App\Models\Option;
 use App\Models\Site;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -15,7 +15,11 @@ class IndexController extends Controller
     {
         $path = trim(Str::after("/$path/", $site->path), '/');
         if (! $path) {
-            return view('index', ['entry' => Entry::findOrFail(Option::get('home_entry'))]);
+            $entry = Page::for('home');
+
+            abort_unless($entry, 404);
+
+            return view('index', ['entry' => $entry]);
         }
 
         $entry = Entry::where('slug', Str::afterLast($path, '/'))

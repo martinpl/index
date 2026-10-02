@@ -34,6 +34,8 @@ class TermType
             'entry_types' => $config['entry_types'] ?? [],
             'model' => $config['model'] ?? Term::class,
         ];
+
+        $this->types[$key]['model']::registered();
     }
 
     public function has(string $key): bool

@@ -55,6 +55,14 @@ class Term extends Model
     }
 
     /**
+     * Called after this class is registered as a term type.
+     */
+    public static function registered(): void
+    {
+        //
+    }
+
+    /**
      * Hydrate each row as the class registered for its term type.
      */
     public function newFromBuilder($attributes = [], $connection = null): static
