@@ -1,9 +1,9 @@
 <?php
 
 use App\Facades\TermType;
-use App\Models\Category;
 use App\Models\Entry;
 use App\Models\Term;
+use App\TermTypes\Category;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\assertDatabaseHas;

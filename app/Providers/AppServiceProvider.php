@@ -2,19 +2,19 @@
 
 namespace App\Providers;
 
+use App\EntryTypes\Page;
+use App\EntryTypes\Post;
 use App\Facades\EntryType as EntryTypeFacade;
 use App\Facades\TermType as TermTypeFacade;
 use App\Foundation\EntryType;
 use App\Foundation\Plugin;
 use App\Foundation\TermType;
 use App\Foundation\Theme;
-use App\Models\Category;
 use App\Models\Entry;
-use App\Models\Page;
-use App\Models\Post;
 use App\Models\Site;
-use App\Models\Tag;
 use App\Models\Term;
+use App\TermTypes\Category;
+use App\TermTypes\Tag;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Schema;

@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\EntryTypes;
+
+use App\Models\Entry;
 
 class Page extends Entry
 {

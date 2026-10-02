@@ -1,9 +1,9 @@
 <?php
 
+use App\EntryTypes\Page;
+use App\EntryTypes\Post;
 use App\Facades\EntryType;
 use App\Models\Entry;
-use App\Models\Page;
-use App\Models\Post;
 use App\Models\Term;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
