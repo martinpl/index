@@ -53,6 +53,7 @@ test('manages a plugin through commands', function () {
 
     artisan('plugin:list')
         ->expectsTable(['name', 'status'], [
+            ['blog', 'inactive'],
             ['hello-index', 'inactive'],
             ['seo', 'active'],
         ])

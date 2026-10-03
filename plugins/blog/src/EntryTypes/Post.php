@@ -1,7 +1,8 @@
 <?php
 
-namespace App\EntryTypes;
+namespace Blog\EntryTypes;
 
+use App\EntryTypes\Page;
 use App\Models\Entry;
 
 class Post extends Entry

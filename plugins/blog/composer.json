@@ -1,0 +1,15 @@
+{
+    "name": "index/blog",
+    "version": "1.0.0",
+    "description": "Adds posts with categories and tags to Index.",
+    "autoload": {
+        "psr-4": {
+            "Blog\\": "src/"
+        }
+    },
+    "extra": {
+        "index": {
+            "name": "Blog"
+        }
+    }
+}

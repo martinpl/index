@@ -1,7 +1,6 @@
 <?php
 
 use App\EntryTypes\Page;
-use App\EntryTypes\Post;
 use App\Facades\EntryType;
 use App\Models\Entry;
 use App\Models\Term;
@@ -52,12 +51,10 @@ test('requires the class to declare its type', function () {
     expect(fn () => EntryType::register(UntypedEntry::class))->toThrow(Error::class);
 });
 
-test('hydrates pages and posts as their classes', function () {
+test('hydrates pages as the page class', function () {
     $page = Entry::factory()->published()->create(['type' => 'page']);
-    $post = Entry::factory()->published()->create(['type' => 'post']);
 
-    expect(Entry::find($page->id))->toBeInstanceOf(Page::class)
-        ->and(Entry::find($post->id))->toBeInstanceOf(Post::class);
+    expect(Entry::find($page->id))->toBeInstanceOf(Page::class);
 });
 
 test('hydrates entries as the class of their entry type', function () {

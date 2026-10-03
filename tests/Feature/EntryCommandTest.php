@@ -1,5 +1,7 @@
 <?php
 
+use App\Facades\EntryType;
+use App\Facades\TermType;
 use App\Models\Entry;
 use App\Models\Term;
 use App\Models\User;
@@ -10,6 +12,12 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
 pest()->use(LazilyRefreshDatabase::class);
+
+beforeEach(function (): void {
+    EntryType::register('post');
+    TermType::register('category', ['entry_types' => ['post']]);
+    TermType::register('tag', ['entry_types' => ['post']]);
+});
 
 test('creates an entry', function () {
     $user = User::factory()->create();

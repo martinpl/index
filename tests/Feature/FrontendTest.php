@@ -34,6 +34,7 @@ test('returns not found when entry is not published', function () {
 });
 
 test('renders an entry under its entry type slug', function () {
+    EntryType::register('post');
     Entry::factory()->published()->create(['type' => 'page', 'slug' => 'about', 'name' => 'About']);
     Entry::factory()->published()->create(['type' => 'post', 'slug' => 'hello', 'name' => 'Hello']);
 

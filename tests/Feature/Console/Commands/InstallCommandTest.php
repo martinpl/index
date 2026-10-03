@@ -21,7 +21,8 @@ test('runs migrations and installs a site on an empty database', function () {
 
     assertDatabaseHas('sites', ['domain' => 'example.com', 'path' => '/']);
     assertDatabaseCount('sites', 1);
-    assertDatabaseCount('options', 2);
+    assertDatabaseCount('options', 3);
     assertDatabaseHas('options', ['key' => 'site_name', 'value' => json_encode('My site')]);
     assertDatabaseHas('options', ['key' => 'active_theme', 'value' => json_encode('theme')]);
+    assertDatabaseHas('options', ['key' => 'active_plugins', 'value' => json_encode(['blog'])]);
 });

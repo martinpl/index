@@ -10,7 +10,6 @@ test('lists registered entry types', function () {
     artisan('entry-type:list')
         ->expectsTable(['key', 'name', 'slug'], [
             ['page', 'Page', ''],
-            ['post', 'Post', 'posts'],
             ['product', 'Product', 'products'],
         ])
         ->assertSuccessful();

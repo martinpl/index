@@ -13,7 +13,6 @@ test('registers page roles', function () {
 
     expect(Page::roles())->toBe([
         'home' => 'Home page',
-        'posts' => 'Posts page',
         'shop' => 'Shop page',
         'cart' => 'Cart',
     ]);

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Facades\Plugin;
 use App\Facades\Theme;
 use App\Models\Option;
 use App\Models\Site;
@@ -57,6 +58,7 @@ class InstallCommand extends Command
         ]);
         Option::set('site_name', $name);
         Theme::activate('theme');
+        Plugin::activate('blog');
         $this->info('Site installed successfully.');
 
         return self::SUCCESS;

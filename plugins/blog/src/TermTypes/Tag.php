@@ -1,13 +1,13 @@
 <?php
 
-namespace App\TermTypes;
+namespace Blog\TermTypes;
 
-use App\EntryTypes\Post;
 use App\Models\Term;
+use Blog\EntryTypes\Post;
 
-class Category extends Term
+class Tag extends Term
 {
-    public static string $type = 'category';
+    public static string $type = 'tag';
 
     /**
      * @return array{name?: string, entry_types?: list<string>}

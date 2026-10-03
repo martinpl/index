@@ -3,7 +3,6 @@
 use App\Facades\TermType;
 use App\Models\Entry;
 use App\Models\Term;
-use App\TermTypes\Category;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -49,12 +48,6 @@ test('uses the key from the class type', function () {
 
 test('requires the class to declare its type', function () {
     expect(fn () => TermType::register(UntypedTerm::class))->toThrow(Error::class);
-});
-
-test('hydrates categories as the category class', function () {
-    $category = Term::factory()->create(['type' => 'category']);
-
-    expect(Term::find($category->id))->toBeInstanceOf(Category::class);
 });
 
 test('hydrates terms as the class of their term type', function () {
