@@ -3,15 +3,10 @@
 use App\Facades\EntryType;
 use App\Models\Entry;
 use App\Models\Option;
-use App\Models\Site;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\get;
 
-pest()->use(LazilyRefreshDatabase::class);
-
 beforeEach(function (): void {
-    Site::factory()->create(['domain' => 'localhost']);
     Option::set('active_theme', 'theme');
 });
 

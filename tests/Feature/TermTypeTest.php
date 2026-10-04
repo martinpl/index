@@ -3,11 +3,8 @@
 use App\Facades\TermType;
 use App\Models\Entry;
 use App\Models\Term;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\assertDatabaseHas;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 class Genre extends Term
 {

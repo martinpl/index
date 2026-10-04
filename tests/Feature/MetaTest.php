@@ -1,12 +1,9 @@
 <?php
 
 use App\Models\Entry;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 test('sets and forgets meta', function () {
     $entry = Entry::factory()->create();

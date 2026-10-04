@@ -4,11 +4,8 @@ use App\EntryTypes\Page;
 use App\Facades\EntryType;
 use App\Models\Entry;
 use App\Models\Term;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\assertDatabaseHas;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 class Product extends Entry
 {

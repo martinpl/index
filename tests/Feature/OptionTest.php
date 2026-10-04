@@ -1,13 +1,10 @@
 <?php
 
 use App\Models\Option;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 test('manages options through commands', function () {
     artisan('option:set', ['key' => 'site_name', 'value' => 'Index'])

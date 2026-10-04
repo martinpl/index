@@ -4,13 +4,10 @@ use App\Models\Entry;
 use App\Models\Option;
 use App\Models\Site;
 use App\Models\User;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\get;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 test('serves entries of the site matching the domain and path', function () {
     Site::create(['domain' => 'example.com']);
@@ -22,14 +19,13 @@ test('serves entries of the site matching the domain and path', function () {
     Option::set('active_theme', 'theme');
     Entry::factory()->published()->create(['type' => 'page', 'slug' => 'hello', 'name' => 'Blog hello']);
 
-    get('http://example.com/hello')->assertOk()->assertSee('Main hello');
+    get('http://localhost/hello')->assertOk()->assertSee('Main hello');
     get('http://example.com/blog/hello')->assertOk()->assertSee('Blog hello');
-    get('http://example.com/blogger')->assertOk()->assertSee('Main blogger');
+    get('http://localhost/blogger')->assertOk()->assertSee('Main blogger');
     get('http://example.com/blog/missing')->assertNotFound();
 });
 
 test('uses its own tables', function () {
-    Site::create(['domain' => 'example.com']);
     Site::create(['domain' => 'blog.example.com'])->makeCurrent();
 
     User::factory()->create(['email' => 'taylor@example.com']);

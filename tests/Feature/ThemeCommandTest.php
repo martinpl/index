@@ -2,7 +2,6 @@
 
 use App\Facades\Theme;
 use App\Models\Option;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\View;
@@ -10,8 +9,6 @@ use Theme\ThemeServiceProvider;
 
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 afterEach(function (): void {
     File::deleteDirectory(base_path('themes/classic'));

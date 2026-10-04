@@ -2,15 +2,11 @@
 
 use App\Facades\Plugin;
 use App\Models\Option;
-use App\Models\Site;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 afterEach(function (): void {
     File::deleteDirectory(base_path('plugins/analytics'));
@@ -87,7 +83,6 @@ test('installs a plugin from an URL', function () {
 });
 
 test('boots an active plugin', function () {
-    Site::factory()->create(['domain' => 'localhost']);
     Option::set('active_plugins', ['hello-index']);
 
     Plugin::boot();

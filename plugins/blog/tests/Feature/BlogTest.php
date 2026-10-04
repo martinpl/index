@@ -10,9 +10,6 @@ use App\Models\Term;
 use Blog\EntryTypes\Post;
 use Blog\TermTypes\Category;
 use Blog\TermTypes\Tag;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 beforeEach(function (): void {
     Option::set('active_plugins', ['blog']);

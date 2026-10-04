@@ -20,7 +20,10 @@ class OptionListCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->table(['key', 'value'], $options->toArray());
+        $this->table(['key', 'value'], $options->map(fn (Option $option): array => [
+            $option->key,
+            is_string($option->value) ? $option->value : json_encode($option->value),
+        ]));
 
         return self::SUCCESS;
     }

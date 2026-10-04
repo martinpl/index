@@ -2,11 +2,8 @@
 
 use App\Models\Entry;
 use App\Models\Option;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\artisan;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 test('manages page roles', function () {
     $page = Entry::factory()->create(['type' => 'page']);

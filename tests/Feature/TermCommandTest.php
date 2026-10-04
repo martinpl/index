@@ -3,13 +3,10 @@
 use App\Facades\TermType;
 use App\Models\Entry;
 use App\Models\Term;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
-
-pest()->use(LazilyRefreshDatabase::class);
 
 beforeEach(function (): void {
     TermType::register('category');
