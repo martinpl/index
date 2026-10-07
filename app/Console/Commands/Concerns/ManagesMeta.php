@@ -5,6 +5,7 @@ namespace App\Console\Commands\Concerns;
 use App\Models\Entry;
 use App\Models\Meta;
 use App\Models\Term;
+use App\Models\User;
 
 trait ManagesMeta
 {
@@ -20,7 +21,7 @@ trait ManagesMeta
         return false;
     }
 
-    protected function manageMeta(Entry|Term $model): int
+    protected function manageMeta(Entry|Term|User $model): int
     {
         if ($this->argument('action') === 'list') {
             return $this->list($model);
@@ -40,7 +41,7 @@ trait ManagesMeta
         };
     }
 
-    private function list(Entry|Term $model): int
+    private function list(Entry|Term|User $model): int
     {
         $meta = $model->meta()->orderBy('key')->get();
         if ($meta->isEmpty()) {
@@ -55,7 +56,7 @@ trait ManagesMeta
         return self::SUCCESS;
     }
 
-    private function get(Entry|Term $model, string $key): int
+    private function get(Entry|Term|User $model, string $key): int
     {
         if (! $model->hasMeta($key)) {
             return $this->metaDoesNotExist($model, $key);
@@ -66,7 +67,7 @@ trait ManagesMeta
         return self::SUCCESS;
     }
 
-    private function set(Entry|Term $model, string $key): int
+    private function set(Entry|Term|User $model, string $key): int
     {
         $value = $this->argument('value');
         if ($value === null) {
@@ -81,7 +82,7 @@ trait ManagesMeta
         return self::SUCCESS;
     }
 
-    private function delete(Entry|Term $model, string $key): int
+    private function delete(Entry|Term|User $model, string $key): int
     {
         if (! $model->forgetMeta($key)) {
             return $this->metaDoesNotExist($model, $key);
@@ -92,7 +93,7 @@ trait ManagesMeta
         return self::SUCCESS;
     }
 
-    private function metaDoesNotExist(Entry|Term $model, string $key): int
+    private function metaDoesNotExist(Entry|Term|User $model, string $key): int
     {
         $this->error("Meta [$key] of {$model->getMorphClass()} [{$model->getKey()}] does not exist.");
 

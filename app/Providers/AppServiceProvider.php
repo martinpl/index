@@ -11,6 +11,7 @@ use App\Foundation\Theme;
 use App\Models\Entry;
 use App\Models\Site;
 use App\Models\Term;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -45,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'entry' => Entry::class,
             'term' => Term::class,
+            'user' => User::class,
         ]);
 
         EntryTypeFacade::register(Page::class);
