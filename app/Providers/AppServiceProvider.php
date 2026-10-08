@@ -6,6 +6,7 @@ use App\EntryTypes\Page;
 use App\Facades\EntryType as EntryTypeFacade;
 use App\Foundation\EntryType;
 use App\Foundation\Plugin;
+use App\Foundation\Role;
 use App\Foundation\TermType;
 use App\Foundation\Theme;
 use App\Models\Entry;
@@ -17,6 +18,7 @@ use Illuminate\Console\Application as Artisan;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -34,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TermType::class);
         $this->app->singleton(Plugin::class);
         $this->app->singleton(Theme::class);
+        $this->app->singleton(Role::class);
     }
 
     /**
@@ -50,6 +53,8 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         EntryTypeFacade::register(Page::class);
+
+        Gate::before(fn (User $user, string $ability): ?bool => $user->hasAbility($ability) ?: null);
 
         if ($this->app->runningInConsole()) {
             $this->bootConsoleSite();

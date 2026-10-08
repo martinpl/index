@@ -31,6 +31,34 @@ test('sets and forgets meta', function () {
         ->and($entry->getMeta('subtitle', 'fallback'))->toBe('fallback');
 });
 
+test('forgets meta set to null or an empty array', function (mixed $value) {
+    $entry = Entry::factory()->create();
+    $entry->setMeta('gallery', [1, 2, 3]);
+
+    $entry->setMeta('gallery', $value);
+
+    assertDatabaseMissing('meta', ['metable_id' => $entry->id, 'key' => 'gallery']);
+})->with([null, [[]]]);
+
+test('queries models by meta', function () {
+    $red = Entry::factory()->create();
+    $red->setMeta('color', 'red');
+    $red->setMeta('rating', 5);
+    $blue = Entry::factory()->create();
+    $blue->setMeta('color', 'blue');
+    $blue->setMeta('rating', 10);
+    $tagged = Entry::factory()->create();
+    $tagged->setMeta('tags', ['laravel', 'index']);
+
+    expect(Entry::withAnyStatus()->whereMeta('tags')->pluck('id')->all())->toBe([$tagged->id])
+        ->and(Entry::withAnyStatus()->whereMeta('color', 'red')->pluck('id')->all())->toBe([$red->id])
+        ->and(Entry::withAnyStatus()->whereMeta('color', '!=', 'red')->pluck('id')->all())->toBe([$blue->id])
+        ->and(Entry::withAnyStatus()->whereMeta('color', 'like', 'bl%')->pluck('id')->all())->toBe([$blue->id])
+        ->and(Entry::withAnyStatus()->whereMeta('rating', '>', 9)->pluck('id')->all())->toBe([$blue->id])
+        ->and(Entry::withAnyStatus()->whereMetaContains('tags', 'index')->pluck('id')->all())->toBe([$tagged->id])
+        ->and(Entry::withAnyStatus()->whereMetaContains('tags', 'php')->exists())->toBeFalse();
+});
+
 test('keeps meta of trashed entries', function () {
     $entry = Entry::factory()->create();
     $entry->setMeta('subtitle', 'Hello');
