@@ -17,7 +17,7 @@ test('registers page roles', function () {
 
 test('finds the published page assigned to a role', function () {
     $entry = Entry::factory()->published()->create(['type' => 'page', 'slug' => 'blog']);
-    Option::set('page_roles', ['posts' => $entry->id]);
+    Option::set('page_roles', ['posts' => $entry->id], 'core');
 
     expect(Page::for('posts'))->toBeInstanceOf(Page::class)
         ->and(Page::for('posts')->is($entry))->toBeTrue()
@@ -28,7 +28,7 @@ test('finds the published page assigned to a role', function () {
 
 test('links the home page to the site root', function () {
     $entry = Entry::factory()->published()->create(['type' => 'page', 'slug' => 'home']);
-    Option::set('page_roles', ['home' => $entry->id]);
+    Option::set('page_roles', ['home' => $entry->id], 'core');
 
     expect(page_url('home'))->toBe(url('/'));
 });

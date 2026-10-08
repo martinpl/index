@@ -13,7 +13,8 @@ use Illuminate\Console\Command;
     {type : The key of the term type}
     {term : The ID of the term}
     {key? : The meta key}
-    {value? : The meta value}')]
+    {value? : The meta value}
+    {--owner=core : The owner of the meta, e.g. core or plugins/seo}')]
 #[Description('Manages the meta of a term')]
 class TermMetaCommand extends Command
 {

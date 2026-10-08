@@ -16,7 +16,8 @@ use Illuminate\Validation\Rule;
     {name : The name of the term}
     {--slug= : The slug of the term}
     {--description= : The description of the term}
-    {--parent= : The ID of the parent term}')]
+    {--parent= : The ID of the parent term}
+    {--owner=core : The owner of the term, e.g. core or plugins/seo}')]
 #[Description('Creates a term')]
 class TermCreateCommand extends Command
 {
@@ -35,6 +36,7 @@ class TermCreateCommand extends Command
             'name' => $this->argument('name'),
             'description' => $this->option('description'),
             'parent_id' => $this->option('parent'),
+            'owner' => $this->option('owner'),
         ];
 
         $validator = Validator::make($attributes, [
@@ -42,6 +44,7 @@ class TermCreateCommand extends Command
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'parent_id' => ['nullable', 'integer', Rule::exists(Term::class, 'id')->where('type', $type)],
+            'owner' => ['required', 'string', 'max:255'],
         ], attributes: ['parent_id' => 'parent']);
 
         if ($validator->fails()) {

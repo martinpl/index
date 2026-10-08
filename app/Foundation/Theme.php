@@ -39,7 +39,7 @@ class Theme extends Package
 
     public function activate(string $name): void
     {
-        Option::set(self::activeTheme, $name);
+        Option::set(self::activeTheme, $name, 'core');
     }
 
     public function deactivate(string $name): void

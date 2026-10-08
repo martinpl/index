@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Facades\TermType;
 use App\Models\Concerns\BelongsToSite;
 use App\Models\Concerns\HasMeta;
+use App\Models\Concerns\HasOwner;
 use Database\Factories\TermFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['type', 'slug', 'name', 'description', 'parent_id'])]
+#[Fillable(['type', 'slug', 'name', 'description', 'parent_id', 'owner'])]
 class Term extends Model
 {
     use BelongsToSite;
@@ -21,6 +22,7 @@ class Term extends Model
     use HasFactory;
 
     use HasMeta;
+    use HasOwner;
 
     /**
      * The term type key, required in term type classes.

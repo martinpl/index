@@ -37,7 +37,7 @@ test('registers an entry type from a class', function () {
 
 test('uses the key from the class type', function () {
     EntryType::register(ShopEvent::class);
-    $event = ShopEvent::create(['slug' => 'fair', 'name' => 'Fair', 'status' => 'publish']);
+    $event = ShopEvent::create(['slug' => 'fair', 'name' => 'Fair', 'status' => 'publish', 'owner' => 'core']);
 
     expect(EntryType::get('event')['model'])->toBe(ShopEvent::class)
         ->and($event->type)->toBe('event')
@@ -68,7 +68,7 @@ test('hydrates entries as the class of their entry type', function () {
 test('queries and creates only entries of its entry type', function () {
     EntryType::register(Product::class);
     Entry::factory()->published()->create(['type' => 'post']);
-    $product = Product::create(['slug' => 'chair', 'name' => 'Chair', 'status' => 'publish']);
+    $product = Product::create(['slug' => 'chair', 'name' => 'Chair', 'status' => 'publish', 'owner' => 'core']);
 
     expect($product->type)->toBe('product')
         ->and(Product::pluck('id')->all())->toBe([$product->id])
@@ -77,10 +77,10 @@ test('queries and creates only entries of its entry type', function () {
 
 test('keeps meta and terms working for entry type classes', function () {
     EntryType::register(Product::class);
-    $product = Product::create(['slug' => 'chair', 'name' => 'Chair', 'status' => 'publish']);
+    $product = Product::create(['slug' => 'chair', 'name' => 'Chair', 'status' => 'publish', 'owner' => 'core']);
     $term = Term::factory()->create();
 
-    $product->setMeta('price', 10);
+    $product->setMeta('price', 10, 'core');
     $product->terms()->attach($term);
 
     assertDatabaseHas('meta', ['metable_type' => 'entry', 'metable_id' => $product->id, 'key' => 'price']);

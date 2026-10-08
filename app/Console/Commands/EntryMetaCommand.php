@@ -12,7 +12,8 @@ use Illuminate\Console\Command;
     {action : The action to perform (get, set, delete or list)}
     {entry : The ID of the entry}
     {key? : The meta key}
-    {value? : The meta value}')]
+    {value? : The meta value}
+    {--owner=core : The owner of the meta, e.g. core or plugins/seo}')]
 #[Description('Manages the meta of an entry')]
 class EntryMetaCommand extends Command
 {

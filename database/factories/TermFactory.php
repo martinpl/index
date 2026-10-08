@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 class TermFactory extends Factory
 {
     /**
-     * @return array{type: string, slug: string, name: string}
+     * @return array{type: string, slug: string, name: string, owner: string}
      */
     public function definition(): array
     {
@@ -22,6 +22,7 @@ class TermFactory extends Factory
             'type' => 'category',
             'slug' => Str::slug($name),
             'name' => Str::headline($name),
+            'owner' => 'core',
         ];
     }
 }

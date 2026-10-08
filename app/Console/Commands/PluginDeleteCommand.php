@@ -7,7 +7,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('plugin:delete {plugin}')]
+#[Signature('plugin:delete {plugin} {--purge : Also delete the plugin\'s data}')]
 #[Description('Deletes a plugin')]
 class PluginDeleteCommand extends Command
 {
@@ -21,6 +21,9 @@ class PluginDeleteCommand extends Command
         }
 
         Plugin::delete($name);
+        if ($this->option('purge')) {
+            Plugin::purge($name);
+        }
         $this->info("Deleted plugin [$name].");
 
         return self::SUCCESS;

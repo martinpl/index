@@ -36,7 +36,7 @@ test('registers a term type from a class', function () {
 
 test('uses the key from the class type', function () {
     TermType::register(ShopBrand::class);
-    $brand = ShopBrand::create(['slug' => 'acme', 'name' => 'Acme']);
+    $brand = ShopBrand::create(['slug' => 'acme', 'name' => 'Acme', 'owner' => 'core']);
 
     expect(TermType::get('brand')['model'])->toBe(ShopBrand::class)
         ->and($brand->type)->toBe('brand')
@@ -58,10 +58,10 @@ test('hydrates terms as the class of their term type', function () {
 
 test('keeps meta and entries working for term type classes', function () {
     TermType::register(Genre::class);
-    $genre = Genre::create(['slug' => 'jazz', 'name' => 'Jazz']);
+    $genre = Genre::create(['slug' => 'jazz', 'name' => 'Jazz', 'owner' => 'core']);
     $entry = Entry::factory()->create();
 
-    $genre->setMeta('color', 'blue');
+    $genre->setMeta('color', 'blue', 'core');
     $genre->entries()->attach($entry);
 
     assertDatabaseHas('meta', ['metable_type' => 'term', 'metable_id' => $genre->id, 'key' => 'color']);

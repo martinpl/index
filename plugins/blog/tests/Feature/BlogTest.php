@@ -12,7 +12,7 @@ use Blog\TermTypes\Category;
 use Blog\TermTypes\Tag;
 
 beforeEach(function (): void {
-    Option::set('active_plugins', ['blog']);
+    Option::set('active_plugins', ['blog'], 'core');
     Plugin::boot();
 });
 

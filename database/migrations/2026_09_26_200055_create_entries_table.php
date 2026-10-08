@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('order')->default(0);
             $table->timestamp('date')->nullable();
             $table->timestamp('modified')->nullable();
+            $table->string('owner');
 
             $table->unique(['type', 'slug']);
         });

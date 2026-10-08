@@ -17,7 +17,7 @@ test('manages options through commands', function () {
         ->expectsOutput('Index')
         ->assertSuccessful();
 
-    Option::set('timezone', 'Europe/Warsaw');
+    Option::set('timezone', 'Europe/Warsaw', 'core');
 
     artisan('option:list')
         ->expectsTable(['key', 'value'], [
@@ -44,7 +44,7 @@ test('returns a fallback for a missing option', function () {
 });
 
 test('sets and forgets an option', function () {
-    Option::set('theme', 'index');
+    Option::set('theme', 'index', 'core');
 
     expect(Option::exists('theme'))->toBeTrue();
     expect(Option::get('theme'))->toBe('index');

@@ -21,12 +21,12 @@ trait HasRoles
 
     public function giveRole(string $role): void
     {
-        $this->setMeta('roles', array_values(array_unique([...$this->getRoles(), $role])));
+        $this->setMeta('roles', array_values(array_unique([...$this->getRoles(), $role])), 'core');
     }
 
     public function revokeRole(string $role): void
     {
-        $this->setMeta('roles', array_values(array_diff($this->getRoles(), [$role])));
+        $this->setMeta('roles', array_values(array_diff($this->getRoles(), [$role])), 'core');
     }
 
     /**
@@ -55,7 +55,7 @@ trait HasRoles
      */
     public function grantAbilities(array $abilities): void
     {
-        $this->setMeta('abilities', array_values(array_unique([...$this->getMeta('abilities', []), ...$abilities])));
+        $this->setMeta('abilities', array_values(array_unique([...$this->getMeta('abilities', []), ...$abilities])), 'core');
     }
 
     /**
@@ -63,6 +63,6 @@ trait HasRoles
      */
     public function revokeAbilities(array $abilities): void
     {
-        $this->setMeta('abilities', array_values(array_diff($this->getMeta('abilities', []), $abilities)));
+        $this->setMeta('abilities', array_values(array_diff($this->getMeta('abilities', []), $abilities)), 'core');
     }
 }

@@ -81,6 +81,21 @@ class Site extends Model
         return $this;
     }
 
+    /**
+     * Run the callback with the site's tables, without booting its plugins and theme.
+     */
+    public function execute(Closure $callback): mixed
+    {
+        $previous = static::current();
+        app()->instance(static::class, $this);
+
+        try {
+            return $callback($this);
+        } finally {
+            $previous ? app()->instance(static::class, $previous) : app()->forgetInstance(static::class);
+        }
+    }
+
     public function isMain(): bool
     {
         return $this->id === 1;

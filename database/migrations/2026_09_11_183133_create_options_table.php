@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('key')->unique();
             $table->json('value');
+            $table->string('owner');
         });
     }
 

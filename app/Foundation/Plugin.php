@@ -34,12 +34,12 @@ class Plugin extends Package
 
     public function activate(string $name): void
     {
-        Option::set(self::activePlugins, array_unique([...$this->active(), $name]));
+        Option::set(self::activePlugins, array_unique([...$this->active(), $name]), 'core');
     }
 
     public function deactivate(string $name): void
     {
-        Option::set(self::activePlugins, array_diff($this->active(), [$name]));
+        Option::set(self::activePlugins, array_diff($this->active(), [$name]), 'core');
     }
 
     protected function directory(): string

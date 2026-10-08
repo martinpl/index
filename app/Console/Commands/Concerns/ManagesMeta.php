@@ -76,7 +76,7 @@ trait ManagesMeta
             return self::FAILURE;
         }
 
-        $model->setMeta($key, $value);
+        $model->setMeta($key, $value, $this->option('owner'));
         $this->info("Set meta [$key] of {$model->getMorphClass()} [{$model->getKey()}].");
 
         return self::SUCCESS;

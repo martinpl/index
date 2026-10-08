@@ -26,7 +26,7 @@ class PageRoleSetCommand extends Command
         $pageId = $this->argument('page');
         if (! $pageId) {
             unset($pages[$role]);
-            Option::set('page_roles', $pages);
+            Option::set('page_roles', $pages, 'core');
             $this->info("Unassigned page role [$role].");
 
             return self::SUCCESS;
@@ -40,7 +40,7 @@ class PageRoleSetCommand extends Command
         }
 
         $pages[$role] = $page->id;
-        Option::set('page_roles', $pages);
+        Option::set('page_roles', $pages, 'core');
         $this->info("Assigned page [$page->id] to role [$role].");
 
         return self::SUCCESS;

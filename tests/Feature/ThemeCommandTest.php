@@ -84,7 +84,7 @@ test('installs a theme from an URL', function () {
 });
 
 test('boots the active theme', function () {
-    Option::set('active_theme', 'theme');
+    Option::set('active_theme', 'theme', 'core');
 
     Theme::boot();
 

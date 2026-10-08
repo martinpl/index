@@ -8,8 +8,8 @@ use function Pest\Laravel\assertDatabaseMissing;
 test('sets and forgets meta', function () {
     $entry = Entry::factory()->create();
 
-    $entry->setMeta('subtitle', 'Hello');
-    $entry->setMeta('gallery', [1, 2, 3]);
+    $entry->setMeta('subtitle', 'Hello', 'core');
+    $entry->setMeta('gallery', [1, 2, 3], 'core');
 
     expect($entry->hasMeta('subtitle'))->toBeTrue()
         ->and($entry->getMeta('subtitle'))->toBe('Hello')
@@ -23,7 +23,7 @@ test('sets and forgets meta', function () {
         'value' => json_encode('Hello'),
     ]);
 
-    $entry->setMeta('subtitle', 'Updated');
+    $entry->setMeta('subtitle', 'Updated', 'core');
 
     expect($entry->getMeta('subtitle'))->toBe('Updated')
         ->and($entry->forgetMeta('subtitle'))->toBe(1)
@@ -33,22 +33,22 @@ test('sets and forgets meta', function () {
 
 test('forgets meta set to null or an empty array', function (mixed $value) {
     $entry = Entry::factory()->create();
-    $entry->setMeta('gallery', [1, 2, 3]);
+    $entry->setMeta('gallery', [1, 2, 3], 'core');
 
-    $entry->setMeta('gallery', $value);
+    $entry->setMeta('gallery', $value, 'core');
 
     assertDatabaseMissing('meta', ['metable_id' => $entry->id, 'key' => 'gallery']);
 })->with([null, [[]]]);
 
 test('queries models by meta', function () {
     $red = Entry::factory()->create();
-    $red->setMeta('color', 'red');
-    $red->setMeta('rating', 5);
+    $red->setMeta('color', 'red', 'core');
+    $red->setMeta('rating', 5, 'core');
     $blue = Entry::factory()->create();
-    $blue->setMeta('color', 'blue');
-    $blue->setMeta('rating', 10);
+    $blue->setMeta('color', 'blue', 'core');
+    $blue->setMeta('rating', 10, 'core');
     $tagged = Entry::factory()->create();
-    $tagged->setMeta('tags', ['laravel', 'index']);
+    $tagged->setMeta('tags', ['laravel', 'index'], 'core');
 
     expect(Entry::withAnyStatus()->whereMeta('tags')->pluck('id')->all())->toBe([$tagged->id])
         ->and(Entry::withAnyStatus()->whereMeta('color', 'red')->pluck('id')->all())->toBe([$red->id])
@@ -61,7 +61,7 @@ test('queries models by meta', function () {
 
 test('keeps meta of trashed entries', function () {
     $entry = Entry::factory()->create();
-    $entry->setMeta('subtitle', 'Hello');
+    $entry->setMeta('subtitle', 'Hello', 'core');
 
     $entry->delete();
 

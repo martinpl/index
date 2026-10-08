@@ -7,7 +7,7 @@ use App\Models\Option;
 use function Pest\Laravel\get;
 
 beforeEach(function (): void {
-    Option::set('active_theme', 'theme');
+    Option::set('active_theme', 'theme', 'core');
 });
 
 test('returns not found without a home entry', function () {
@@ -16,14 +16,14 @@ test('returns not found without a home entry', function () {
 
 test('renders the home entry', function () {
     $entry = Entry::factory()->published()->create(['type' => 'page', 'name' => 'Home']);
-    Option::set('page_roles', ['home' => $entry->id]);
+    Option::set('page_roles', ['home' => $entry->id], 'core');
 
     get('/')->assertOk()->assertViewIs('index')->assertSee('Home');
 });
 
 test('returns not found when entry is not published', function () {
     $entry = Entry::factory()->create(['type' => 'page', 'status' => 'draft']);
-    Option::set('page_roles', ['home' => $entry->id]);
+    Option::set('page_roles', ['home' => $entry->id], 'core');
 
     get('/')->assertNotFound();
 });

@@ -96,7 +96,7 @@ test('updates a user', function () {
 
 test('deletes a user', function () {
     $user = User::factory()->create();
-    $user->setMeta('color', 'red');
+    $user->setMeta('color', 'red', 'core');
     $entry = Entry::factory()->create(['user_id' => $user->id]);
 
     artisan('user:delete', ['user' => $user->id])

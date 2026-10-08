@@ -254,7 +254,7 @@ test('does not assign terms of an unrelated term type to an entry', function () 
 
 test('manages the meta of an entry', function () {
     $entry = Entry::factory()->create();
-    $entry->setMeta('tags', ['laravel', 'index']);
+    $entry->setMeta('tags', ['laravel', 'index'], 'core');
 
     artisan('entry:meta', ['action' => 'set', 'entry' => $entry->id, 'key' => 'color', 'value' => 'red'])
         ->expectsOutput("Set meta [color] of entry [$entry->id].")

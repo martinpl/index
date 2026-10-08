@@ -8,7 +8,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
-#[Signature('option:set {key?} {value?}')]
+#[Signature('option:set {key?} {value?} {--owner=core : The owner of the option, e.g. core or plugins/seo}')]
 #[Description('Sets an option value')]
 class OptionSetCommand extends Command
 {
@@ -24,9 +24,10 @@ class OptionSetCommand extends Command
             $value = $this->ask('Option value');
         }
 
-        $validator = Validator::make(['key' => $key, 'value' => $value], [
+        $validator = Validator::make(['key' => $key, 'value' => $value, 'owner' => $this->option('owner')], [
             'key' => ['required'],
             'value' => ['required'],
+            'owner' => ['required', 'string', 'max:255'],
         ]);
 
         if ($validator->fails()) {
@@ -37,7 +38,7 @@ class OptionSetCommand extends Command
             return self::FAILURE;
         }
 
-        Option::set($key, $value);
+        Option::set($key, $value, $this->option('owner'));
         $this->info("Set option [$key].");
 
         return self::SUCCESS;

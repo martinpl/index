@@ -39,7 +39,7 @@ trait HasMeta
         return $this->meta()->where('key', $key)->exists();
     }
 
-    public function setMeta(string $key, mixed $value): void
+    public function setMeta(string $key, mixed $value, string $owner): void
     {
         if ($value === null || $value === []) {
             $this->forgetMeta($key);
@@ -47,7 +47,7 @@ trait HasMeta
             return;
         }
 
-        $this->meta()->updateOrCreate(['key' => $key], ['value' => $value]);
+        $this->meta()->updateOrCreate(['key' => $key], ['value' => $value, 'owner' => $owner]);
     }
 
     public function forgetMeta(string $key): int

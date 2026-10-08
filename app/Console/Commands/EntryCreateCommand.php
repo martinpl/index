@@ -20,7 +20,8 @@ use Illuminate\Validation\Rule;
     {--content= : The content of the entry}
     {--user= : The ID of the user who authored the entry}
     {--parent= : The ID of the parent entry}
-    {--order=0 : The order of the entry}')]
+    {--order=0 : The order of the entry}
+    {--owner=core : The owner of the entry, e.g. core or plugins/seo}')]
 #[Description('Creates an entry')]
 class EntryCreateCommand extends Command
 {
@@ -42,6 +43,7 @@ class EntryCreateCommand extends Command
             'user_id' => $this->option('user'),
             'parent_id' => $this->option('parent'),
             'order' => $this->option('order'),
+            'owner' => $this->option('owner'),
         ];
 
         $validator = Validator::make($attributes, [
@@ -52,6 +54,7 @@ class EntryCreateCommand extends Command
             'user_id' => ['nullable', 'integer', Rule::exists(User::class, 'id')],
             'parent_id' => ['nullable', 'integer', Rule::exists(Entry::class, 'id')->where('type', $type)],
             'order' => ['required', 'integer'],
+            'owner' => ['required', 'string', 'max:255'],
         ], attributes: ['user_id' => 'user', 'parent_id' => 'parent']);
 
         if ($validator->fails()) {

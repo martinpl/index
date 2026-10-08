@@ -12,7 +12,8 @@ use Illuminate\Console\Command;
     {action : The action to perform (get, set, delete or list)}
     {user : The ID of the user}
     {key? : The meta key}
-    {value? : The meta value}')]
+    {value? : The meta value}
+    {--owner=core : The owner of the meta, e.g. core or plugins/seo}')]
 #[Description('Manages the meta of a user')]
 class UserMetaCommand extends Command
 {

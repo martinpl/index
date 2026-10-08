@@ -7,7 +7,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('theme:delete {theme}')]
+#[Signature('theme:delete {theme} {--purge : Also delete the theme\'s data}')]
 #[Description('Deletes a theme')]
 class ThemeDeleteCommand extends Command
 {
@@ -21,6 +21,9 @@ class ThemeDeleteCommand extends Command
         }
 
         Theme::delete($name);
+        if ($this->option('purge')) {
+            Theme::purge($name);
+        }
         $this->info("Deleted theme [$name].");
 
         return self::SUCCESS;

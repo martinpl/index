@@ -13,6 +13,7 @@ return new class extends Migration
             $table->morphs('metable');
             $table->string('key');
             $table->json('value');
+            $table->string('owner');
 
             $table->unique(['metable_type', 'metable_id', 'key']);
         });

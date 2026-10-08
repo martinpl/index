@@ -109,6 +109,6 @@ class Role
      */
     protected function save(array $roles): void
     {
-        Option::set('roles', $roles);
+        Option::set('roles', $roles, 'core');
     }
 }

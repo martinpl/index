@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class MetaFactory extends Factory
 {
     /**
-     * @return array{metable_type: string, metable_id: Factory<Entry>, key: string, value: string}
+     * @return array{metable_type: string, metable_id: Factory<Entry>, key: string, value: string, owner: string}
      */
     public function definition(): array
     {
@@ -21,6 +21,7 @@ class MetaFactory extends Factory
             'metable_id' => Entry::factory(),
             'key' => fake()->unique()->word(),
             'value' => fake()->sentence(),
+            'owner' => 'core',
         ];
     }
 }

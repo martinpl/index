@@ -11,13 +11,14 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class OptionFactory extends Factory
 {
     /**
-     * @return array{key: string, value: string}
+     * @return array{key: string, value: string, owner: string}
      */
     public function definition(): array
     {
         return [
             'key' => fake()->unique()->word(),
             'value' => fake()->sentence(),
+            'owner' => 'core',
         ];
     }
 }

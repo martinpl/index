@@ -6,6 +6,7 @@ use App\Enums\EntryStatus;
 use App\Facades\EntryType;
 use App\Models\Concerns\BelongsToSite;
 use App\Models\Concerns\HasMeta;
+use App\Models\Concerns\HasOwner;
 use Database\Factories\EntryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * @method static Builder<static> withAnyStatus()
  */
-#[Fillable(['type', 'status', 'slug', 'name', 'content', 'user_id', 'parent_id', 'order'])]
+#[Fillable(['type', 'status', 'slug', 'name', 'content', 'user_id', 'parent_id', 'order', 'owner'])]
 class Entry extends Model
 {
     use BelongsToSite;
@@ -27,6 +28,7 @@ class Entry extends Model
     use HasFactory;
 
     use HasMeta;
+    use HasOwner;
 
     const CREATED_AT = 'date';
 
