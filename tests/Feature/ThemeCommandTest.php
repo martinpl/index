@@ -5,7 +5,7 @@ use App\Models\Option;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\View;
-use Theme\ThemeServiceProvider;
+use Index\IndexServiceProvider;
 
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
@@ -52,7 +52,7 @@ test('manages a theme through commands', function () {
     artisan('theme:list')
         ->expectsTable(['name', 'status'], [
             ['classic', 'active'],
-            ['theme', 'inactive'],
+            ['index', 'inactive'],
         ])
         ->assertSuccessful();
 
@@ -84,10 +84,10 @@ test('installs a theme from an URL', function () {
 });
 
 test('boots the active theme', function () {
-    Option::set('active_theme', 'theme', 'core');
+    Option::set('active_theme', 'index', 'core');
 
     Theme::boot();
 
-    expect(app()->getProviders(ThemeServiceProvider::class))->toHaveCount(1)
-        ->and(View::getFinder()->getPaths()[0])->toBe(base_path('themes/theme/resources/views'));
+    expect(app()->getProviders(IndexServiceProvider::class))->toHaveCount(1)
+        ->and(View::getFinder()->getPaths()[0])->toBe(base_path('themes/index/resources/views'));
 });

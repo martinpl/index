@@ -11,9 +11,9 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
 beforeEach(function (): void {
-    EntryType::register('post');
-    TermType::register('category', ['entry_types' => ['post']]);
-    TermType::register('tag', ['entry_types' => ['post']]);
+    EntryType::register('post', [], 'core');
+    TermType::register('category', ['entry_types' => ['post']], 'core');
+    TermType::register('tag', ['entry_types' => ['post']], 'core');
 });
 
 test('creates an entry', function () {

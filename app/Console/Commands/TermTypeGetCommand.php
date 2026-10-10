@@ -25,6 +25,7 @@ class TermTypeGetCommand extends Command
             ['key', $termType['key']],
             ['name', $termType['name']],
             ['entry types', implode(', ', $termType['entry_types'])],
+            ['owner', $termType['owner']],
         ]);
 
         return self::SUCCESS;

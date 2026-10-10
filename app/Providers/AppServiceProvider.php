@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
             'user' => User::class,
         ]);
 
-        EntryTypeFacade::register(Page::class);
+        EntryTypeFacade::register(Page::class, [], 'core');
 
         Gate::before(fn (User $user, string $ability): ?bool => $user->hasAbility($ability) ?: null);
 

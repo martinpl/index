@@ -24,18 +24,19 @@ class ShopBrand extends Term
 class UntypedTerm extends Term {}
 
 test('registers a term type from a class', function () {
-    TermType::register(Genre::class);
+    TermType::register(Genre::class, [], 'core');
 
     expect(TermType::get('genre'))->toBe([
         'key' => 'genre',
         'name' => 'Genre',
         'entry_types' => ['post'],
         'model' => Genre::class,
+        'owner' => 'core',
     ]);
 });
 
 test('uses the key from the class type', function () {
-    TermType::register(ShopBrand::class);
+    TermType::register(ShopBrand::class, [], 'core');
     $brand = ShopBrand::create(['slug' => 'acme', 'name' => 'Acme', 'owner' => 'core']);
 
     expect(TermType::get('brand')['model'])->toBe(ShopBrand::class)
@@ -44,11 +45,11 @@ test('uses the key from the class type', function () {
 });
 
 test('requires the class to declare its type', function () {
-    expect(fn () => TermType::register(UntypedTerm::class))->toThrow(Error::class);
+    expect(fn () => TermType::register(UntypedTerm::class, [], 'core'))->toThrow(Error::class);
 });
 
 test('hydrates terms as the class of their term type', function () {
-    TermType::register(Genre::class);
+    TermType::register(Genre::class, [], 'core');
     $genre = Term::factory()->create(['type' => 'genre']);
     $category = Term::factory()->create(['type' => 'category']);
 
@@ -57,7 +58,7 @@ test('hydrates terms as the class of their term type', function () {
 });
 
 test('keeps meta and entries working for term type classes', function () {
-    TermType::register(Genre::class);
+    TermType::register(Genre::class, [], 'core');
     $genre = Genre::create(['slug' => 'jazz', 'name' => 'Jazz', 'owner' => 'core']);
     $entry = Entry::factory()->create();
 

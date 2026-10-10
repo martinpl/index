@@ -25,6 +25,7 @@ class EntryTypeGetCommand extends Command
             ['key', $entryType['key']],
             ['name', $entryType['name']],
             ['slug', $entryType['slug']],
+            ['owner', $entryType['owner']],
         ]);
 
         return self::SUCCESS;

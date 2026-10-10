@@ -25,18 +25,26 @@ class ShopEvent extends Entry
 class UntypedEntry extends Entry {}
 
 test('registers an entry type from a class', function () {
-    EntryType::register(Product::class);
+    EntryType::register(Product::class, [], 'core');
 
     expect(EntryType::get('product'))->toBe([
         'key' => 'product',
         'name' => 'Product',
         'slug' => 'shop/products',
         'model' => Product::class,
+        'owner' => 'core',
     ]);
 });
 
+test('rejects a duplicate key naming its owner', function () {
+    EntryType::register('product', [], 'plugins/shop');
+
+    expect(fn () => EntryType::register(Product::class, [], 'core'))
+        ->toThrow(DomainException::class, 'Entry type [product] is already registered by [plugins/shop].');
+});
+
 test('uses the key from the class type', function () {
-    EntryType::register(ShopEvent::class);
+    EntryType::register(ShopEvent::class, [], 'core');
     $event = ShopEvent::create(['slug' => 'fair', 'name' => 'Fair', 'status' => 'publish', 'owner' => 'core']);
 
     expect(EntryType::get('event')['model'])->toBe(ShopEvent::class)
@@ -45,7 +53,7 @@ test('uses the key from the class type', function () {
 });
 
 test('requires the class to declare its type', function () {
-    expect(fn () => EntryType::register(UntypedEntry::class))->toThrow(Error::class);
+    expect(fn () => EntryType::register(UntypedEntry::class, [], 'core'))->toThrow(Error::class);
 });
 
 test('hydrates pages as the page class', function () {
@@ -55,7 +63,7 @@ test('hydrates pages as the page class', function () {
 });
 
 test('hydrates entries as the class of their entry type', function () {
-    EntryType::register(Product::class);
+    EntryType::register(Product::class, [], 'core');
     $product = Entry::factory()->published()->create(['type' => 'product']);
     $post = Entry::factory()->published()->create(['type' => 'post']);
     $child = Entry::factory()->published()->create(['type' => 'product', 'parent_id' => $product->id]);
@@ -66,7 +74,7 @@ test('hydrates entries as the class of their entry type', function () {
 });
 
 test('queries and creates only entries of its entry type', function () {
-    EntryType::register(Product::class);
+    EntryType::register(Product::class, [], 'core');
     Entry::factory()->published()->create(['type' => 'post']);
     $product = Product::create(['slug' => 'chair', 'name' => 'Chair', 'status' => 'publish', 'owner' => 'core']);
 
@@ -76,7 +84,7 @@ test('queries and creates only entries of its entry type', function () {
 });
 
 test('keeps meta and terms working for entry type classes', function () {
-    EntryType::register(Product::class);
+    EntryType::register(Product::class, [], 'core');
     $product = Product::create(['slug' => 'chair', 'name' => 'Chair', 'status' => 'publish', 'owner' => 'core']);
     $term = Term::factory()->create();
 

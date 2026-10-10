@@ -20,11 +20,12 @@ class TermTypeListCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->table(['key', 'name', 'entry types'], $termTypes
+        $this->table(['key', 'name', 'entry types', 'owner'], $termTypes
             ->map(fn (array $termType): array => [
                 $termType['key'],
                 $termType['name'],
                 implode(', ', $termType['entry_types']),
+                $termType['owner'],
             ]));
 
         return self::SUCCESS;

@@ -7,7 +7,7 @@ use App\Models\Option;
 use function Pest\Laravel\get;
 
 beforeEach(function (): void {
-    Option::set('active_theme', 'theme', 'core');
+    Option::set('active_theme', 'index', 'core');
 });
 
 test('returns not found without a home entry', function () {
@@ -29,7 +29,7 @@ test('returns not found when entry is not published', function () {
 });
 
 test('renders an entry under its entry type slug', function () {
-    EntryType::register('post');
+    EntryType::register('post', [], 'core');
     Entry::factory()->published()->create(['type' => 'page', 'slug' => 'about', 'name' => 'About']);
     Entry::factory()->published()->create(['type' => 'post', 'slug' => 'hello', 'name' => 'Hello']);
 
@@ -40,7 +40,7 @@ test('renders an entry under its entry type slug', function () {
 });
 
 test('renders an entry under a custom entry type slug', function () {
-    EntryType::register('product', ['slug' => 'shop/products']);
+    EntryType::register('product', ['slug' => 'shop/products'], 'core');
     Entry::factory()->published()->create(['type' => 'product', 'slug' => 'chair', 'name' => 'Chair']);
 
     get('/shop/products/chair')->assertOk()->assertSee('Chair');

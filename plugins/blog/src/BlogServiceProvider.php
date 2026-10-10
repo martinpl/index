@@ -2,19 +2,16 @@
 
 namespace Blog;
 
-use App\Facades\EntryType;
-use App\Facades\TermType;
+use App\Support\PackageServiceProvider;
 use Blog\EntryTypes\Post;
 use Blog\TermTypes\Category;
 use Blog\TermTypes\Tag;
-use Illuminate\Support\ServiceProvider;
 
-class BlogServiceProvider extends ServiceProvider
+class BlogServiceProvider extends PackageServiceProvider
 {
     public function boot(): void
     {
-        EntryType::register(Post::class);
-        TermType::register(Category::class);
-        TermType::register(Tag::class);
+        $this->addEntryTypes([Post::class]);
+        $this->addTermTypes([Category::class, Tag::class]);
     }
 }

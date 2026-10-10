@@ -22,18 +22,21 @@ test('registers posts with categories and tags', function () {
         'name' => 'Post',
         'slug' => 'posts',
         'model' => Post::class,
+        'owner' => 'plugins/blog',
     ])
         ->and(TermType::get('category'))->toBe([
             'key' => 'category',
             'name' => 'Category',
             'entry_types' => ['post'],
             'model' => Category::class,
+            'owner' => 'plugins/blog',
         ])
         ->and(TermType::get('tag'))->toBe([
             'key' => 'tag',
             'name' => 'Tag',
             'entry_types' => ['post'],
             'model' => Tag::class,
+            'owner' => 'plugins/blog',
         ]);
 });
 

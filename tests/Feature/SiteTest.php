@@ -11,12 +11,12 @@ use function Pest\Laravel\get;
 
 test('serves entries of the site matching the domain and path', function () {
     Site::create(['domain' => 'example.com']);
-    Option::set('active_theme', 'theme', 'core');
+    Option::set('active_theme', 'index', 'core');
     Entry::factory()->published()->create(['type' => 'page', 'slug' => 'hello', 'name' => 'Main hello']);
     Entry::factory()->published()->create(['type' => 'page', 'slug' => 'blogger', 'name' => 'Main blogger']);
 
     Site::create(['domain' => 'example.com', 'path' => 'blog'])->makeCurrent();
-    Option::set('active_theme', 'theme', 'core');
+    Option::set('active_theme', 'index', 'core');
     Entry::factory()->published()->create(['type' => 'page', 'slug' => 'hello', 'name' => 'Blog hello']);
 
     get('http://localhost/hello')->assertOk()->assertSee('Main hello');

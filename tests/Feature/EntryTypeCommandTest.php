@@ -5,12 +5,12 @@ use App\Facades\EntryType;
 use function Pest\Laravel\artisan;
 
 test('lists registered entry types', function () {
-    EntryType::register('product');
+    EntryType::register('product', [], 'core');
 
     artisan('entry-type:list')
-        ->expectsTable(['key', 'name', 'slug'], [
-            ['page', 'Page', ''],
-            ['product', 'Product', 'products'],
+        ->expectsTable(['key', 'name', 'slug', 'owner'], [
+            ['page', 'Page', '', 'core'],
+            ['product', 'Product', 'products', 'core'],
         ])
         ->assertSuccessful();
 });
@@ -21,6 +21,7 @@ test('gets an entry type', function () {
             ['key', 'page'],
             ['name', 'Page'],
             ['slug', ''],
+            ['owner', 'core'],
         ])
         ->assertSuccessful();
 });

@@ -3,53 +3,22 @@
 namespace App\Foundation;
 
 use App\Models\Term;
-use DomainException;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use ReflectionClass;
 
-class TermType
+class TermType extends TypeRegistry
 {
-    private array $types = [];
+    protected string $model = Term::class;
+
+    protected string $label = 'Term type';
 
     /**
-     * @param  string|class-string<Term>  $key
      * @param  array{name?: string, entry_types?: list<string>, model?: class-string<Term>}  $config
      */
-    public function register(string $key, array $config = []): void
+    protected function attributes(string $key, array $config): array
     {
-        // Class lookup is case-insensitive, so key "genre" would match class "Genre".
-        if (is_subclass_of($key, Term::class) && (new ReflectionClass($key))->getName() === $key) {
-            $config = ['model' => $key, ...$key::config(), ...$config];
-            $key = $key::$type;
-        }
-
-        if ($this->has($key)) {
-            throw new DomainException("Term type [$key] is already registered.");
-        }
-
-        $this->types[$key] = [
-            'key' => $key,
+        return [
             'name' => $config['name'] ?? Str::headline($key),
             'entry_types' => $config['entry_types'] ?? [],
-            'model' => $config['model'] ?? Term::class,
         ];
-
-        $this->types[$key]['model']::registered();
-    }
-
-    public function has(string $key): bool
-    {
-        return array_key_exists($key, $this->types);
-    }
-
-    public function get(string $key): ?array
-    {
-        return $this->types[$key] ?? null;
-    }
-
-    public function list(): Collection
-    {
-        return collect($this->types)->sortKeys();
     }
 }

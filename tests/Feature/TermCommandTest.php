@@ -9,8 +9,8 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
 beforeEach(function (): void {
-    TermType::register('category');
-    TermType::register('tag');
+    TermType::register('category', [], 'core');
+    TermType::register('tag', [], 'core');
 });
 
 test('creates a term', function () {

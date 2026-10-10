@@ -57,7 +57,7 @@ class InstallCommand extends Command
             'domain' => $domain,
         ]);
         Option::set('site_name', $name, 'core');
-        Theme::activate('theme');
+        Theme::activate('index');
         Plugin::activate('blog');
         $this->info('Site installed successfully.');
 
