@@ -2,7 +2,6 @@
 
 use App\Concerns\ProfileValidationRules;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
@@ -41,7 +40,7 @@ new #[Title('Profile settings')] class extends Component {
 
         $user->save();
 
-        Flux::toast(variant: 'success', text: __('Profile updated.'));
+        $this->dispatch('toast', type: 'success', title: __('Profile updated.'));
     }
 
     /**
@@ -79,29 +78,37 @@ new #[Title('Profile settings')] class extends Component {
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <flux:heading level="2" class="sr-only">{{ __('Profile settings') }}</flux:heading>
+    <h2 class="sr-only">{{ __('Profile settings') }}</h2>
 
     <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+            <x-ui.field>
+                <x-ui.field-label for="name">{{ __('Name') }}</x-ui.field-label>
+                <x-ui.input id="name" wire:model="name" type="text" required autofocus autocomplete="name" />
+                <x-ui.field-error :messages="$errors->get('name')" />
+            </x-ui.field>
 
             <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+                <x-ui.field>
+                    <x-ui.field-label for="email">{{ __('Email') }}</x-ui.field-label>
+                    <x-ui.input id="email" wire:model="email" type="email" required autocomplete="email" />
+                    <x-ui.field-error :messages="$errors->get('email')" />
+                </x-ui.field>
 
                 @if ($this->hasUnverifiedEmail)
                     <div>
-                        <flux:text class="mt-4">
+                        <p class="mt-4 text-sm">
                             {{ __('Your email address is unverified.') }}
 
-                            <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
+                            <x-ui.link class="cursor-pointer text-sm" wire:click.prevent="resendVerificationNotification">
                                 {{ __('Click here to re-send the verification email.') }}
-                            </flux:link>
-                        </flux:text>
+                            </x-ui.link>
+                        </p>
 
                         @if (session('status') === 'verification-link-sent')
-                            <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
+                            <p class="text-success mt-2 text-sm font-medium">
                                 {{ __('A new verification link has been sent to your email address.') }}
-                            </flux:text>
+                            </p>
                         @endif
                     </div>
                 @endif
@@ -109,9 +116,9 @@ new #[Title('Profile settings')] class extends Component {
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
+                    <x-ui.button type="submit" class="w-full" data-test="update-profile-button">
                         {{ __('Save') }}
-                    </flux:button>
+                    </x-ui.button>
                 </div>
 
             </div>

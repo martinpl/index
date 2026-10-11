@@ -11,5 +11,13 @@
 
 @fonts
 
+{{-- Applies the stored theme before first paint; mirrors the BlatUI theme store. --}}
+<script>
+    (() => {
+        const mode = localStorage.getItem('theme:mode') ?? 'system';
+        const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+    })();
+</script>
+
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-@fluxAppearance

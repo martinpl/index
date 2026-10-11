@@ -10,13 +10,19 @@ new #[Title('Appearance settings')] class extends Component {
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <flux:heading level="2" class="sr-only">{{ __('Appearance settings') }}</flux:heading>
+    <h2 class="sr-only">{{ __('Appearance settings') }}</h2>
 
     <x-pages::settings.layout :heading="__('Appearance')" :subheading="__('Update the appearance settings for your account')">
-        <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
-            <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
-            <flux:radio value="dark" icon="moon">{{ __('Dark') }}</flux:radio>
-            <flux:radio value="system" icon="computer-desktop">{{ __('System') }}</flux:radio>
-        </flux:radio.group>
+        <x-ui.segmented-control
+            name="appearance"
+            :options="[
+                ['value' => 'light', 'label' => __('Light'), 'icon' => 'sun'],
+                ['value' => 'dark', 'label' => __('Dark'), 'icon' => 'moon'],
+                ['value' => 'system', 'label' => __('System'), 'icon' => 'monitor'],
+            ]"
+            x-data
+            x-init="$el.querySelector(`input[value='${$store.theme.mode}']`).checked = true"
+            x-on:change="$store.theme.setMode($event.target.value)"
+        />
     </x-pages::settings.layout>
 </section>

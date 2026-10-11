@@ -49,20 +49,27 @@
                 <div class="space-y-5 text-center">
                     <div x-show="!showRecoveryInput">
                         <div class="flex items-center justify-center my-5" x-ref="otp">
-                            <flux:otp
-                                x-model="code"
-                                length="6"
+                            <x-ui.input-otp
                                 name="code"
-                                label="OTP Code"
-                                label:sr-only
-                                class="mx-auto"
-                             />
+                                :maxlength="6"
+                                :aria-label="__('OTP Code')"
+                                x-modelable="value"
+                                x-model="code"
+                            >
+                                <x-ui.input-otp-group>
+                                    @for ($i = 0; $i < 6; $i++)
+                                        <x-ui.input-otp-slot :index="$i" />
+                                    @endfor
+                                </x-ui.input-otp-group>
+                            </x-ui.input-otp>
                         </div>
+
+                        <x-ui.field-error :messages="$errors->get('code')" />
                     </div>
 
                     <div x-show="showRecoveryInput">
                         <div class="my-5">
-                            <flux:input
+                            <x-ui.input
                                 type="text"
                                 name="recovery_code"
                                 x-ref="recovery_code"
@@ -72,20 +79,12 @@
                             />
                         </div>
 
-                        @error('recovery_code')
-                            <flux:text color="red">
-                                {{ $message }}
-                            </flux:text>
-                        @enderror
+                        <x-ui.field-error :messages="$errors->get('recovery_code')" />
                     </div>
 
-                    <flux:button
-                        variant="primary"
-                        type="submit"
-                        class="w-full"
-                    >
+                    <x-ui.button type="submit" class="w-full">
                         {{ __('Continue') }}
-                    </flux:button>
+                    </x-ui.button>
                 </div>
 
                 <div class="mt-5 space-x-0.5 text-sm leading-5 text-center">

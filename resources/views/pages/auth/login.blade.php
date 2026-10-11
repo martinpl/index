@@ -11,49 +11,59 @@
             @csrf
 
             <!-- Email Address -->
-            <flux:input
-                name="email"
-                :label="__('Email address')"
-                :value="old('email')"
-                type="email"
-                required
-                autofocus
-                autocomplete="email"
-                placeholder="email@example.com"
-            />
+            <x-ui.field>
+                <x-ui.field-label for="email">{{ __('Email address') }}</x-ui.field-label>
+                <x-ui.input
+                    id="email"
+                    name="email"
+                    :value="old('email')"
+                    type="email"
+                    required
+                    autofocus
+                    autocomplete="email"
+                    placeholder="email@example.com"
+                />
+                <x-ui.field-error :messages="$errors->get('email')" />
+            </x-ui.field>
 
             <!-- Password -->
-            <div class="relative">
-                <flux:input
+            <x-ui.field>
+                <div class="flex items-center">
+                    <x-ui.field-label for="password">{{ __('Password') }}</x-ui.field-label>
+
+                    @if (Route::has('password.request'))
+                        <x-ui.link class="ms-auto text-sm" :href="route('password.request')" wire:navigate>
+                            {{ __('Forgot your password?') }}
+                        </x-ui.link>
+                    @endif
+                </div>
+                <x-ui.input
+                    id="password"
                     name="password"
-                    :label="__('Password')"
                     type="password"
                     required
                     autocomplete="current-password"
                     :placeholder="__('Password')"
-                    viewable
                 />
-
-                @if (Route::has('password.request'))
-                    <flux:link class="absolute top-0 text-sm end-0" :href="route('password.request')" wire:navigate>
-                        {{ __('Forgot your password?') }}
-                    </flux:link>
-                @endif
-            </div>
+                <x-ui.field-error :messages="$errors->get('password')" />
+            </x-ui.field>
 
             <!-- Remember Me -->
-            <flux:checkbox name="remember" :label="__('Remember me')" :checked="old('remember')" />
+            <x-ui.field orientation="horizontal">
+                <x-ui.checkbox id="remember" name="remember" :checked="old('remember')" />
+                <x-ui.field-label for="remember">{{ __('Remember me') }}</x-ui.field-label>
+            </x-ui.field>
 
             <div class="flex items-center justify-end">
-                <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
+                <x-ui.button type="submit" class="w-full" data-test="login-button">
                     {{ __('Log in') }}
-                </flux:button>
+                </x-ui.button>
             </div>
         </form>
 
-        <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
+        <div class="text-muted-foreground space-x-1 text-center text-sm rtl:space-x-reverse">
             <span>{{ __('Don\'t have an account?') }}</span>
-            <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
+            <x-ui.link :href="route('register')" wire:navigate>{{ __('Sign up') }}</x-ui.link>
         </div>
     </div>
 </x-layouts::auth>
