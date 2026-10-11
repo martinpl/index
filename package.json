@@ -7,6 +7,10 @@
         "dev": "vp dev"
     },
     "devDependencies": {
+        "@alpinejs/anchor": "^3.17.4",
+        "@alpinejs/collapse": "^3.17.4",
+        "@alpinejs/focus": "^3.17.4",
+        "@floating-ui/dom": "^1.8.0",
         "@laravel/passkeys": "^0.2.0",
         "@tailwindcss/vite": "^4.1.11",
         "concurrently": "^10.0.3",

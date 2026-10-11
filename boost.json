@@ -9,7 +9,8 @@
     "mcp": true,
     "nightwatch": false,
     "packages": [
-        "livewire/blaze"
+        "livewire/blaze",
+        "anousss007/blatui"
     ],
     "sail": false,
     "skills": [
@@ -18,9 +19,9 @@
         "fortify-development",
         "laravel-best-practices",
         "testing-best-practices",
-        "fluxui-development",
         "livewire-development",
         "tailwindcss-development",
+        "blatui-development",
         "blaze-optimize"
     ]
 }
