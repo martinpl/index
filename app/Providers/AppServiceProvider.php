@@ -58,6 +58,8 @@ class AppServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->bootConsoleSite();
+        } else {
+            $this->bootRequestSite();
         }
     }
 
@@ -99,5 +101,17 @@ class AppServiceProvider extends ServiceProvider
         } elseif (rescue(fn () => Schema::hasTable('sites'), false, false)) {
             Site::find(1)?->makeCurrent();
         }
+    }
+
+    /**
+     * Make the site matching the request current, before any middleware runs.
+     */
+    protected function bootRequestSite(): void
+    {
+        $site = Site::findForRequest($this->app['request']);
+
+        abort_unless($site, 404);
+
+        $site->makeCurrent();
     }
 }
