@@ -1,0 +1,21 @@
+{
+    "name": "index/debugbar",
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "Debugbar\\": "src/"
+        }
+    },
+    "extra": {
+        "index": {
+            "name": "Debugbar"
+        }
+    },
+    "require": {
+        "fruitcake/laravel-debugbar": "^4.4"
+    },
+    "scripts": {
+        "post-install-cmd": "@php ../../artisan plugin:scope debugbar --skip-plugins",
+        "post-update-cmd": "@php ../../artisan plugin:scope debugbar --skip-plugins"
+    }
+}
