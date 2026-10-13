@@ -18,12 +18,15 @@ class Plugin extends Package
     public function boot(): void
     {
         $hasDb = rescue(fn () => DB::connection()->getPdo(), false);
-        if (! $hasDb || ! Schema::hasTable('options')) {
+        if ($this->skipped || ! $hasDb || ! Schema::hasTable('options')) {
             return;
         }
 
         foreach ($this->active() as $name) {
-            app()->register($this->pluginClass($this->path($name)));
+            $path = $this->path($name);
+            $this->autoload($path);
+
+            app()->register($this->pluginClass($path));
         }
     }
 

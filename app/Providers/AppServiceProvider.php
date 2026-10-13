@@ -86,17 +86,28 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Make the site given by the "--site" option, or the main site, current.
+     * Make the site given by the "--site" option, or the main site, current,
+     * without booting plugins or the theme when "--skip-plugins" or "--skip-themes" is given.
      */
     protected function bootConsoleSite(): void
     {
         Artisan::starting(function (Artisan $artisan): void {
-            $artisan->getDefinition()->addOption(
+            $artisan->getDefinition()->addOptions([
                 new InputOption('site', null, InputOption::VALUE_REQUIRED, 'The ID of the site the command should run on'),
-            );
+                new InputOption('skip-plugins', null, InputOption::VALUE_NONE, 'Do not boot active plugins'),
+                new InputOption('skip-themes', null, InputOption::VALUE_NONE, 'Do not boot the active theme'),
+            ]);
         });
 
-        if ($site = (new ArgvInput)->getParameterOption('--site')) {
+        $input = new ArgvInput;
+        if ($input->hasParameterOption('--skip-plugins')) {
+            $this->app->make(Plugin::class)->skip();
+        }
+        if ($input->hasParameterOption('--skip-themes')) {
+            $this->app->make(Theme::class)->skip();
+        }
+
+        if ($site = $input->getParameterOption('--site')) {
             Site::findOrFail($site)->makeCurrent();
         } elseif (rescue(fn () => Schema::hasTable('sites'), false, false)) {
             Site::find(1)?->makeCurrent();

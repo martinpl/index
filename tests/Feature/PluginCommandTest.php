@@ -5,8 +5,11 @@ use App\Models\Entry;
 use App\Models\Option;
 use App\Models\Site;
 use App\Models\Term;
+use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
@@ -138,4 +141,38 @@ test('boots an active plugin', function () {
     $this->get('/hello-index')
         ->assertOk()
         ->assertExactJson(['message' => 'Hello from the Hello Index plugin.']);
+});
+
+test('does not boot skipped plugins', function () {
+    Option::set('active_plugins', ['hello-index'], 'core');
+    Plugin::skip();
+
+    Plugin::boot();
+
+    $this->get('/hello-index')->assertNotFound();
+});
+
+test('scopes plugin dependencies except the application ones', function () {
+    $storage = sys_get_temp_dir().'/index-'.Str::uuid();
+    app()->useStoragePath($storage);
+    File::ensureDirectoryExists($storage.'/app');
+    File::ensureDirectoryExists(base_path('plugins/seo/vendor/composer'));
+    File::put(base_path('plugins/seo/composer.json'), json_encode(['name' => 'index/seo']));
+    File::put(base_path('plugins/seo/vendor/composer/installed.json'), json_encode(['packages' => []]));
+    Http::fake(['github.com/*' => Http::response('phar')]);
+    Process::fake(function (PendingProcess $process) use (&$config) {
+        $config = json_decode(File::get($process->path.'/'.$process->environment['COMPOSER']), true)['extra']['strauss'];
+
+        return Process::result();
+    });
+
+    artisan('plugin:scope', ['plugin' => 'seo'])
+        ->expectsOutput('Scoped plugin [seo].')
+        ->assertSuccessful();
+
+    expect($config['namespace_prefix'])->toBe('Seo\\Vendor\\')
+        ->and($config['exclude_from_copy']['packages'])->toContain('laravel/framework', 'illuminate/support', 'symfony/http-foundation')
+        ->and(base_path('plugins/seo/composer.strauss.json'))->not->toBeFile();
+
+    File::deleteDirectory($storage);
 });

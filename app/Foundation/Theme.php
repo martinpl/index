@@ -17,7 +17,7 @@ class Theme extends Package
     public function boot(): void
     {
         $hasDb = rescue(fn () => DB::connection()->getPdo(), false);
-        if (! $hasDb || ! Schema::hasTable('options')) {
+        if ($this->skipped || ! $hasDb || ! Schema::hasTable('options')) {
             return;
         }
 
@@ -27,6 +27,8 @@ class Theme extends Package
         }
 
         $path = $this->path($name);
+        $this->autoload($path);
+
         View::prependLocation($path.'/resources/views');
 
         app()->register($this->themeClass($path));

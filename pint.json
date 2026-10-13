@@ -1,0 +1,3 @@
+{
+    "notPath": ["#(^|/)vendor-prefixed/#"]
+}
