@@ -166,10 +166,6 @@ new #[Title('Security settings')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    @include('partials.settings-heading')
-
-    <h2 class="sr-only">{{ __('Security settings') }}</h2>
-
     <x-pages::settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
         <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
             <x-ui.field>
