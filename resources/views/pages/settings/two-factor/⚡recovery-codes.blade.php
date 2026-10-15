@@ -4,7 +4,8 @@ use Laravel\Fortify\Actions\GenerateNewRecoveryCodes;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     #[Locked]
     public array $recoveryCodes = [];
 
@@ -45,12 +46,8 @@ new class extends Component {
     }
 }; ?>
 
-<div
-    class="py-6 space-y-6 border shadow-sm rounded-xl"
-    wire:cloak
-    x-data="{ showRecoveryCodes: false }"
->
-    <div class="px-6 space-y-2">
+<div class="space-y-6 rounded-xl border py-6 shadow-sm" wire:cloak x-data="{ showRecoveryCodes: false }">
+    <div class="space-y-2 px-6">
         <div class="flex items-center gap-2">
             <x-lucide-lock class="size-4" />
             <x-ui.typography variant="large" as="h3">{{ __('2FA recovery codes') }}</x-ui.typography>
@@ -63,8 +60,8 @@ new class extends Component {
     <div class="px-6">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <x-ui.button
-                x-show="!showRecoveryCodes"
-                @click="showRecoveryCodes = true;"
+                x-show="! showRecoveryCodes"
+                @click="showRecoveryCodes = true"
                 aria-expanded="false"
                 aria-controls="recovery-codes-section"
             >
@@ -83,11 +80,7 @@ new class extends Component {
             </x-ui.button>
 
             @if (filled($recoveryCodes))
-                <x-ui.button
-                    x-show="showRecoveryCodes"
-                    variant="secondary"
-                    wire:click="regenerateRecoveryCodes"
-                >
+                <x-ui.button x-show="showRecoveryCodes" variant="secondary" wire:click="regenerateRecoveryCodes">
                     <x-lucide-refresh-cw />
                     {{ __('Regenerate codes') }}
                 </x-ui.button>
@@ -99,7 +92,7 @@ new class extends Component {
             x-transition
             id="recovery-codes-section"
             class="relative overflow-hidden"
-            x-bind:aria-hidden="!showRecoveryCodes"
+            x-bind:aria-hidden="! showRecoveryCodes"
         >
             <div class="mt-3 space-y-3">
                 @error('recoveryCodes')
@@ -111,16 +104,12 @@ new class extends Component {
 
                 @if (filled($recoveryCodes))
                     <div
-                        class="bg-muted grid gap-1 p-4 font-mono text-sm rounded-lg"
+                        class="bg-muted grid gap-1 rounded-lg p-4 font-mono text-sm"
                         role="list"
                         aria-label="{{ __('Recovery codes') }}"
                     >
-                        @foreach($recoveryCodes as $code)
-                            <div
-                                role="listitem"
-                                class="select-text"
-                                wire:loading.class="opacity-50 animate-pulse"
-                            >
+                        @foreach ($recoveryCodes as $code)
+                            <div role="listitem" class="select-text" wire:loading.class="opacity-50 animate-pulse">
                                 {{ $code }}
                             </div>
                         @endforeach

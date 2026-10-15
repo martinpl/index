@@ -24,8 +24,6 @@
         <h2 class="font-medium">{{ $heading ?? '' }}</h2>
         <x-ui.typography variant="muted">{{ $subheading ?? '' }}</x-ui.typography>
 
-        <div class="mt-5 w-full max-w-lg">
-            {{ $slot }}
-        </div>
+        <div class="mt-5 w-full max-w-lg">{{ $slot }}</div>
     </div>
 </div>

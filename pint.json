@@ -1,3 +1,4 @@
 {
-    "notPath": ["#(^|/)vendor-prefixed/#"]
+    "notPath": ["#(^|/)vendor-prefixed/#"],
+    "rules": { "Pint/laravel_blade": true }
 }

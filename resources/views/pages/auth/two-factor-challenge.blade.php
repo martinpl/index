@@ -1,7 +1,7 @@
 <x-layouts::auth :title="__('Two-factor authentication')">
     <div class="flex flex-col gap-6">
         <div
-            class="relative w-full h-auto"
+            class="relative h-auto w-full"
             x-cloak
             x-data="{
                 showRecoveryInput: @js($errors->has('recovery_code')),
@@ -16,7 +16,7 @@
                     }
                 },
                 toggleInput() {
-                    this.showRecoveryInput = !this.showRecoveryInput;
+                    this.showRecoveryInput = ! this.showRecoveryInput;
 
                     this.code = '';
                     this.recovery_code = '';
@@ -29,7 +29,7 @@
                 },
             }"
         >
-            <div x-show="!showRecoveryInput">
+            <div x-show="! showRecoveryInput">
                 <x-auth-header
                     :title="__('Authentication code')"
                     :description="__('Enter the authentication code provided by your authenticator application.')"
@@ -47,8 +47,8 @@
                 @csrf
 
                 <div class="space-y-5 text-center">
-                    <div x-show="!showRecoveryInput">
-                        <div class="flex items-center justify-center my-5" x-ref="otp">
+                    <div x-show="! showRecoveryInput">
+                        <div class="my-5 flex items-center justify-center" x-ref="otp">
                             <x-ui.input-otp
                                 name="code"
                                 :maxlength="6"
@@ -82,16 +82,18 @@
                         <x-ui.field-error :messages="$errors->get('recovery_code')" />
                     </div>
 
-                    <x-ui.button type="submit" class="w-full">
-                        {{ __('Continue') }}
-                    </x-ui.button>
+                    <x-ui.button type="submit" class="w-full">{{ __('Continue') }}</x-ui.button>
                 </div>
 
-                <div class="mt-5 space-x-0.5 text-sm leading-5 text-center">
+                <div class="mt-5 space-x-0.5 text-center text-sm leading-5">
                     <span class="opacity-50">{{ __('or you can') }}</span>
-                    <div class="inline font-medium underline cursor-pointer opacity-80">
-                        <span x-show="!showRecoveryInput" @click="toggleInput()">{{ __('login using a recovery code') }}</span>
-                        <span x-show="showRecoveryInput" @click="toggleInput()">{{ __('login using an authentication code') }}</span>
+                    <div class="inline cursor-pointer font-medium underline opacity-80">
+                        <span x-show="! showRecoveryInput" @click="toggleInput()">
+                            {{ __('login using a recovery code') }}
+                        </span>
+                        <span x-show="showRecoveryInput" @click="toggleInput()">
+                            {{ __('login using an authentication code') }}
+                        </span>
                     </div>
                 </div>
             </form>

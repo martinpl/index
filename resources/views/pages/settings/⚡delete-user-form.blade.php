@@ -11,9 +11,7 @@ new class extends Component {}; ?>
     </div>
 
     <x-ui.dialog-trigger for="confirm-user-deletion">
-        <x-ui.button variant="destructive" data-test="delete-user-button">
-            {{ __('Delete account') }}
-        </x-ui.button>
+        <x-ui.button variant="destructive" data-test="delete-user-button">{{ __('Delete account') }}</x-ui.button>
     </x-ui.dialog-trigger>
 
     <livewire:pages::settings.delete-user-modal />

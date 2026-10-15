@@ -8,10 +8,12 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Profile settings')] class extends Component {
+new #[Title('Profile settings')] class extends Component
+{
     use ProfileValidationRules;
 
     public string $name = '';
+
     public string $email = '';
 
     /**
@@ -96,7 +98,10 @@ new #[Title('Profile settings')] class extends Component {
                         <p class="mt-4 text-sm">
                             {{ __('Your email address is unverified.') }}
 
-                            <x-ui.link class="cursor-pointer text-sm" wire:click.prevent="resendVerificationNotification">
+                            <x-ui.link
+                                class="cursor-pointer text-sm"
+                                wire:click.prevent="resendVerificationNotification"
+                            >
                                 {{ __('Click here to re-send the verification email.') }}
                             </x-ui.link>
                         </p>
@@ -116,7 +121,6 @@ new #[Title('Profile settings')] class extends Component {
                         {{ __('Save') }}
                     </x-ui.button>
                 </div>
-
             </div>
         </form>
 

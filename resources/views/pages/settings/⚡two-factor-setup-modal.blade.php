@@ -8,7 +8,8 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     #[Locked]
     public bool $requiresConfirmation;
 
@@ -154,22 +155,19 @@ new class extends Component {
     }
 }; ?>
 
-<x-ui.dialog
-    id="two-factor-setup-modal"
-    x-init="$watch('open', (value) => value || $wire.closeModal())"
->
+<x-ui.dialog id="two-factor-setup-modal" x-init="$watch('open', (value) => value || $wire.closeModal())">
     <x-ui.dialog-content class="sm:max-w-md">
         <div class="space-y-6">
             <div class="flex flex-col items-center space-y-4">
                 <div class="bg-card w-auto rounded-full border p-0.5 shadow-sm">
                     <div class="bg-muted relative overflow-hidden rounded-full border p-2.5">
-                        <div class="flex items-stretch absolute inset-0 w-full h-full divide-x [&>div]:flex-1 justify-around opacity-50">
+                        <div class="[&>div]:flex-1 absolute inset-0 flex h-full w-full items-stretch justify-around divide-x opacity-50">
                             @for ($i = 1; $i <= 5; $i++)
                                 <div></div>
                             @endfor
                         </div>
 
-                        <div class="flex flex-col items-stretch absolute w-full h-full divide-y [&>div]:flex-1 inset-0 justify-around opacity-50">
+                        <div class="[&>div]:flex-1 absolute inset-0 flex h-full w-full flex-col items-stretch justify-around divide-y opacity-50">
                             @for ($i = 1; $i <= 5; $i++)
                                 <div></div>
                             @endfor
@@ -188,16 +186,11 @@ new class extends Component {
             @if ($showVerificationStep)
                 <div class="space-y-6">
                     <div
-                        class="flex flex-col items-center space-y-3 justify-center"
+                        class="flex flex-col items-center justify-center space-y-3"
                         x-data
                         x-init="$nextTick(() => $el.querySelector('input')?.focus())"
                     >
-                        <x-ui.input-otp
-                            name="code"
-                            wire:model="code"
-                            :maxlength="6"
-                            :aria-label="__('OTP Code')"
-                        >
+                        <x-ui.input-otp name="code" wire:model="code" :maxlength="6" :aria-label="__('OTP Code')">
                             <x-ui.input-otp-group>
                                 @for ($i = 0; $i < 6; $i++)
                                     <x-ui.input-otp-slot :index="$i" />
@@ -209,11 +202,7 @@ new class extends Component {
                     </div>
 
                     <div class="flex items-center space-x-3">
-                        <x-ui.button
-                            variant="outline"
-                            class="flex-1"
-                            wire:click="resetVerification"
-                        >
+                        <x-ui.button variant="outline" class="flex-1" wire:click="resetVerification">
                             {{ __('Back') }}
                         </x-ui.button>
 
@@ -235,15 +224,15 @@ new class extends Component {
                 @enderror
 
                 <div class="flex justify-center">
-                    <div class="relative w-64 overflow-hidden border rounded-lg aspect-square">
+                    <div class="relative aspect-square w-64 overflow-hidden rounded-lg border">
                         @empty($qrCodeSvg)
-                            <div class="bg-muted absolute inset-0 flex items-center justify-center animate-pulse">
+                            <div class="bg-muted absolute inset-0 flex animate-pulse items-center justify-center">
                                 <x-ui.spinner />
                             </div>
                         @else
-                            <div x-data class="flex items-center justify-center h-full p-4">
+                            <div x-data class="flex h-full items-center justify-center p-4">
                                 <div
-                                    class="bg-white p-3 rounded"
+                                    class="rounded bg-white p-3"
                                     :style="$store.theme.isDark ? 'filter: invert(1) brightness(1.5)' : ''"
                                 >
                                     {!! $qrCodeSvg !!}
@@ -264,7 +253,7 @@ new class extends Component {
                 </div>
 
                 <div class="space-y-4">
-                    <div class="relative flex items-center justify-center w-full">
+                    <div class="relative flex w-full items-center justify-center">
                         <x-ui.separator class="absolute inset-x-0 top-1/2" />
                         <span class="bg-background text-muted-foreground relative px-2 text-sm">
                             {{ __('or, enter the code manually') }}
@@ -286,9 +275,9 @@ new class extends Component {
                             }
                         }"
                     >
-                        <div class="flex items-stretch w-full border rounded-xl">
+                        <div class="flex w-full items-stretch rounded-xl border">
                             @empty($manualSetupKey)
-                                <div class="bg-muted flex items-center justify-center w-full p-3">
+                                <div class="bg-muted flex w-full items-center justify-center p-3">
                                     <x-ui.spinner />
                                 </div>
                             @else
@@ -296,16 +285,16 @@ new class extends Component {
                                     type="text"
                                     readonly
                                     value="{{ $manualSetupKey }}"
-                                    class="w-full p-3 bg-transparent outline-none"
+                                    class="w-full bg-transparent p-3 outline-none"
                                 />
 
                                 <button
                                     type="button"
                                     @click="copy()"
                                     :aria-label="@js(__('Copy'))"
-                                    class="px-3 transition-colors border-l cursor-pointer"
+                                    class="cursor-pointer border-l px-3 transition-colors"
                                 >
-                                    <x-lucide-copy x-show="!copied" class="size-5" />
+                                    <x-lucide-copy x-show="! copied" class="size-5" />
                                     <x-lucide-check x-show="copied" class="text-success size-5" />
                                 </button>
                             @endempty

@@ -8,7 +8,7 @@
         <form method="POST" action="{{ route('password.update') }}" class="flex flex-col gap-6">
             @csrf
             <!-- Token -->
-            <input type="hidden" name="token" value="{{ request()->route('token') }}">
+            <input type="hidden" name="token" value="{{ request()->route('token') }}" />
 
             <!-- Email Address -->
             <x-ui.field>
@@ -55,9 +55,7 @@
             </x-ui.field>
 
             <div class="flex items-center justify-end">
-                <x-ui.button type="submit" data-test="reset-password-button">
-                    {{ __('Reset password') }}
-                </x-ui.button>
+                <x-ui.button type="submit" data-test="reset-password-button">{{ __('Reset password') }}</x-ui.button>
             </div>
         </form>
     </div>

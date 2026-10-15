@@ -1,5 +1,5 @@
 @assets
-@vite('resources/js/passkeys.js')
+    @vite('resources/js/passkeys.js')
 @endassets
 
 <div
@@ -40,7 +40,7 @@
             window.addEventListener('passkeys:ready', () => this.updateSupport(), { once: true });
         },
         async register() {
-            if (!this.name.trim()) return;
+            if (! this.name.trim()) return;
 
             this.loading = true;
             this.error = null;
@@ -65,11 +65,11 @@
         },
     }"
 >
-    <template x-if="!supported">
+    <template x-if="! supported">
         <x-ui.typography variant="muted">{{ __('Passkeys are not supported in this browser.') }}</x-ui.typography>
     </template>
 
-    <template x-if="supported && !showForm">
+    <template x-if="supported && ! showForm">
         <div>
             <x-ui.button x-on:click="showForm = true">
                 <x-lucide-plus />
@@ -90,25 +90,19 @@
                     x-ref="passkeyNameInput"
                     x-init="$nextTick(() => $refs.passkeyNameInput?.focus())"
                 />
-                <x-ui.field-description>{{ __('Give this passkey a name to help you identify it later.') }}</x-ui.field-description>
+                <x-ui.field-description>
+                    {{ __('Give this passkey a name to help you identify it later.') }}
+                </x-ui.field-description>
             </x-ui.field>
 
             <p x-show="error" x-text="error" x-cloak class="text-destructive text-sm"></p>
 
             <div class="flex gap-2">
-                <x-ui.button
-                    x-on:click="register()"
-                    x-bind:disabled="loading || !name.trim()"
-                >
-                    <span x-show="!loading">{{ __('Register passkey') }}</span>
+                <x-ui.button x-on:click="register()" x-bind:disabled="loading || ! name.trim()">
+                    <span x-show="! loading">{{ __('Register passkey') }}</span>
                     <span x-show="loading" x-cloak>{{ __('Registering...') }}</span>
                 </x-ui.button>
-                <x-ui.button
-                    variant="ghost"
-                    x-on:click="cancel()"
-                >
-                    {{ __('Cancel') }}
-                </x-ui.button>
+                <x-ui.button variant="ghost" x-on:click="cancel()">{{ __('Cancel') }}</x-ui.button>
             </div>
         </div>
     </template>

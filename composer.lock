@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "anousss007/blatui",
-            "version": "v1.36.0",
+            "version": "v1.36.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/anousss007/blatui.git",
-                "reference": "db9d78daf728826bea55594910828b6bfad2d054"
+                "reference": "693ef57c08896184b597dfd318ae41d8a5021779"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/anousss007/blatui/zipball/db9d78daf728826bea55594910828b6bfad2d054",
-                "reference": "db9d78daf728826bea55594910828b6bfad2d054",
+                "url": "https://api.github.com/repos/anousss007/blatui/zipball/693ef57c08896184b597dfd318ae41d8a5021779",
+                "reference": "693ef57c08896184b597dfd318ae41d8a5021779",
                 "shasum": ""
             },
             "require": {
@@ -75,7 +75,7 @@
                 "issues": "https://github.com/anousss007/blatui/issues",
                 "source": "https://github.com/anousss007/blatui"
             },
-            "time": "2026-10-11T09:27:44+00:00"
+            "time": "2026-10-14T19:53:20+00:00"
         },
         {
             "name": "bacon/bacon-qr-code",
@@ -2806,16 +2806,16 @@
         },
         {
             "name": "mallardduck/blade-lucide-icons",
-            "version": "2.0.28",
+            "version": "2.0.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mallardduck/blade-lucide-icons.git",
-                "reference": "488dcb8b6fd50444bfb46d8de4c809e4f7b09546"
+                "reference": "a63fec245befe95ad405f27e46a8bc373e635f54"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mallardduck/blade-lucide-icons/zipball/488dcb8b6fd50444bfb46d8de4c809e4f7b09546",
-                "reference": "488dcb8b6fd50444bfb46d8de4c809e4f7b09546",
+                "url": "https://api.github.com/repos/mallardduck/blade-lucide-icons/zipball/a63fec245befe95ad405f27e46a8bc373e635f54",
+                "reference": "a63fec245befe95ad405f27e46a8bc373e635f54",
                 "shasum": ""
             },
             "require": {
@@ -2860,9 +2860,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mallardduck/blade-lucide-icons/issues",
-                "source": "https://github.com/mallardduck/blade-lucide-icons/tree/2.0.28"
+                "source": "https://github.com/mallardduck/blade-lucide-icons/tree/2.0.29"
             },
-            "time": "2026-10-14T03:20:52+00:00"
+            "time": "2026-10-15T02:59:37+00:00"
         },
         {
             "name": "monolog/monolog",

@@ -7,7 +7,7 @@
 ])
 
 @assets
-@vite('resources/js/passkeys.js')
+    @vite('resources/js/passkeys.js')
 @endassets
 
 <div
@@ -47,18 +47,12 @@
     <template x-if="supported">
         <div>
             <div class="grid gap-2">
-                <x-ui.button
-                    variant="outline"
-                    class="w-full"
-                    x-on:click="verify()"
-                    x-bind:disabled="loading"
-                >
+                <x-ui.button variant="outline" class="w-full" x-on:click="verify()" x-bind:disabled="loading">
                     <x-lucide-fingerprint />
-                    <span x-show="!loading">{{ $label }}</span>
+                    <span x-show="! loading">{{ $label }}</span>
                     <span x-show="loading" x-cloak>{{ $loadingLabel }}</span>
                 </x-ui.button>
-                <p x-show="error" x-text="error" x-cloak
-                   class="text-destructive text-center text-sm"></p>
+                <p x-show="error" x-text="error" x-cloak class="text-destructive text-center text-sm"></p>
             </div>
 
             <div class="relative my-6">
@@ -66,9 +60,7 @@
                     <x-ui.separator />
                 </div>
                 <div class="relative flex justify-center text-xs uppercase">
-                    <span class="bg-background text-muted-foreground px-2">
-                        {{ $separator }}
-                    </span>
+                    <span class="bg-background text-muted-foreground px-2">{{ $separator }}</span>
                 </div>
             </div>
         </div>

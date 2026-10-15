@@ -13,9 +13,7 @@
         <div class="flex flex-col items-center justify-between space-y-3">
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
-                <x-ui.button type="submit">
-                    {{ __('Resend verification email') }}
-                </x-ui.button>
+                <x-ui.button type="submit">{{ __('Resend verification email') }}</x-ui.button>
             </form>
 
             <form method="POST" action="{{ route('logout') }}">

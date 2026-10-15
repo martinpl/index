@@ -6,17 +6,20 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
-use Livewire\Attributes\Title;
-use Livewire\Component;
 use Laravel\Passkeys\Actions\DeletePasskey;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Title;
+use Livewire\Component;
 
-new #[Title('Security settings')] class extends Component {
+new #[Title('Security settings')] class extends Component
+{
     use PasswordValidationRules;
 
     public string $current_password = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
 
     public bool $canManageTwoFactor;
@@ -166,7 +169,10 @@ new #[Title('Security settings')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    <x-pages::settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
+    <x-pages::settings.layout
+        :heading="__('Update password')"
+        :subheading="__('Ensure your account is using a long, random password to stay secure')"
+    >
         <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
             <x-ui.field>
                 <x-ui.field-label for="current_password">{{ __('Current password') }}</x-ui.field-label>
@@ -205,18 +211,18 @@ new #[Title('Security settings')] class extends Component {
             </x-ui.field>
 
             <div class="flex items-center gap-4">
-                <x-ui.button type="submit" data-test="update-password-button">
-                    {{ __('Save') }}
-                </x-ui.button>
+                <x-ui.button type="submit" data-test="update-password-button">{{ __('Save') }}</x-ui.button>
             </div>
         </form>
 
         @if ($canManageTwoFactor)
             <section class="mt-12">
                 <h3 class="font-medium">{{ __('Two-factor authentication') }}</h3>
-                <x-ui.typography variant="muted">{{ __('Manage your two-factor authentication settings') }}</x-ui.typography>
+                <x-ui.typography variant="muted">
+                    {{ __('Manage your two-factor authentication settings') }}
+                </x-ui.typography>
 
-                <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
+                <div class="mx-auto flex w-full flex-col space-y-6 text-sm" wire:cloak>
                     @if ($twoFactorEnabled)
                         <div class="space-y-4">
                             <p>
@@ -224,10 +230,7 @@ new #[Title('Security settings')] class extends Component {
                             </p>
 
                             <div class="flex justify-start">
-                                <x-ui.button
-                                    variant="destructive"
-                                    wire:click="disable"
-                                >
+                                <x-ui.button variant="destructive" wire:click="disable">
                                     {{ __('Disable 2FA') }}
                                 </x-ui.button>
                             </div>
@@ -256,9 +259,11 @@ new #[Title('Security settings')] class extends Component {
         @if ($canManagePasskeys)
             <section class="mt-12">
                 <h3 class="font-medium">{{ __('Passkeys') }}</h3>
-                <x-ui.typography variant="muted">{{ __('Manage your passkeys for passwordless sign-in') }}</x-ui.typography>
+                <x-ui.typography variant="muted">
+                    {{ __('Manage your passkeys for passwordless sign-in') }}
+                </x-ui.typography>
 
-                <div class="mt-6 flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
+                <div class="mx-auto mt-6 flex w-full flex-col space-y-6 text-sm" wire:cloak>
                     <div class="overflow-hidden rounded-lg border">
                         @forelse ($passkeys as $passkey)
                             <div @class(['flex items-center justify-between p-4', 'border-b' => ! $loop->last])>
@@ -270,13 +275,15 @@ new #[Title('Security settings')] class extends Component {
                                         <div class="flex items-center gap-2.5">
                                             <p class="font-medium tracking-tight">{{ $passkey['name'] }}</p>
                                             @if ($passkey['authenticator'])
-                                                <x-ui.badge variant="secondary" size="sm">{{ $passkey['authenticator'] }}</x-ui.badge>
+                                                <x-ui.badge variant="secondary" size="sm">
+                                                    {{ $passkey['authenticator'] }}
+                                                </x-ui.badge>
                                             @endif
                                         </div>
                                         <p class="text-muted-foreground text-xs">
                                             {{ __('Added :time', ['time' => $passkey['created_at_diff']]) }}
                                             @if ($passkey['last_used_at_diff'])
-                                                <span class="opacity-50 mx-1">/</span>
+                                                <span class="mx-1 opacity-50">/</span>
                                                 {{ __('Last used :time', ['time' => $passkey['last_used_at_diff']]) }}
                                             @endif
                                         </p>
@@ -299,7 +306,9 @@ new #[Title('Security settings')] class extends Component {
                                     <x-lucide-key-round class="text-muted-foreground size-7" />
                                 </div>
                                 <p class="font-medium">{{ __('No passkeys yet') }}</p>
-                                <x-ui.typography variant="muted" class="mt-1">{{ __('Add a passkey to sign in without a password') }}</x-ui.typography>
+                                <x-ui.typography variant="muted" class="mt-1">
+                                    {{ __('Add a passkey to sign in without a password') }}
+                                </x-ui.typography>
                             </div>
                         @endforelse
                     </div>
@@ -324,18 +333,8 @@ new #[Title('Security settings')] class extends Component {
             </x-ui.dialog-header>
 
             <x-ui.dialog-footer>
-                <x-ui.button
-                    variant="outline"
-                    wire:click="closeDeleteModal"
-                >
-                    {{ __('Cancel') }}
-                </x-ui.button>
-                <x-ui.button
-                    variant="destructive"
-                    wire:click="deletePasskey"
-                >
-                    {{ __('Remove passkey') }}
-                </x-ui.button>
+                <x-ui.button variant="outline" wire:click="closeDeleteModal">{{ __('Cancel') }}</x-ui.button>
+                <x-ui.button variant="destructive" wire:click="deletePasskey">{{ __('Remove passkey') }}</x-ui.button>
             </x-ui.dialog-footer>
         </x-ui.dialog-content>
     </x-ui.dialog>

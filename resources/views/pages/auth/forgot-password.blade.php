@@ -1,6 +1,9 @@
 <x-layouts::auth :title="__('Forgot password')">
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Forgot password')" :description="__('Enter your email to receive a password reset link')" />
+        <x-auth-header
+            :title="__('Forgot password')"
+            :description="__('Enter your email to receive a password reset link')"
+        />
 
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
@@ -11,14 +14,7 @@
             <!-- Email Address -->
             <x-ui.field>
                 <x-ui.field-label for="email">{{ __('Email address') }}</x-ui.field-label>
-                <x-ui.input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    autofocus
-                    placeholder="email@example.com"
-                />
+                <x-ui.input id="email" name="email" type="email" required autofocus placeholder="email@example.com" />
                 <x-ui.field-error :messages="$errors->get('email')" />
             </x-ui.field>
 
