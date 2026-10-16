@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use App\Facades\Action;
 use App\Facades\EntryType;
+use App\Facades\Filter;
 use App\Facades\TermType;
 use App\Models\Entry;
 use App\Models\Term;
@@ -39,6 +41,17 @@ abstract class PackageServiceProvider extends ServiceProvider
     {
         foreach ($classes as $class) {
             TermType::register($class, [], static::owner());
+        }
+    }
+
+    /**
+     * @param  list<class-string>  $classes  Classes with `#[Action]` / `#[Filter]` methods.
+     */
+    protected function addHooks(array $classes): void
+    {
+        foreach ($classes as $class) {
+            Action::subscribe($class);
+            Filter::subscribe($class);
         }
     }
 }

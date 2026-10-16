@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\EntryTypes\Page;
 use App\Facades\EntryType as EntryTypeFacade;
+use App\Foundation\Action;
 use App\Foundation\EntryType;
+use App\Foundation\Filter;
 use App\Foundation\Plugin;
 use App\Foundation\Role;
 use App\Foundation\TermType;
@@ -16,6 +18,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -37,6 +40,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Plugin::class);
         $this->app->singleton(Theme::class);
         $this->app->singleton(Role::class);
+        $this->app->singleton(Action::class);
+        $this->app->singleton(Filter::class);
     }
 
     /**
@@ -53,6 +58,9 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         EntryTypeFacade::register(Page::class, [], 'core');
+
+        Blade::directive('action', fn (string $expression): string => "<?php \\App\\Facades\\Action::run($expression); ?>");
+        Blade::directive('filter', fn (string $expression): string => "<?php echo \\App\\Facades\\Filter::apply($expression); ?>");
 
         Gate::before(fn (User $user, string $ability): ?bool => $user->hasAbility($ability) ?: null);
 
