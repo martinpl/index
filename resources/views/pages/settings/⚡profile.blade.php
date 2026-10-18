@@ -117,12 +117,30 @@ new #[Title('Profile settings')] class extends Component
 
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">
-                    <x-ui.button type="submit" class="w-full" data-test="update-profile-button">
-                        {{ __('Save') }}
-                    </x-ui.button>
+                    <x-ui.button type="submit" class="w-full">{{ __('Save') }}</x-ui.button>
                 </div>
             </div>
         </form>
+
+        @auth
+            <section class="flex-1 self-stretch mt-10">
+                <h2 class="font-medium">{{ __('Appearance') }}</h2>
+                <x-ui.typography variant="muted">{{ __('Update the appearance settings for your account') }}</x-ui.typography>
+                <div class="mt-5 w-full max-w-lg">
+                    <x-ui.segmented-control
+                        name="appearance"
+                        :options="[
+                            ['value' => 'light', 'label' => __('Light'), 'icon' => 'sun'],
+                            ['value' => 'dark', 'label' => __('Dark'), 'icon' => 'moon'],
+                            ['value' => 'system', 'label' => __('System'), 'icon' => 'monitor'],
+                        ]"
+                        x-data
+                        x-init="$el.querySelector(`input[value='${$store.theme.mode}']`).checked = true"
+                        x-on:change="$store.theme.setMode($event.target.value)"
+                    />
+                </div>
+            </section>
+        @endauth
 
         @if ($this->showDeleteUser)
             <livewire:pages::settings.delete-user-form />

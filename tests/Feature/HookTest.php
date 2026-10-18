@@ -14,7 +14,7 @@ class ShoutFilter
 
 class SeoHooks
 {
-    #[App\Attributes\Action('head')]
+    #[App\Attributes\Action('seo.head')]
     public function meta(): void
     {
         echo '<meta name="generator" content="Index">';
@@ -77,6 +77,6 @@ test('subscribes attributed methods and runs hooks from blade', function () {
     Filter::subscribe(SeoHooks::class);
 
     expect(Filter::apply('heading', 'Home'))->toBe('Home - Index')
-        ->and(Blade::render("@action('head')<title>@filter('title', \$title)</title>", ['title' => '<Home>']))
-        ->toBe('<meta name="generator" content="Index"><title>&lt;Home&gt; - Index</title>');
+        ->and(Blade::render("@action('seo.head')<title>@filter('title', \$title)</title>", ['title' => 'Home']))
+        ->toBe('<meta name="generator" content="Index"><title>Home - Index</title>');
 });

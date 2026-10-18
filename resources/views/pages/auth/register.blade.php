@@ -72,9 +72,7 @@
             </x-ui.field>
 
             <div class="flex items-center justify-end">
-                <x-ui.button type="submit" class="w-full" data-test="register-user-button">
-                    {{ __('Create account') }}
-                </x-ui.button>
+                <x-ui.button type="submit" class="w-full">{{ __('Create account') }}</x-ui.button>
             </div>
         </form>
 

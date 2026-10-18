@@ -18,9 +18,7 @@
                 <x-ui.field-error :messages="$errors->get('email')" />
             </x-ui.field>
 
-            <x-ui.button type="submit" data-test="email-password-reset-link-button">
-                {{ __('Email password reset link') }}
-            </x-ui.button>
+            <x-ui.button type="submit">{{ __('Email password reset link') }}</x-ui.button>
         </form>
 
         <div class="text-muted-foreground space-x-1 text-center text-sm rtl:space-x-reverse">

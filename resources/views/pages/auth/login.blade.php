@@ -58,7 +58,7 @@
             </x-ui.field>
 
             <div class="flex items-center justify-end">
-                <x-ui.button type="submit" class="w-full" data-test="login-button">{{ __('Log in') }}</x-ui.button>
+                <x-ui.button type="submit" class="w-full">{{ __('Log in') }}</x-ui.button>
             </div>
         </form>
 

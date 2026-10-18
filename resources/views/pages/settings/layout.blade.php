@@ -4,7 +4,6 @@
             @foreach ([
                 'profile.edit' => __('Profile'),
                 'security.edit' => __('Security'),
-                'appearance.edit' => __('Appearance'),
             ] as $routeName => $label)
                 <x-ui.button
                     variant="ghost"

@@ -55,7 +55,7 @@
             </x-ui.field>
 
             <div class="flex items-center justify-end">
-                <x-ui.button type="submit" data-test="reset-password-button">{{ __('Reset password') }}</x-ui.button>
+                <x-ui.button type="submit">{{ __('Reset password') }}</x-ui.button>
             </div>
         </form>
     </div>

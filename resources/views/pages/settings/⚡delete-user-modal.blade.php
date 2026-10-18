@@ -48,9 +48,7 @@ new class extends Component
                     <x-ui.button variant="secondary">{{ __('Cancel') }}</x-ui.button>
                 </x-ui.dialog-close>
 
-                <x-ui.button variant="destructive" type="submit" data-test="confirm-delete-user-button">
-                    {{ __('Delete account') }}
-                </x-ui.button>
+                <x-ui.button variant="destructive" type="submit">{{ __('Delete account') }}</x-ui.button>
             </x-ui.dialog-footer>
         </form>
     </x-ui.dialog-content>

@@ -4,10 +4,12 @@
     @include('partials.head')
 </head>
 <body class="min-h-screen antialiased">
-    <x-ui.sidebar-provider>
+    @action('dashboard.body')
+    @php($hasAdminbar = true)
+    <x-ui.sidebar-provider @class(['[&>div>div]:h-auto min-h-[calc(100svh-40px)] transform-gpu' => $hasAdminbar])>
         <x-ui.sidebar>
             <x-ui.sidebar-header class="border-sidebar-border h-16 border-b">
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                <x-app-logo :sidebar="true" href="{{ route('dashboard.home') }}" wire:navigate />
             </x-ui.sidebar-header>
             <x-ui.sidebar-content>
                 <x-ui.sidebar-group>
@@ -15,8 +17,8 @@
                         <x-ui.sidebar-menu>
                             <x-ui.sidebar-menu-item>
                                 <x-ui.sidebar-menu-button
-                                    :href="route('dashboard')"
-                                    :is-active="request()->routeIs('dashboard')"
+                                    :href="route('dashboard.home')"
+                                    :is-active="request()->routeIs('dashboard.home')"
                                     wire:navigate
                                 >
                                     <x-lucide-layout-dashboard />
@@ -27,13 +29,6 @@
                     </x-ui.sidebar-group-content>
                 </x-ui.sidebar-group>
             </x-ui.sidebar-content>
-            <x-ui.sidebar-footer>
-                <x-ui.sidebar-menu>
-                    <x-ui.sidebar-menu-item>
-                        <x-desktop-user-menu />
-                    </x-ui.sidebar-menu-item>
-                </x-ui.sidebar-menu>
-            </x-ui.sidebar-footer>
         </x-ui.sidebar>
         <x-ui.sidebar-inset>
             <header class="bg-background sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4">

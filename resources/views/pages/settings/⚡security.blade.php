@@ -211,7 +211,7 @@ new #[Title('Security settings')] class extends Component
             </x-ui.field>
 
             <div class="flex items-center gap-4">
-                <x-ui.button type="submit" data-test="update-password-button">{{ __('Save') }}</x-ui.button>
+                <x-ui.button type="submit">{{ __('Save') }}</x-ui.button>
             </div>
         </form>
 

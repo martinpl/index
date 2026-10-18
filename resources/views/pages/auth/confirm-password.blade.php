@@ -31,7 +31,7 @@
                 <x-ui.field-error :messages="$errors->get('password')" />
             </x-ui.field>
 
-            <x-ui.button type="submit" data-test="confirm-password-button">{{ __('Confirm') }}</x-ui.button>
+            <x-ui.button type="submit">{{ __('Confirm') }}</x-ui.button>
         </form>
     </div>
 </x-layouts::auth>

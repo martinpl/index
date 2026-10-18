@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\EntryTypes\Page;
+use App\Facades\Action as ActionFacade;
 use App\Facades\EntryType as EntryTypeFacade;
 use App\Foundation\Action;
 use App\Foundation\EntryType;
@@ -11,6 +12,7 @@ use App\Foundation\Plugin;
 use App\Foundation\Role;
 use App\Foundation\TermType;
 use App\Foundation\Theme;
+use App\Hooks\Document;
 use App\Models\Entry;
 use App\Models\Site;
 use App\Models\Term;
@@ -61,6 +63,8 @@ class AppServiceProvider extends ServiceProvider
 
         Blade::directive('action', fn (string $expression): string => "<?php \\App\\Facades\\Action::run($expression); ?>");
         Blade::directive('filter', fn (string $expression): string => "<?php echo \\App\\Facades\\Filter::apply($expression); ?>");
+
+        ActionFacade::subscribe(Document::class);
 
         Gate::before(fn (User $user, string $ability): ?bool => $user->hasAbility($ability) ?: null);
 

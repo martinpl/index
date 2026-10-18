@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\EntryTypes\Page;
 use App\Facades\EntryType;
+use App\Facades\Filter;
 use App\Models\Entry;
 use App\Models\Site;
 use Illuminate\Support\Str;
@@ -19,7 +20,7 @@ class IndexController extends Controller
 
             abort_unless($entry, 404);
 
-            return view('index', ['entry' => $entry]);
+            return $this->view('index', $entry);
         }
 
         $entry = Entry::where('slug', Str::afterLast($path, '/'))
@@ -29,6 +30,13 @@ class IndexController extends Controller
 
         abort_unless($entry, 404);
 
-        return view('index', ['entry' => $entry]);
+        return $this->view('index', $entry);
+    }
+
+    protected function view(string $view, Entry $entry): View
+    {
+        Filter::add('title.parts', fn ($parts) => [$entry->name, ...$parts]);
+
+        return view($view, ['entry' => $entry]);
     }
 }
