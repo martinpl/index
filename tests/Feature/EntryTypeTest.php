@@ -31,6 +31,7 @@ test('registers an entry type from a class', function () {
         'key' => 'product',
         'name' => 'Product',
         'slug' => 'shop/products',
+        'icon' => 'lucide-file-text',
         'model' => Product::class,
         'owner' => 'core',
     ]);

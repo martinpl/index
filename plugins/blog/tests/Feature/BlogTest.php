@@ -21,6 +21,7 @@ test('registers posts with categories and tags', function () {
         'key' => 'post',
         'name' => 'Post',
         'slug' => 'posts',
+        'icon' => 'lucide-newspaper',
         'model' => Post::class,
         'owner' => 'plugins/blog',
     ])

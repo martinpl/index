@@ -122,10 +122,12 @@ new #[Title('Profile settings')] class extends Component
             </div>
         </form>
 
-        @auth
-            <section class="flex-1 self-stretch mt-10">
+        @if (auth()->user()->hasVerifiedEmail())
+            <section class="mt-10 flex-1 self-stretch">
                 <h2 class="font-medium">{{ __('Appearance') }}</h2>
-                <x-ui.typography variant="muted">{{ __('Update the appearance settings for your account') }}</x-ui.typography>
+                <x-ui.typography variant="muted">
+                    {{ __('Update the appearance settings for your account') }}
+                </x-ui.typography>
                 <div class="mt-5 w-full max-w-lg">
                     <x-ui.segmented-control
                         name="appearance"
@@ -140,7 +142,7 @@ new #[Title('Profile settings')] class extends Component
                     />
                 </div>
             </section>
-        @endauth
+        @endif
 
         @if ($this->showDeleteUser)
             <livewire:pages::settings.delete-user-form />

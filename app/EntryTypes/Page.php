@@ -13,11 +13,11 @@ class Page extends Entry
     public static string $type = 'page';
 
     /**
-     * @return array{name?: string, slug?: string}
+     * @return array{name?: string, slug?: string, icon?: string}
      */
     public static function config(): array
     {
-        return ['slug' => ''];
+        return ['slug' => '', 'icon' => 'lucide-file'];
     }
 
     public static function registered(): void

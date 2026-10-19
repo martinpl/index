@@ -7,25 +7,38 @@
     @endif
     <div>
         <x-ui.menubar id="admin-bar" class="sticky top-0 z-50 h-10 rounded-none border-x-0 border-t-0 px-2">
-            <x-ui.menubar-menu>
-                <x-ui.menubar-trigger class="gap-2">
-                    <x-app-logo-icon class="size-4" />
-                    {{ option('site_name') }}
-                </x-ui.menubar-trigger>
-                <x-ui.menubar-content>
-                    @if (! $isDashboard)
-                        <x-ui.menubar-item :href="route('dashboard.home')" wire:navigate>
-                            <x-lucide-layout-dashboard />
-                            {{ __('Dashboard') }}
-                        </x-ui.menubar-item>
-                    @else
-                        <x-ui.menubar-item :href="page_url('home')" wire:navigate>
-                            <x-lucide-home />
-                            {{ __('Home') }}
-                        </x-ui.menubar-item>
-                    @endif
-                </x-ui.menubar-content>
-            </x-ui.menubar-menu>
+            @foreach (\App\Facades\AdminBar::tree() as $menu)
+                @if ($menu['children']->isEmpty())
+                    <a
+                        href="{{ $menu['url'] }}"
+                        class="hover:bg-accent hover:text-accent-foreground [&_svg]:size-4 flex items-center gap-2 rounded-sm px-2 py-1 text-sm font-medium"
+                    >
+                        @if ($menu['icon'])
+                            <x-dynamic-component :component="$menu['icon']" />
+                        @endif
+                        {{ __($menu['title']) }}
+                    </a>
+                @else
+                    <x-ui.menubar-menu>
+                        <x-ui.menubar-trigger class="[&_svg]:size-4 gap-2">
+                            @if ($menu['icon'])
+                                <x-dynamic-component :component="$menu['icon']" />
+                            @endif
+                            {{ __($menu['title']) }}
+                        </x-ui.menubar-trigger>
+                        <x-ui.menubar-content>
+                            @foreach ($menu['children'] as $item)
+                                <x-ui.menubar-item :href="$item['url']">
+                                    @if ($item['icon'])
+                                        <x-dynamic-component :component="$item['icon']" />
+                                    @endif
+                                    {{ __($item['title']) }}
+                                </x-ui.menubar-item>
+                            @endforeach
+                        </x-ui.menubar-content>
+                    </x-ui.menubar-menu>
+                @endif
+            @endforeach
 
             <x-ui.menubar-menu class="ms-auto">
                 <x-ui.menubar-trigger class="gap-2">
@@ -47,7 +60,7 @@
                         </x-ui.menubar-label>
                     </div>
                     <x-ui.menubar-separator />
-                    <x-ui.menubar-item :href="route('profile.edit')" wire:navigate>
+                    <x-ui.menubar-item :href="route('profile.edit')">
                         <x-lucide-settings />
                         {{ __('Settings') }}
                     </x-ui.menubar-item>
@@ -62,5 +75,5 @@
                 </x-ui.menubar-content>
             </x-ui.menubar-menu>
         </x-ui.menubar>
-
+    </div>
 @endauth

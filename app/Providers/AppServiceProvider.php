@@ -6,6 +6,8 @@ use App\EntryTypes\Page;
 use App\Facades\Action as ActionFacade;
 use App\Facades\EntryType as EntryTypeFacade;
 use App\Foundation\Action;
+use App\Foundation\AdminBar;
+use App\Foundation\DashboardMenu;
 use App\Foundation\EntryType;
 use App\Foundation\Filter;
 use App\Foundation\Plugin;
@@ -13,6 +15,7 @@ use App\Foundation\Role;
 use App\Foundation\TermType;
 use App\Foundation\Theme;
 use App\Hooks\Document;
+use App\Hooks\Menus;
 use App\Models\Entry;
 use App\Models\Site;
 use App\Models\Term;
@@ -44,6 +47,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Role::class);
         $this->app->singleton(Action::class);
         $this->app->singleton(Filter::class);
+        $this->app->singleton(AdminBar::class);
+        $this->app->singleton(DashboardMenu::class);
     }
 
     /**
@@ -65,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('filter', fn (string $expression): string => "<?php echo \\App\\Facades\\Filter::apply($expression); ?>");
 
         ActionFacade::subscribe(Document::class);
+        ActionFacade::subscribe(Menus::class);
 
         Gate::before(fn (User $user, string $ability): ?bool => $user->hasAbility($ability) ?: null);
 

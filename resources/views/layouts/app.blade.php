@@ -9,22 +9,36 @@
     <x-ui.sidebar-provider @class(['[&>div>div]:h-auto min-h-[calc(100svh-40px)] transform-gpu' => $hasAdminbar])>
         <x-ui.sidebar>
             <x-ui.sidebar-header class="border-sidebar-border h-16 border-b">
-                <x-app-logo :sidebar="true" href="{{ route('dashboard.home') }}" wire:navigate />
+                <x-app-logo :sidebar="true" href="{{ route('dashboard.home') }}" />
             </x-ui.sidebar-header>
             <x-ui.sidebar-content>
                 <x-ui.sidebar-group>
                     <x-ui.sidebar-group-content class="flex flex-col gap-2">
                         <x-ui.sidebar-menu>
-                            <x-ui.sidebar-menu-item>
-                                <x-ui.sidebar-menu-button
-                                    :href="route('dashboard.home')"
-                                    :is-active="request()->routeIs('dashboard.home')"
-                                    wire:navigate
-                                >
-                                    <x-lucide-layout-dashboard />
-                                    <span>{{ __('Dashboard') }}</span>
-                                </x-ui.sidebar-menu-button>
-                            </x-ui.sidebar-menu-item>
+                            @foreach (\App\Facades\DashboardMenu::tree() as $item)
+                                <x-ui.sidebar-menu-item>
+                                    <x-ui.sidebar-menu-button :href="$item['url']" :is-active="$item['active']">
+                                        @if ($item['icon'])
+                                            <x-dynamic-component :component="$item['icon']" />
+                                        @endif
+                                        <span>{{ __($item['title']) }}</span>
+                                    </x-ui.sidebar-menu-button>
+                                    @if ($item['children']->isNotEmpty())
+                                        <x-ui.sidebar-menu-sub>
+                                            @foreach ($item['children'] as $child)
+                                                <x-ui.sidebar-menu-sub-item>
+                                                    <x-ui.sidebar-menu-sub-button
+                                                        :href="$child['url']"
+                                                        :is-active="$child['active']"
+                                                    >
+                                                        <span>{{ __($child['title']) }}</span>
+                                                    </x-ui.sidebar-menu-sub-button>
+                                                </x-ui.sidebar-menu-sub-item>
+                                            @endforeach
+                                        </x-ui.sidebar-menu-sub>
+                                    @endif
+                                </x-ui.sidebar-menu-item>
+                            @endforeach
                         </x-ui.sidebar-menu>
                     </x-ui.sidebar-group-content>
                 </x-ui.sidebar-group>

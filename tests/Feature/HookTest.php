@@ -40,7 +40,9 @@ test('runs actions in priority order', function () {
 
     Action::run('init', 'main');
 
-    expect($calls)->toBe(['early main', 'late main']);
+    expect($calls)->toBe(['early main', 'late main'])
+        ->and(Action::fired('init'))->toBe(1)
+        ->and(Action::fired('missing'))->toBe(0);
 });
 
 test('applies filters with extra arguments and class callbacks', function () {
