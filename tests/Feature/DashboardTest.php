@@ -14,7 +14,11 @@ test('authenticated users can visit the dashboard', function () {
     $this->actingAs($user);
 
     $response = $this->get(route('dashboard.home'));
-    $response->assertOk();
+    $response->assertOk()
+        ->assertSeeText($user->name)
+        ->assertSeeText($user->email)
+        ->assertSee(route('profile.edit'), false)
+        ->assertSee('action="'.route('logout').'"', false);
 });
 
 test('the dashboard menu links to every entry type and its term types', function () {

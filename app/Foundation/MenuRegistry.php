@@ -5,6 +5,7 @@ namespace App\Foundation;
 use App\Facades\Action;
 use Closure;
 use DomainException;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Gate;
 abstract class MenuRegistry
 {
     /**
-     * @var array<string, array{key: string, title: string|Closure, url: string|Closure|null, icon: string|null, parent: string|null, position: int, can: string|Closure|null}>
+     * @var array<string, array{key: string, title: string|Htmlable|Closure, url: string|Closure|null, icon: string|null, parent: string|null, position: int, can: string|Closure|null, align: string}>
      */
     protected array $items = [];
 
@@ -22,9 +23,11 @@ abstract class MenuRegistry
     protected string $hook;
 
     /**
-     * Add an item; `icon` is a Blade component name and `can` an ability or a closure receiving the user.
+     * Add an item; `icon` is a Blade component name, `can` an ability or a closure receiving the user,
+     * and `align` places a top-level item at the `start` or `end`. An item whose title is Htmlable, such as
+     * a view, renders its own markup and needs no `url`.
      *
-     * @param  array{title: string|Closure, url?: string|Closure|null, icon?: string|null, parent?: string|null, position?: int, can?: string|Closure|null}  $item
+     * @param  array{title: string|Htmlable|Closure, url?: string|Closure|null, icon?: string|null, parent?: string|null, position?: int, can?: string|Closure|null, align?: 'start'|'end'}  $item
      */
     public function add(string $key, array $item): void
     {
@@ -40,6 +43,7 @@ abstract class MenuRegistry
             'parent' => $item['parent'] ?? null,
             'position' => $item['position'] ?? 10,
             'can' => $item['can'] ?? null,
+            'align' => $item['align'] ?? 'start',
         ];
     }
 
@@ -61,7 +65,7 @@ abstract class MenuRegistry
     /**
      * The items visible to the current user, resolved, sorted by position and nested under their parents.
      *
-     * @return Collection<int, array{key: string, title: string, url: string|null, icon: string|null, active: bool, children: Collection}>
+     * @return Collection<int, array{key: string, title: string|Htmlable, url: string|null, icon: string|null, align: string, active: bool, children: Collection}>
      */
     public function tree(?string $parent = null): Collection
     {
@@ -78,10 +82,10 @@ abstract class MenuRegistry
                 'title' => value($item['title']),
                 'url' => $url = value($item['url']),
                 'icon' => $item['icon'],
+                'align' => $item['align'],
                 'active' => $url === request()->url(),
                 'children' => $this->tree($item['key']),
             ])
-            ->reject(fn (array $item): bool => is_null($item['url']) && $item['children']->isEmpty())
             ->values();
     }
 

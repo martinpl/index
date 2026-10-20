@@ -21,7 +21,7 @@
                                         @if ($item['icon'])
                                             <x-dynamic-component :component="$item['icon']" />
                                         @endif
-                                        <span>{{ __($item['title']) }}</span>
+                                        <span>{{ $item['title'] }}</span>
                                     </x-ui.sidebar-menu-button>
                                     @if ($item['children']->isNotEmpty())
                                         <x-ui.sidebar-menu-sub>
@@ -31,7 +31,7 @@
                                                         :href="$child['url']"
                                                         :is-active="$child['active']"
                                                     >
-                                                        <span>{{ __($child['title']) }}</span>
+                                                        <span>{{ $child['title'] }}</span>
                                                     </x-ui.sidebar-menu-sub-button>
                                                 </x-ui.sidebar-menu-sub-item>
                                             @endforeach

@@ -21,6 +21,6 @@ class Document
     #[Action('dashboard.body')]
     public function adminBar()
     {
-        echo view('admin-bar')->render();
+        echo view('partials.admin-bar.admin-bar')->render();
     }
 }
