@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\EntryTypes\Page;
 use App\Facades\Action as ActionFacade;
 use App\Facades\EntryType as EntryTypeFacade;
+use App\Facades\Settings as SettingsFacade;
+use App\Fields\Text;
 use App\Foundation\Action;
 use App\Foundation\AdminBar;
 use App\Foundation\DashboardMenu;
@@ -12,6 +14,7 @@ use App\Foundation\EntryType;
 use App\Foundation\Filter;
 use App\Foundation\Plugin;
 use App\Foundation\Role;
+use App\Foundation\Settings;
 use App\Foundation\TermType;
 use App\Foundation\Theme;
 use App\Hooks\Document;
@@ -49,6 +52,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Filter::class);
         $this->app->singleton(AdminBar::class);
         $this->app->singleton(DashboardMenu::class);
+        $this->app->singleton(Settings::class);
     }
 
     /**
@@ -65,6 +69,15 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         EntryTypeFacade::register(Page::class, [], 'core');
+
+        SettingsFacade::register('general', [
+            'title' => 'General',
+            'can' => 'manage-settings',
+            'position' => 0,
+            'fields' => fn (): array => [
+                Text::make('site_name')->label(__('Site name'))->required()->rules('max:255'),
+            ],
+        ], 'core');
 
         Blade::directive('action', fn (string $expression): string => "<?php \\App\\Facades\\Action::run($expression); ?>");
         Blade::directive('filter', fn (string $expression): string => "<?php echo \\App\\Facades\\Filter::apply($expression); ?>");

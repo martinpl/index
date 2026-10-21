@@ -4,7 +4,7 @@
         @php(\Livewire\Livewire::forceAssetInjection())
         @vite(['resources/css/app.css', 'resources/js/head.js'])
     @endif
-    <x-ui.menubar id="admin-bar" class="sticky top-0 z-50 h-10 rounded-none border-x-0 border-t-0 px-2">
+    <x-ui.menubar id="admin-bar" class="sticky top-0 z-50 h-10 rounded-none border-x-0 border-t-0 px-2 shadow-none">
         @php($menus = \App\Facades\AdminBar::tree())
         @foreach (['start', 'end'] as $align)
             <div @class(['flex items-center gap-1', 'ms-auto' => $align === 'end'])>

@@ -5,9 +5,12 @@ namespace App\Support;
 use App\Facades\Action;
 use App\Facades\EntryType;
 use App\Facades\Filter;
+use App\Facades\Settings;
 use App\Facades\TermType;
+use App\Fields\Field;
 use App\Models\Entry;
 use App\Models\Term;
+use Closure;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -41,6 +44,16 @@ abstract class PackageServiceProvider extends ServiceProvider
     {
         foreach ($classes as $class) {
             TermType::register($class, [], static::owner());
+        }
+    }
+
+    /**
+     * @param  array<string, array{title?: string, fields: Closure(): list<Field>, can?: string|null, position?: int}>  $pages
+     */
+    protected function addSettings(array $pages): void
+    {
+        foreach ($pages as $key => $config) {
+            Settings::register($key, $config, static::owner());
         }
     }
 

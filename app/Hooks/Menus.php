@@ -4,6 +4,7 @@ namespace App\Hooks;
 
 use App\Attributes\Action;
 use App\Facades\EntryType;
+use App\Facades\Settings;
 use App\Facades\TermType;
 use App\Foundation\AdminBar;
 use App\Foundation\DashboardMenu;
@@ -86,6 +87,26 @@ class Menus
                     'parent' => "entries.{$entryType['key']}",
                 ]);
             }
+        }
+
+        $pages = Settings::list()->filter(fn (array $page): bool => Settings::allows($page['key']));
+
+        if ($pages->isNotEmpty()) {
+            $menu->add('settings', [
+                'title' => __('Settings'),
+                'url' => route('dashboard.settings', $pages->first()['key']),
+                'icon' => 'lucide-settings',
+                'position' => 100,
+            ]);
+        }
+
+        foreach ($pages as $page) {
+            $menu->add("settings.{$page['key']}", [
+                'title' => __($page['title']),
+                'url' => route('dashboard.settings', $page['key']),
+                'parent' => $page['parent'],
+                'position' => $page['position'],
+            ]);
         }
     }
 }

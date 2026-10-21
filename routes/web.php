@@ -9,6 +9,7 @@ Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'verified'])
     Route::view('', 'pages::dashboard.home')->name('home');
     Route::livewire('entries/{type}', 'pages::dashboard.entries')->name('entries');
     Route::livewire('terms/{type}', 'pages::dashboard.terms')->name('terms');
+    Route::livewire('settings/{page}', 'pages::dashboard.settings')->name('settings');
 });
 
 require __DIR__.'/settings.php';

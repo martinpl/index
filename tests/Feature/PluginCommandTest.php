@@ -130,7 +130,7 @@ test('deactivates a deleted plugin on every site', function () {
 
     artisan('plugin:delete', ['plugin' => 'seo'])->assertSuccessful();
 
-    expect($site->execute(fn () => Option::get('active_plugins')))->toBe([]);
+    expect($site->execute(fn () => Option::get('active_plugins')))->toBeNull();
 });
 
 test('boots an active plugin', function () {

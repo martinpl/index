@@ -40,6 +40,12 @@ class Option extends Model
 
     public static function set(string $key, mixed $value, string $owner): void
     {
+        if ($value === null || $value === []) {
+            self::forget($key);
+
+            return;
+        }
+
         static::query()->updateOrCreate(['key' => $key], ['value' => $value, 'owner' => $owner]);
     }
 
