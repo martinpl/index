@@ -20,7 +20,7 @@ class Menus
         $inDashboard = fn (): bool => request()->routeIs('dashboard.*', 'profile.*', 'security.*');
 
         $bar->add('site', [
-            'title' => option('site_name'),
+            'title' => setting('site_name'),
             'icon' => 'app-logo-icon',
             'position' => 0,
         ]);

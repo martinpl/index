@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\EntryTypes\Page;
-use App\Models\Option;
+use App\Models\Setting;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -14,7 +14,7 @@ class PageRoleListCommand extends Command
 {
     public function handle(): int
     {
-        $pages = Option::get('page_roles', []);
+        $pages = Setting::get('page_roles', []);
 
         $this->table(['key', 'name', 'page'], collect(Page::roles())
             ->sortKeys()

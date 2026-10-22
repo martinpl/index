@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Entry;
-use App\Models\Option;
+use App\Models\Setting;
 
 use function Pest\Laravel\artisan;
 
@@ -22,7 +22,7 @@ test('manages page roles', function () {
         ->expectsOutput('Unassigned page role [home].')
         ->assertSuccessful();
 
-    expect(Option::get('page_roles'))->toBeNull();
+    expect(Setting::get('page_roles'))->toBeNull();
 
     artisan('page-role:set', ['role' => 'shop', 'page' => $page->id])
         ->expectsOutput('Page role [shop] does not exist.')
@@ -40,5 +40,5 @@ test('does not assign a missing page to a role', function () {
         ->expectsOutput("Page [$post->id] does not exist.")
         ->assertFailed();
 
-    expect(Option::get('page_roles'))->toBeNull();
+    expect(Setting::get('page_roles'))->toBeNull();
 });

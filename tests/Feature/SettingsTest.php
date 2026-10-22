@@ -6,7 +6,7 @@ use App\Fields\Repeater;
 use App\Fields\Select;
 use App\Fields\Text;
 use App\Fields\Toggle;
-use App\Models\Option;
+use App\Models\Setting;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -15,7 +15,7 @@ use function Pest\Laravel\get;
 
 function settingsManager(): User
 {
-    return tap(User::factory()->create())->grantAbilities(['manage-settings']);
+    return tap(User::factory()->create())->grantAbilities(['settings.manage']);
 }
 
 test('guests are redirected to the login page', function () {
@@ -34,8 +34,8 @@ test('unknown settings pages are not found', function () {
     get(route('dashboard.settings', 'missing'))->assertNotFound();
 });
 
-test('the settings page shows the stored options', function () {
-    Option::set('site_name', 'Index', 'core');
+test('the settings page shows the stored settings', function () {
+    Setting::set('site_name', 'Index', 'core');
     actingAs(settingsManager());
 
     get(route('dashboard.settings', 'general'))
@@ -56,10 +56,10 @@ test('the settings page validates the values', function () {
         ->assertHasErrors(['values.site_name' => 'The site name field is required.'])
         ->assertSee('The site name field is required.');
 
-    expect(Option::exists('site_name'))->toBeFalse();
+    expect(Setting::exists('site_name'))->toBeFalse();
 });
 
-test('the settings page stores cast values as options owned by the page owner', function () {
+test('the settings page stores cast values as settings owned by the page owner', function () {
     Settings::register('reading', [
         'fields' => fn (): array => [
             Toggle::make('comments_open'),
@@ -76,11 +76,11 @@ test('the settings page stores cast values as options owned by the page owner', 
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(Option::get('comments_open'))->toBeTrue()
-        ->and(Option::get('order'))->toBe('desc')
-        ->and(Option::get('links'))->toBe([['url' => '/about'], ['url' => '/contact']])
-        ->and(Option::query()->where('key', 'links')->value('owner'))->toBe('plugins/reading')
-        ->and(Option::exists('injected'))->toBeFalse();
+    expect(Setting::get('comments_open'))->toBeTrue()
+        ->and(Setting::get('order'))->toBe('desc')
+        ->and(Setting::get('links'))->toBe([['url' => '/about'], ['url' => '/contact']])
+        ->and(Setting::query()->where('key', 'links')->value('owner'))->toBe('plugins/reading')
+        ->and(Setting::exists('injected'))->toBeFalse();
 });
 
 test('plugins can add fields to a settings page', function () {
@@ -93,7 +93,7 @@ test('plugins can add fields to a settings page', function () {
         ->call('save')
         ->assertHasNoErrors();
 
-    expect(Option::get('tagline'))->toBe('Just another Index site');
+    expect(Setting::get('tagline'))->toBe('Just another Index site');
 });
 
 test('registering a duplicate settings page throws', function () {

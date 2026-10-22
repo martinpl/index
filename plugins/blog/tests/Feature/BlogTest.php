@@ -5,14 +5,14 @@ use App\Facades\EntryType;
 use App\Facades\Plugin;
 use App\Facades\TermType;
 use App\Models\Entry;
-use App\Models\Option;
+use App\Models\Setting;
 use App\Models\Term;
 use Blog\EntryTypes\Post;
 use Blog\TermTypes\Category;
 use Blog\TermTypes\Tag;
 
 beforeEach(function (): void {
-    Option::set('active_plugins', ['blog'], 'core');
+    Setting::set('active_plugins', ['blog'], 'core');
     Plugin::boot();
 });
 

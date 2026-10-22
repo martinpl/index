@@ -47,7 +47,7 @@ new class extends Component
 
     public function render(): View
     {
-        return $this->view(['fields' => Settings::fields($this->page)])->title(__(Settings::get($this->page)['title']));
+        return $this->view(['fields' => Settings::fields($this->page)])->title(__(Settings::get($this->page)['page_title']));
     }
 };
 ?>

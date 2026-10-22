@@ -1,7 +1,7 @@
 <?php
 
 use App\EntryTypes\Page;
-use App\Models\Option;
+use App\Models\Setting;
 
 /**
  * The URL of the published page assigned to the given role.
@@ -12,9 +12,9 @@ function page_url(string $role): ?string
 }
 
 /**
- * Get the value of an option, or the default if it does not exist.
+ * Get the value of a setting, or the default if it does not exist.
  */
-function option(string $key, mixed $default = null): mixed
+function setting(string $key, mixed $default = null): mixed
 {
-    return Option::get($key, $default);
+    return Setting::get($key, $default);
 }

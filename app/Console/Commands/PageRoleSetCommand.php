@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\EntryTypes\Page;
-use App\Models\Option;
+use App\Models\Setting;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -21,12 +21,12 @@ class PageRoleSetCommand extends Command
             return self::FAILURE;
         }
 
-        $pages = Option::get('page_roles', []);
+        $pages = Setting::get('page_roles', []);
 
         $pageId = $this->argument('page');
         if (! $pageId) {
             unset($pages[$role]);
-            Option::set('page_roles', $pages, 'core');
+            Setting::set('page_roles', $pages, 'core');
             $this->info("Unassigned page role [$role].");
 
             return self::SUCCESS;
@@ -40,7 +40,7 @@ class PageRoleSetCommand extends Command
         }
 
         $pages[$role] = $page->id;
-        Option::set('page_roles', $pages, 'core');
+        Setting::set('page_roles', $pages, 'core');
         $this->info("Assigned page [$page->id] to role [$role].");
 
         return self::SUCCESS;

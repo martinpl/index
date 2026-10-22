@@ -2,7 +2,7 @@
 
 use App\Facades\Plugin;
 use App\Models\Entry;
-use App\Models\Option;
+use App\Models\Setting;
 use App\Models\Site;
 use App\Models\Term;
 use Illuminate\Process\PendingProcess;
@@ -48,7 +48,7 @@ test('manages a plugin through commands', function () {
         ->expectsOutput('Activated plugin [seo].')
         ->assertSuccessful();
 
-    assertDatabaseHas('options', ['key' => 'active_plugins', 'value' => json_encode(['seo'])]);
+    assertDatabaseHas('settings', ['key' => 'active_plugins', 'value' => json_encode(['seo'])]);
 
     artisan('plugin:is-active', ['plugin' => 'seo'])
         ->expectsOutput('yes')
@@ -101,9 +101,9 @@ test('deletes a plugin with its data', function () {
     $entry->setMeta('seo_title', 'Title', $owner);
     $entry->setMeta('views', 5, 'core');
     $term = Term::factory()->create(['owner' => $owner]);
-    Option::set('seo_settings', ['robots' => true], $owner);
-    Option::set('site_name', 'Index', 'core');
-    Site::create(['domain' => 'blog.example.com'])->execute(fn () => Option::set('seo_settings', ['robots' => true], $owner));
+    Setting::set('seo_settings', ['robots' => true], $owner);
+    Setting::set('site_name', 'Index', 'core');
+    Site::create(['domain' => 'blog.example.com'])->execute(fn () => Setting::set('seo_settings', ['robots' => true], $owner));
 
     artisan('plugin:delete', ['plugin' => 'seo', '--purge' => true])
         ->expectsOutput('Deleted plugin [seo].')
@@ -113,11 +113,11 @@ test('deletes a plugin with its data', function () {
     assertDatabaseMissing('meta', ['metable_id' => $owned->id]);
     assertDatabaseMissing('meta', ['key' => 'seo_title']);
     assertDatabaseMissing('terms', ['id' => $term->id]);
-    assertDatabaseMissing('options', ['key' => 'seo_settings']);
-    assertDatabaseMissing('site_2_options', ['key' => 'seo_settings']);
+    assertDatabaseMissing('settings', ['key' => 'seo_settings']);
+    assertDatabaseMissing('site_2_settings', ['key' => 'seo_settings']);
     assertDatabaseHas('entries', ['id' => $entry->id]);
     assertDatabaseHas('meta', ['metable_id' => $entry->id, 'key' => 'views']);
-    assertDatabaseHas('options', ['key' => 'site_name']);
+    assertDatabaseHas('settings', ['key' => 'site_name']);
 });
 
 test('deactivates a deleted plugin on every site', function () {
@@ -130,11 +130,11 @@ test('deactivates a deleted plugin on every site', function () {
 
     artisan('plugin:delete', ['plugin' => 'seo'])->assertSuccessful();
 
-    expect($site->execute(fn () => Option::get('active_plugins')))->toBeNull();
+    expect($site->execute(fn () => Setting::get('active_plugins')))->toBeNull();
 });
 
 test('boots an active plugin', function () {
-    Option::set('active_plugins', ['hello-index'], 'core');
+    Setting::set('active_plugins', ['hello-index'], 'core');
 
     Plugin::boot();
 
@@ -144,7 +144,7 @@ test('boots an active plugin', function () {
 });
 
 test('does not boot skipped plugins', function () {
-    Option::set('active_plugins', ['hello-index'], 'core');
+    Setting::set('active_plugins', ['hello-index'], 'core');
     Plugin::skip();
 
     Plugin::boot();

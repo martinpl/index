@@ -2,7 +2,7 @@
 
 namespace App\Foundation;
 
-use App\Models\Option;
+use App\Models\Setting;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +17,7 @@ class Theme extends Package
     public function boot(): void
     {
         $hasDb = rescue(fn () => DB::connection()->getPdo(), false);
-        if ($this->skipped || ! $hasDb || ! Schema::hasTable('options')) {
+        if ($this->skipped || ! $hasDb || ! Schema::hasTable('settings')) {
             return;
         }
 
@@ -41,13 +41,13 @@ class Theme extends Package
 
     public function activate(string $name): void
     {
-        Option::set(self::activeTheme, $name, 'core');
+        Setting::set(self::activeTheme, $name, 'core');
     }
 
     public function deactivate(string $name): void
     {
         if ($this->isActive($name)) {
-            Option::forget(self::activeTheme);
+            Setting::forget(self::activeTheme);
         }
     }
 
@@ -58,7 +58,7 @@ class Theme extends Package
 
     private function active(): ?string
     {
-        return Option::get(self::activeTheme);
+        return Setting::get(self::activeTheme);
     }
 
     private function themeClass(string $path): string

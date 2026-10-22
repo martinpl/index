@@ -3,7 +3,7 @@
 namespace App\EntryTypes;
 
 use App\Models\Entry;
-use App\Models\Option;
+use App\Models\Setting;
 use App\Models\Site;
 use DomainException;
 use Illuminate\Support\Str;
@@ -50,14 +50,14 @@ class Page extends Entry
      */
     public static function for(string $role): ?static
     {
-        $id = Option::get('page_roles', [])[$role] ?? null;
+        $id = Setting::get('page_roles', [])[$role] ?? null;
 
         return $id ? static::find($id) : null;
     }
 
     public function role(): ?string
     {
-        return array_search($this->id, Option::get('page_roles', []), true) ?: null;
+        return array_search($this->id, Setting::get('page_roles', []), true) ?: null;
     }
 
     public function url(): string

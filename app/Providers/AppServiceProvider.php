@@ -72,7 +72,8 @@ class AppServiceProvider extends ServiceProvider
 
         SettingsFacade::register('general', [
             'title' => 'General',
-            'can' => 'manage-settings',
+            'page_title' => 'General Settings',
+            'can' => 'settings.manage',
             'position' => 0,
             'fields' => fn (): array => [
                 Text::make('site_name')->label(__('Site name'))->required()->rules('max:255'),

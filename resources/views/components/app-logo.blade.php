@@ -6,5 +6,5 @@
     <span class="bg-primary text-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-md">
         <x-app-logo-icon class="size-5 fill-current" />
     </span>
-    <span class="truncate text-sm font-semibold">{{ option('site_name') }}</span>
+    <span class="truncate text-sm font-semibold">{{ setting('site_name') }}</span>
 </a>

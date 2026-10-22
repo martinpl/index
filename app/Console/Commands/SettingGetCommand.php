@@ -2,21 +2,21 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Option;
+use App\Models\Setting;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
-#[Signature('option:get {key?}')]
-#[Description('Gets an option value')]
-class OptionGetCommand extends Command
+#[Signature('setting:get {key?}')]
+#[Description('Gets a setting value')]
+class SettingGetCommand extends Command
 {
     public function handle(): int
     {
         $key = $this->argument('key');
         if (! $key) {
-            $key = $this->ask('Option key');
+            $key = $this->ask('Setting key');
         }
 
         $validator = Validator::make(['key' => $key], [
@@ -31,13 +31,13 @@ class OptionGetCommand extends Command
             return self::FAILURE;
         }
 
-        if (! Option::exists($key)) {
-            $this->error("Option [$key] does not exist.");
+        if (! Setting::exists($key)) {
+            $this->error("Setting [$key] does not exist.");
 
             return self::FAILURE;
         }
 
-        $this->line(Option::get($key));
+        $this->line(Setting::get($key));
 
         return self::SUCCESS;
     }

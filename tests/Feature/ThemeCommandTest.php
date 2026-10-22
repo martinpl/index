@@ -1,7 +1,7 @@
 <?php
 
 use App\Facades\Theme;
-use App\Models\Option;
+use App\Models\Setting;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\View;
@@ -43,7 +43,7 @@ test('manages a theme through commands', function () {
         ->expectsOutput('Activated theme [classic].')
         ->assertSuccessful();
 
-    assertDatabaseHas('options', ['key' => 'active_theme', 'value' => json_encode('classic')]);
+    assertDatabaseHas('settings', ['key' => 'active_theme', 'value' => json_encode('classic')]);
 
     artisan('theme:is-active', ['theme' => 'classic'])
         ->expectsOutput('yes')
@@ -84,7 +84,7 @@ test('installs a theme from an URL', function () {
 });
 
 test('boots the active theme', function () {
-    Option::set('active_theme', 'index', 'core');
+    Setting::set('active_theme', 'index', 'core');
 
     Theme::boot();
 

@@ -95,22 +95,22 @@ test('grants abilities to a user directly and through roles', function () {
     $user = User::factory()->create();
     $user->giveRole('editor');
 
-    artisan('ability:grant', ['abilities' => ['manage-settings'], '--user' => $user->id])
-        ->expectsOutput("Granted abilities [manage-settings] to user [$user->id].")
+    artisan('ability:grant', ['abilities' => ['settings.manage'], '--user' => $user->id])
+        ->expectsOutput("Granted abilities [settings.manage] to user [$user->id].")
         ->assertSuccessful();
 
     artisan('ability:list', ['--user' => $user->id])
-        ->expectsTable(['ability'], [['edit-entries'], ['manage-settings']])
+        ->expectsTable(['ability'], [['edit-entries'], ['settings.manage']])
         ->assertSuccessful();
 
     expect(Gate::forUser($user)->allows('edit-entries'))->toBeTrue()
-        ->and(Gate::forUser($user)->allows('manage-settings'))->toBeTrue()
+        ->and(Gate::forUser($user)->allows('settings.manage'))->toBeTrue()
         ->and(Gate::forUser($user)->allows('delete-users'))->toBeFalse();
 
-    artisan('ability:revoke', ['abilities' => ['manage-settings'], '--user' => $user->id])
+    artisan('ability:revoke', ['abilities' => ['settings.manage'], '--user' => $user->id])
         ->assertSuccessful();
 
-    expect(Gate::forUser($user)->allows('manage-settings'))->toBeFalse();
+    expect(Gate::forUser($user)->allows('settings.manage'))->toBeFalse();
 });
 
 test('requires either a role or a user to manage abilities', function (array $options) {

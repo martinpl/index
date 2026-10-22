@@ -2,21 +2,21 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Option;
+use App\Models\Setting;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
-#[Signature('option:delete {key?}')]
-#[Description('Deletes an option')]
-class OptionDeleteCommand extends Command
+#[Signature('setting:delete {key?}')]
+#[Description('Deletes a setting')]
+class SettingDeleteCommand extends Command
 {
     public function handle(): int
     {
         $key = $this->argument('key');
         if (! $key) {
-            $key = $this->ask('Option key');
+            $key = $this->ask('Setting key');
         }
 
         $validator = Validator::make(['key' => $key], [
@@ -31,14 +31,14 @@ class OptionDeleteCommand extends Command
             return self::FAILURE;
         }
 
-        if (! Option::exists($key)) {
-            $this->error("Option [$key] does not exist.");
+        if (! Setting::exists($key)) {
+            $this->error("Setting [$key] does not exist.");
 
             return self::FAILURE;
         }
 
-        Option::forget($key);
-        $this->info("Deleted option [$key].");
+        Setting::forget($key);
+        $this->info("Deleted setting [$key].");
 
         return self::SUCCESS;
     }

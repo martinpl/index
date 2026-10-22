@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\Option;
+use App\Models\Setting;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Option>
+ * @extends Factory<Setting>
  */
-class OptionFactory extends Factory
+class SettingFactory extends Factory
 {
     /**
      * @return array{key: string, value: string, owner: string}

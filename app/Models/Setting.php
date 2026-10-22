@@ -4,17 +4,17 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToSite;
 use App\Models\Concerns\HasOwner;
-use Database\Factories\OptionFactory;
+use Database\Factories\SettingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable(['key', 'value', 'owner'])]
-class Option extends Model
+class Setting extends Model
 {
     use BelongsToSite;
 
-    /** @use HasFactory<OptionFactory> */
+    /** @use HasFactory<SettingFactory> */
     use HasFactory;
 
     use HasOwner;

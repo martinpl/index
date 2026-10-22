@@ -4,7 +4,7 @@ namespace App\Foundation;
 
 use App\Models\Entry;
 use App\Models\Meta;
-use App\Models\Option;
+use App\Models\Setting;
 use App\Models\Site;
 use App\Models\Term;
 use Composer\Autoload\ClassLoader;
@@ -69,7 +69,7 @@ abstract class Package
     }
 
     /**
-     * The owner key of the package's entries, terms, meta and options.
+     * The owner key of the package's entries, terms, meta and settings.
      */
     public function owner(string $name): string
     {
@@ -88,7 +88,7 @@ abstract class Package
                 Entry::withAnyStatus()->ownedBy($owner)->lazyById()->each->forceDelete();
                 Term::query()->ownedBy($owner)->lazyById()->each->delete();
                 Meta::query()->ownedBy($owner)->delete();
-                Option::query()->ownedBy($owner)->delete();
+                Setting::query()->ownedBy($owner)->delete();
             });
         }
     }

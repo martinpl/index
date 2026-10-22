@@ -11,7 +11,7 @@ class Document
     public function title()
     {
         $separator = Filter::apply('title.separator', ' - ');
-        $parts = Filter::apply('title.parts', [option('site_name')]);
+        $parts = Filter::apply('title.parts', [setting('site_name')]);
         $title = Filter::apply('title', implode($separator, $parts));
 
         echo "<title>{$title}</title>";

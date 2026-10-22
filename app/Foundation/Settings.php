@@ -4,7 +4,7 @@ namespace App\Foundation;
 
 use App\Facades\Filter;
 use App\Fields\Field;
-use App\Models\Option;
+use App\Models\Setting;
 use Closure;
 use DomainException;
 use Illuminate\Support\Collection;
@@ -14,14 +14,14 @@ use Illuminate\Support\Str;
 class Settings
 {
     /**
-     * @var array<string, array{key: string, title: string, fields: Closure(): list<Field>, can: string|null, position: int, owner: string}>
+     * @var array<string, array{key: string, title: string, page_title: string, fields: Closure(): list<Field>, can: string|null, parent: string, position: int, owner: string}>
      */
     protected array $pages = [];
 
     /**
-     * Register a settings page whose fields are stored as options named after each field.
+     * Register a settings page whose fields are stored as settings named after each field.
      *
-     * @param  array{title?: string, fields: Closure(): list<Field>, can?: string|null, position?: int}  $config
+     * @param  array{title?: string, page_title?: string, fields: Closure(): list<Field>, can?: string|null, parent?: string, position?: int}  $config  The `title` labels the menu item, the `page_title` heads the page.
      * @param  string  $owner  Same format as the data owner column, e.g. `core` or `plugins/blog`.
      */
     public function register(string $key, array $config, string $owner): void
@@ -32,7 +32,8 @@ class Settings
 
         $this->pages[$key] = [
             'key' => $key,
-            'title' => $config['title'] ?? Str::headline($key),
+            'title' => $title = $config['title'] ?? Str::headline($key),
+            'page_title' => $config['page_title'] ?? $title,
             'fields' => $config['fields'],
             'can' => $config['can'] ?? null,
             'parent' => $config['parent'] ?? 'settings',
@@ -52,7 +53,7 @@ class Settings
     }
 
     /**
-     * @return Collection<string, array{key: string, title: string, fields: Closure(): list<Field>, can: string|null, position: int, owner: string}>
+     * @return Collection<string, array{key: string, title: string, page_title: string, fields: Closure(): list<Field>, can: string|null, parent: string, position: int, owner: string}>
      */
     public function list(): Collection
     {
@@ -84,7 +85,7 @@ class Settings
     public function values(string $key): array
     {
         return collect($this->fields($key))
-            ->mapWithKeys(fn (Field $field): array => [$field->name => $field->cast(Option::get($field->name, $field->getDefault()))])
+            ->mapWithKeys(fn (Field $field): array => [$field->name => $field->cast(Setting::get($field->name, $field->getDefault()))])
             ->all();
     }
 
@@ -98,7 +99,7 @@ class Settings
         foreach ($this->fields($key) as $field) {
             $value = $field->cast($values[$field->name] ?? null);
 
-            Option::set($field->name, $value, $this->pages[$key]['owner']);
+            Setting::set($field->name, $value, $this->pages[$key]['owner']);
         }
     }
 }

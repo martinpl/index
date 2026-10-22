@@ -2,7 +2,7 @@
 
 namespace App\Foundation;
 
-use App\Models\Option;
+use App\Models\Setting;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +18,7 @@ class Plugin extends Package
     public function boot(): void
     {
         $hasDb = rescue(fn () => DB::connection()->getPdo(), false);
-        if ($this->skipped || ! $hasDb || ! Schema::hasTable('options')) {
+        if ($this->skipped || ! $hasDb || ! Schema::hasTable('settings')) {
             return;
         }
 
@@ -37,12 +37,12 @@ class Plugin extends Package
 
     public function activate(string $name): void
     {
-        Option::set(self::activePlugins, array_unique([...$this->active(), $name]), 'core');
+        Setting::set(self::activePlugins, array_unique([...$this->active(), $name]), 'core');
     }
 
     public function deactivate(string $name): void
     {
-        Option::set(self::activePlugins, array_diff($this->active(), [$name]), 'core');
+        Setting::set(self::activePlugins, array_diff($this->active(), [$name]), 'core');
     }
 
     protected function directory(): string
@@ -52,7 +52,7 @@ class Plugin extends Package
 
     private function active(): array
     {
-        return Option::get(self::activePlugins, []);
+        return Setting::get(self::activePlugins, []);
     }
 
     private function pluginClass(string $path): string

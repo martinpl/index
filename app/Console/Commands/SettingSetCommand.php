@@ -2,26 +2,26 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Option;
+use App\Models\Setting;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
-#[Signature('option:set {key?} {value?} {--owner=core : The owner of the option, e.g. core or plugins/seo}')]
-#[Description('Sets an option value')]
-class OptionSetCommand extends Command
+#[Signature('setting:set {key?} {value?} {--owner=core : The owner of the setting, e.g. core or plugins/seo}')]
+#[Description('Sets a setting value')]
+class SettingSetCommand extends Command
 {
     public function handle(): int
     {
         $key = $this->argument('key');
         if (! $key) {
-            $key = $this->ask('Option key');
+            $key = $this->ask('Setting key');
         }
 
         $value = $this->argument('value');
         if (! $value) {
-            $value = $this->ask('Option value');
+            $value = $this->ask('Setting value');
         }
 
         $validator = Validator::make(['key' => $key, 'value' => $value, 'owner' => $this->option('owner')], [
@@ -38,8 +38,8 @@ class OptionSetCommand extends Command
             return self::FAILURE;
         }
 
-        Option::set($key, $value, $this->option('owner'));
-        $this->info("Set option [$key].");
+        Setting::set($key, $value, $this->option('owner'));
+        $this->info("Set setting [$key].");
 
         return self::SUCCESS;
     }

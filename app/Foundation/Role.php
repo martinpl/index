@@ -2,7 +2,7 @@
 
 namespace App\Foundation;
 
-use App\Models\Option;
+use App\Models\Setting;
 use App\Models\User;
 use DomainException;
 use Illuminate\Support\Collection;
@@ -15,7 +15,7 @@ class Role
      */
     protected function roles(): array
     {
-        return Option::get('roles', []);
+        return Setting::get('roles', []);
     }
 
     public function has(string $key): bool
@@ -109,6 +109,6 @@ class Role
      */
     protected function save(array $roles): void
     {
-        Option::set('roles', $roles, 'core');
+        Setting::set('roles', $roles, 'core');
     }
 }
