@@ -13,7 +13,7 @@ class Page extends Entry
     public static string $type = 'page';
 
     /**
-     * @return array{name?: string, slug?: string, icon?: string}
+     * @return array{name?: string, slug?: string, icon?: string, can?: string}
      */
     public static function config(): array
     {

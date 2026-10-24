@@ -78,6 +78,7 @@ class Menus
                 'title' => __(Str::plural($entryType['name'])),
                 'url' => route('dashboard.entries', $entryType['key']),
                 'icon' => $entryType['icon'],
+                'can' => $entryType['can'],
             ]);
 
             foreach (TermType::list()->filter(fn (array $termType): bool => in_array($entryType['key'], $termType['entry_types'])) as $termType) {
@@ -88,6 +89,14 @@ class Menus
                 ]);
             }
         }
+
+        $menu->add('plugins', [
+            'title' => __('Plugins'),
+            'url' => route('dashboard.plugins'),
+            'icon' => 'lucide-plug',
+            'position' => 90,
+            'can' => 'plugins.manage',
+        ]);
 
         $pages = Settings::list()->filter(fn (array $page): bool => Settings::allows($page['key']));
 

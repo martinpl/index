@@ -24,7 +24,7 @@ test('authenticated users can visit the dashboard', function () {
 test('the dashboard menu links to every entry type and its term types', function () {
     EntryType::register('post', [], 'core');
     TermType::register('category', ['entry_types' => ['post']], 'core');
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(tap(User::factory()->create())->grantAbilities(['entries.manage']));
 
     $this->get(route('dashboard.entries', 'post'))
         ->assertOk()

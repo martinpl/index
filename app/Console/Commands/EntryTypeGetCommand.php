@@ -26,6 +26,7 @@ class EntryTypeGetCommand extends Command
             ['name', $entryType['name']],
             ['slug', $entryType['slug']],
             ['icon', $entryType['icon']],
+            ['can', $entryType['can']],
             ['owner', $entryType['owner']],
         ]);
 

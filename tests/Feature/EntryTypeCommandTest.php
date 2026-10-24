@@ -22,6 +22,7 @@ test('gets an entry type', function () {
             ['name', 'Page'],
             ['slug', ''],
             ['icon', 'lucide-file'],
+            ['can', 'entries.manage'],
             ['owner', 'core'],
         ])
         ->assertSuccessful();

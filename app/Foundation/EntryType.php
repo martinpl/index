@@ -12,7 +12,7 @@ class EntryType extends TypeRegistry
     protected string $label = 'Entry type';
 
     /**
-     * @param  array{name?: string, slug?: string, icon?: string, model?: class-string<Entry>}  $config
+     * @param  array{name?: string, slug?: string, icon?: string, can?: string, model?: class-string<Entry>}  $config  The `can` ability allows managing the entries of the type.
      */
     protected function attributes(string $key, array $config): array
     {
@@ -20,6 +20,7 @@ class EntryType extends TypeRegistry
             'name' => $config['name'] ?? Str::headline($key),
             'slug' => $config['slug'] ?? Str::plural($key),
             'icon' => $config['icon'] ?? 'lucide-file-text',
+            'can' => $config['can'] ?? 'entries.manage',
         ];
     }
 }

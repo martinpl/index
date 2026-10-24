@@ -22,6 +22,7 @@ test('registers posts with categories and tags', function () {
         'name' => 'Post',
         'slug' => 'posts',
         'icon' => 'lucide-newspaper',
+        'can' => 'entries.manage',
         'model' => Post::class,
         'owner' => 'plugins/blog',
     ])
