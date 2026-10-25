@@ -8,13 +8,12 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 #[Signature('term:create
     {type : The key of the term type}
     {name : The name of the term}
-    {--slug= : The slug of the term}
+    {--slug= : The slug of the term, generated from the name when omitted}
     {--description= : The description of the term}
     {--parent= : The ID of the parent term}
     {--owner=core : The owner of the term, e.g. core or plugins/seo}')]
@@ -32,7 +31,7 @@ class TermCreateCommand extends Command
 
         $attributes = [
             'type' => $type,
-            'slug' => $this->option('slug') ?? Str::slug($this->argument('name')),
+            'slug' => $this->option('slug'),
             'name' => $this->argument('name'),
             'description' => $this->option('description'),
             'parent_id' => $this->option('parent'),
@@ -40,10 +39,10 @@ class TermCreateCommand extends Command
         ];
 
         $validator = Validator::make($attributes, [
-            'slug' => ['required', 'alpha_dash', 'lowercase', 'max:255', Rule::unique(Term::class)->where('type', $type)],
+            'slug' => ['nullable', 'alpha_dash', 'lowercase', 'max:255', Rule::unique(Term::class)->where('type', $type)],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'parent_id' => ['nullable', 'integer', Rule::exists(Term::class, 'id')->where('type', $type)],
+            'parent_id' => TermType::get($type)['hierarchical'] ? ['nullable', 'integer', Rule::exists(Term::class, 'id')->where('type', $type)] : ['prohibited'],
             'owner' => ['required', 'string', 'max:255'],
         ], attributes: ['parent_id' => 'parent']);
 

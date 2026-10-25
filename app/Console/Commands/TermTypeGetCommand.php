@@ -25,6 +25,8 @@ class TermTypeGetCommand extends Command
             ['key', $termType['key']],
             ['name', $termType['name']],
             ['entry types', implode(', ', $termType['entry_types'])],
+            ['hierarchical', $termType['hierarchical'] ? 'yes' : 'no'],
+            ['can', $termType['can']],
             ['owner', $termType['owner']],
         ]);
 

@@ -30,6 +30,8 @@ test('registers a term type from a class', function () {
         'key' => 'genre',
         'name' => 'Genre',
         'entry_types' => ['post'],
+        'hierarchical' => false,
+        'can' => 'entries.manage',
         'model' => Genre::class,
         'owner' => 'core',
     ]);

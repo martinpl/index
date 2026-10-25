@@ -96,6 +96,20 @@ test('plugins can add fields to a settings page', function () {
     expect(Setting::get('tagline'))->toBe('Just another Index site');
 });
 
+test('the settings page leaves out hidden fields, keeping their stored settings', function () {
+    Filter::add('settings.general.fields', fn (array $fields): array => [...$fields, Text::make('tagline')->visible(false)]);
+    Setting::set('tagline', 'Just another Index site', 'core');
+    actingAs(settingsManager());
+
+    Livewire::test('pages::dashboard.settings', ['page' => 'general'])
+        ->assertDontSee('values.tagline')
+        ->set('values.site_name', 'Index')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect(Setting::get('tagline'))->toBe('Just another Index site');
+});
+
 test('registering a duplicate settings page throws', function () {
     Settings::register('general', ['fields' => fn (): array => []], 'plugins/blog');
 })->throws(DomainException::class, 'Settings page [general] is already registered by [core].');

@@ -61,13 +61,15 @@ class Settings
     }
 
     /**
-     * The fields of the page, which plugins may change through the `settings.{key}.fields` filter.
+     * The visible fields of the page, which plugins may change through the `settings.{key}.fields` filter.
      *
      * @return list<Field>
      */
     public function fields(string $key): array
     {
-        return Filter::apply("settings.$key.fields", ($this->pages[$key]['fields'])(), $key);
+        $fields = Filter::apply("settings.$key.fields", ($this->pages[$key]['fields'])(), $key);
+
+        return array_values(array_filter($fields, fn (Field $field): bool => $field->isVisible()));
     }
 
     public function allows(string $key): bool

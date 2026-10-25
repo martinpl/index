@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Facades\TermType;
 use App\Models\Term;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -46,7 +47,9 @@ class TermUpdateCommand extends Command
             'slug' => ['sometimes', 'required', 'alpha_dash', 'lowercase', 'max:255', Rule::unique(Term::class)->where('type', $term->type)->ignore($term)],
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'string'],
-            'parent_id' => ['sometimes', 'integer', Rule::notIn([$term->id]), Rule::exists(Term::class, 'id')->where('type', $term->type)],
+            'parent_id' => TermType::get($term->type)['hierarchical'] ?? false
+                ? ['sometimes', 'integer', Rule::notIn([$term->id]), Rule::exists(Term::class, 'id')->where('type', $term->type)]
+                : ['prohibited'],
         ], attributes: ['parent_id' => 'parent']);
 
         if ($validator->fails()) {

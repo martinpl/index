@@ -2,6 +2,7 @@
 
 namespace App\Fields;
 
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
@@ -21,6 +22,11 @@ abstract class Field
     protected ?string $description = null;
 
     protected mixed $default = null;
+
+    /**
+     * @var bool|Closure(): bool
+     */
+    protected bool|Closure $visible = true;
 
     /**
      * @var list<string|ValidationRule>
@@ -68,6 +74,23 @@ abstract class Field
     public function getDefault(): mixed
     {
         return value($this->default);
+    }
+
+    /**
+     * Show the field only when the condition is true, leaving it out of the form, validation and saving otherwise.
+     *
+     * @param  bool|Closure(): bool  $condition
+     */
+    public function visible(bool|Closure $condition = true): static
+    {
+        $this->visible = $condition;
+
+        return $this;
+    }
+
+    public function isVisible(): bool
+    {
+        return (bool) value($this->visible);
     }
 
     /**

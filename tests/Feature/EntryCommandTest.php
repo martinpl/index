@@ -57,11 +57,11 @@ test('does not create an entry of an unknown type', function () {
 test('does not create an entry with a duplicate slug', function () {
     Entry::factory()->create(['type' => 'post', 'slug' => 'hello-world']);
 
-    artisan('entry:create', ['type' => 'post', 'name' => 'Hello World'])
+    artisan('entry:create', ['type' => 'post', 'name' => 'Hello', '--slug' => 'hello-world'])
         ->expectsOutput('The slug has already been taken.')
         ->assertFailed();
 
-    artisan('entry:create', ['type' => 'page', 'name' => 'Hello World'])
+    artisan('entry:create', ['type' => 'page', 'name' => 'Hello', '--slug' => 'hello-world'])
         ->assertSuccessful();
 });
 

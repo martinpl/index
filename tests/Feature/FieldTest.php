@@ -68,3 +68,16 @@ test('fields cast values and fill in defaults', function () {
             'faq' => [['question' => 'Why?', 'open' => true]],
         ]);
 });
+
+test('hidden fields are left out of their parent field', function () {
+    $form = Group::make('values')->fields([
+        Text::make('title')->required(),
+        Text::make('subtitle')->required()->visible(fn (): bool => false),
+        Repeater::make('faq')->fields([Text::make('question'), Text::make('answer')->visible(false)]),
+    ]);
+
+    expect($form->getDefault())->toBe(['title' => null, 'faq' => []])
+        ->and($form->cast(['title' => 'Home', 'subtitle' => 'dropped', 'faq' => [['question' => 'Why?', 'answer' => 'dropped']]]))
+        ->toBe(['title' => 'Home', 'faq' => [['question' => 'Why?']]])
+        ->and(validateFields($form->getFields(), ['title' => 'Home']))->toBe([]);
+});

@@ -7,6 +7,7 @@ use App\Facades\EntryType;
 use App\Models\Concerns\BelongsToSite;
 use App\Models\Concerns\HasMeta;
 use App\Models\Concerns\HasOwner;
+use App\Models\Concerns\HasSlug;
 use Database\Factories\EntryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -29,6 +30,7 @@ class Entry extends Model
 
     use HasMeta;
     use HasOwner;
+    use HasSlug;
 
     const CREATED_AT = 'date';
 

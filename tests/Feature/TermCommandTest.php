@@ -9,7 +9,7 @@ use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 
 beforeEach(function (): void {
-    TermType::register('category', [], 'core');
+    TermType::register('category', ['hierarchical' => true], 'core');
     TermType::register('tag', [], 'core');
 });
 
@@ -41,6 +41,19 @@ test('does not create a term with a parent of another type', function () {
 
     artisan('term:create', ['type' => 'category', 'name' => 'News', '--parent' => $tag->id])
         ->expectsOutput('The selected parent is invalid.')
+        ->assertFailed();
+});
+
+test('does not give a parent to a term of a flat type', function () {
+    $tag = Term::factory()->create(['type' => 'tag']);
+    $other = Term::factory()->create(['type' => 'tag']);
+
+    artisan('term:create', ['type' => 'tag', 'name' => 'Laravel', '--parent' => $tag->id])
+        ->expectsOutput('The parent field is prohibited.')
+        ->assertFailed();
+
+    artisan('term:update', ['type' => 'tag', 'term' => $other->id, '--parent' => $tag->id])
+        ->expectsOutput('The parent field is prohibited.')
         ->assertFailed();
 });
 

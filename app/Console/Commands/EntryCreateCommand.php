@@ -9,14 +9,13 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 #[Signature('entry:create
     {type : The key of the entry type}
     {name : The name of the entry}
     {--status=draft : The status of the entry, e.g. publish, draft or trash}
-    {--slug= : The slug of the entry}
+    {--slug= : The slug of the entry, generated from the name when omitted}
     {--content= : The content of the entry}
     {--user= : The ID of the user who authored the entry}
     {--parent= : The ID of the parent entry}
@@ -37,7 +36,7 @@ class EntryCreateCommand extends Command
         $attributes = [
             'type' => $type,
             'status' => $this->option('status'),
-            'slug' => $this->option('slug') ?? Str::slug($this->argument('name')),
+            'slug' => $this->option('slug'),
             'name' => $this->argument('name'),
             'content' => $this->option('content'),
             'user_id' => $this->option('user'),
@@ -48,7 +47,7 @@ class EntryCreateCommand extends Command
 
         $validator = Validator::make($attributes, [
             'status' => ['required', 'alpha_dash', 'max:255'],
-            'slug' => ['required', 'alpha_dash', 'lowercase', 'max:255', Rule::unique(Entry::class)->where('type', $type)],
+            'slug' => ['nullable', 'alpha_dash', 'lowercase', 'max:255', Rule::unique(Entry::class)->where('type', $type)],
             'name' => ['required', 'string', 'max:255'],
             'content' => ['nullable', 'string'],
             'user_id' => ['nullable', 'integer', Rule::exists(User::class, 'id')],

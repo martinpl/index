@@ -86,6 +86,7 @@ class Menus
                     'title' => __(Str::plural($termType['name'])),
                     'url' => route('dashboard.terms', $termType['key']),
                     'parent' => "entries.{$entryType['key']}",
+                    'can' => $termType['can'],
                 ]);
             }
         }

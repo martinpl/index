@@ -24,6 +24,8 @@ test('gets a term type', function () {
             ['key', 'genre'],
             ['name', 'Genre'],
             ['entry types', 'post'],
+            ['hierarchical', 'no'],
+            ['can', 'entries.manage'],
             ['owner', 'core'],
         ])
         ->assertSuccessful();

@@ -6,11 +6,13 @@ use App\Facades\TermType;
 use App\Models\Concerns\BelongsToSite;
 use App\Models\Concerns\HasMeta;
 use App\Models\Concerns\HasOwner;
+use App\Models\Concerns\HasSlug;
 use Database\Factories\TermFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['type', 'slug', 'name', 'description', 'parent_id', 'owner'])]
@@ -23,6 +25,7 @@ class Term extends Model
 
     use HasMeta;
     use HasOwner;
+    use HasSlug;
 
     /**
      * The term type key, required in term type classes.
@@ -49,7 +52,7 @@ class Term extends Model
     /**
      * The term type config when this class is registered as a term type.
      *
-     * @return array{name?: string, entry_types?: list<string>}
+     * @return array{name?: string, entry_types?: list<string>, hierarchical?: bool, can?: string}
      */
     public static function config(): array
     {
@@ -86,6 +89,14 @@ class Term extends Model
     public function getForeignKey(): string
     {
         return 'term_id';
+    }
+
+    /**
+     * @return BelongsTo<Term, $this>
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Term::class);
     }
 
     public function entries(): BelongsToMany

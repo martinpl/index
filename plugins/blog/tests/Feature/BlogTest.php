@@ -30,6 +30,8 @@ test('registers posts with categories and tags', function () {
             'key' => 'category',
             'name' => 'Category',
             'entry_types' => ['post'],
+            'hierarchical' => true,
+            'can' => 'entries.manage',
             'model' => Category::class,
             'owner' => 'plugins/blog',
         ])
@@ -37,6 +39,8 @@ test('registers posts with categories and tags', function () {
             'key' => 'tag',
             'name' => 'Tag',
             'entry_types' => ['post'],
+            'hierarchical' => false,
+            'can' => 'entries.manage',
             'model' => Tag::class,
             'owner' => 'plugins/blog',
         ]);

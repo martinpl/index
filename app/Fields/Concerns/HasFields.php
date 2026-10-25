@@ -23,11 +23,13 @@ trait HasFields
     }
 
     /**
+     * The visible child fields.
+     *
      * @return list<Field>
      */
     public function getFields(): array
     {
-        return value($this->fields);
+        return array_values(array_filter(value($this->fields), fn (Field $field): bool => $field->isVisible()));
     }
 
     /**

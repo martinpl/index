@@ -2,17 +2,15 @@
 
 use App\Facades\Settings;
 use App\Fields\Field;
+use App\Fields\WithFields;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 new class extends Component
 {
-    public string $page;
+    use WithFields;
 
-    /**
-     * @var array<string, mixed>
-     */
-    public array $values = [];
+    public string $page;
 
     public function mount(string $page): void
     {
@@ -30,39 +28,30 @@ new class extends Component
     {
         abort_unless(Settings::allows($this->page), 403);
 
-        $fields = Settings::fields($this->page);
-
-        $validated = $this->validate(
-            collect($fields)->flatMap(fn (Field $field): array => $field->getRules("values.$field->name"))->all(),
-            [],
-            collect($fields)->flatMap(fn (Field $field): array => $field->getValidationAttributes("values.$field->name"))->all(),
-        );
-
-        Settings::save($this->page, $validated['values'] ?? []);
+        Settings::save($this->page, $this->validateValues());
 
         $this->values = Settings::values($this->page);
 
         $this->dispatch('toast', type: 'success', title: __('Settings saved.'));
     }
 
+    /**
+     * @return list<Field>
+     */
+    protected function fields(): array
+    {
+        return Settings::fields($this->page);
+    }
+
     public function render(): View
     {
-        return $this->view(['fields' => Settings::fields($this->page)])->title(__(Settings::get($this->page)['page_title']));
+        return $this->view()->title(__(Settings::get($this->page)['page_title']));
     }
 };
 ?>
 
 <form wire:submit="save" class="flex w-full max-w-lg flex-col gap-6">
-    <x-ui.field-group>
-        @foreach ($fields as $field)
-            <x-dynamic-component
-                :component="$field->component"
-                :field="$field"
-                :path="'values.'.$field->name"
-                :value="$values[$field->name]"
-            />
-        @endforeach
-    </x-ui.field-group>
+    <x-fields :$fields :$values />
     <div>
         <x-ui.button type="submit">{{ __('Save') }}</x-ui.button>
     </div>
