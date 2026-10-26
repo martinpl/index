@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @method static Builder<static> withAnyStatus()
@@ -131,6 +132,14 @@ class Entry extends Model
     public function terms(): BelongsToMany
     {
         return $this->belongsToMany(Term::class, $this->siteTable('entry_term'));
+    }
+
+    /**
+     * @return HasMany<EntryMeta, $this>
+     */
+    public function meta(): HasMany
+    {
+        return $this->hasMany(EntryMeta::class);
     }
 
     public function url(): string

@@ -8,19 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('meta', function (Blueprint $table): void {
+        Schema::create('user_meta', function (Blueprint $table): void {
             $table->id();
-            $table->morphs('metable');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('key');
             $table->json('value');
             $table->string('owner');
 
-            $table->unique(['metable_type', 'metable_id', 'key']);
+            $table->unique(['user_id', 'key']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('meta');
+        Schema::dropIfExists('user_meta');
     }
 };

@@ -93,7 +93,7 @@ test('keeps meta and terms working for entry type classes', function () {
     $product->setMeta('price', 10, 'core');
     $product->terms()->attach($term);
 
-    assertDatabaseHas('meta', ['metable_type' => 'entry', 'metable_id' => $product->id, 'key' => 'price']);
+    assertDatabaseHas('entry_meta', ['entry_id' => $product->id, 'key' => 'price']);
     assertDatabaseHas('entry_term', ['entry_id' => $product->id, 'term_id' => $term->id]);
     expect($term->entries()->first())->toBeInstanceOf(Product::class);
 });

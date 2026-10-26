@@ -3,22 +3,21 @@
 namespace Database\Factories;
 
 use App\Models\Entry;
-use App\Models\Meta;
+use App\Models\EntryMeta;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Meta>
+ * @extends Factory<EntryMeta>
  */
-class MetaFactory extends Factory
+class EntryMetaFactory extends Factory
 {
     /**
-     * @return array{metable_type: string, metable_id: Factory<Entry>, key: string, value: string, owner: string}
+     * @return array{entry_id: Factory<Entry>, key: string, value: string, owner: string}
      */
     public function definition(): array
     {
         return [
-            'metable_type' => (new Entry)->getMorphClass(),
-            'metable_id' => Entry::factory(),
+            'entry_id' => Entry::factory(),
             'key' => fake()->unique()->word(),
             'value' => fake()->sentence(),
             'owner' => 'core',

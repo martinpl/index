@@ -16,9 +16,8 @@ test('sets and forgets meta', function () {
         ->and($entry->getMeta('gallery'))->toBe([1, 2, 3])
         ->and($entry->meta)->toHaveCount(2);
 
-    assertDatabaseHas('meta', [
-        'metable_type' => 'entry',
-        'metable_id' => $entry->id,
+    assertDatabaseHas('entry_meta', [
+        'entry_id' => $entry->id,
         'key' => 'subtitle',
         'value' => json_encode('Hello'),
     ]);
@@ -37,7 +36,7 @@ test('forgets meta set to null or an empty array', function (mixed $value) {
 
     $entry->setMeta('gallery', $value, 'core');
 
-    assertDatabaseMissing('meta', ['metable_id' => $entry->id, 'key' => 'gallery']);
+    assertDatabaseMissing('entry_meta', ['entry_id' => $entry->id, 'key' => 'gallery']);
 })->with([null, [[]]]);
 
 test('queries models by meta', function () {
@@ -65,9 +64,9 @@ test('keeps meta of trashed entries', function () {
 
     $entry->delete();
 
-    assertDatabaseHas('meta', ['metable_id' => $entry->id, 'key' => 'subtitle']);
+    assertDatabaseHas('entry_meta', ['entry_id' => $entry->id, 'key' => 'subtitle']);
 
     $entry->forceDelete();
 
-    assertDatabaseMissing('meta', ['metable_id' => $entry->id]);
+    assertDatabaseMissing('entry_meta', ['entry_id' => $entry->id]);
 });

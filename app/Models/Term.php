@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['type', 'slug', 'name', 'description', 'parent_id', 'owner'])]
 class Term extends Model
@@ -102,5 +103,13 @@ class Term extends Model
     public function entries(): BelongsToMany
     {
         return $this->belongsToMany(Entry::class, $this->siteTable('entry_term'));
+    }
+
+    /**
+     * @return HasMany<TermMeta, $this>
+     */
+    public function meta(): HasMany
+    {
+        return $this->hasMany(TermMeta::class);
     }
 }

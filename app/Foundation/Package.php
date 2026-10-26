@@ -3,10 +3,12 @@
 namespace App\Foundation;
 
 use App\Models\Entry;
-use App\Models\Meta;
+use App\Models\EntryMeta;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Models\Term;
+use App\Models\TermMeta;
+use App\Models\UserMeta;
 use Composer\Autoload\ClassLoader;
 use DomainException;
 use Illuminate\Support\Collection;
@@ -87,8 +89,10 @@ abstract class Package
             $site->execute(function () use ($owner): void {
                 Entry::withAnyStatus()->ownedBy($owner)->lazyById()->each->forceDelete();
                 Term::query()->ownedBy($owner)->lazyById()->each->delete();
-                Meta::query()->ownedBy($owner)->delete();
                 Setting::query()->ownedBy($owner)->delete();
+                EntryMeta::query()->ownedBy($owner)->delete();
+                TermMeta::query()->ownedBy($owner)->delete();
+                UserMeta::query()->ownedBy($owner)->delete();
             });
         }
     }

@@ -5,29 +5,14 @@ namespace App\Models\Concerns;
 use App\Models\Meta;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 trait HasMeta
 {
-    public static function bootHasMeta(): void
-    {
-        static::deleted(function (Model $model): void {
-            if (method_exists($model, 'isForceDeleting') && ! $model->isForceDeleting()) {
-                return;
-            }
-
-            $model->meta()->delete();
-        });
-    }
-
     /**
-     * @return MorphMany<Meta, $this>
+     * @return HasMany<Meta, $this>
      */
-    public function meta(): MorphMany
-    {
-        return $this->morphMany(Meta::class, 'metable');
-    }
+    abstract public function meta(): HasMany;
 
     public function getMeta(string $key, mixed $default = null): mixed
     {

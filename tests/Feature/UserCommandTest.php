@@ -104,7 +104,7 @@ test('deletes a user', function () {
         ->assertSuccessful();
 
     assertDatabaseMissing('users', ['id' => $user->id]);
-    assertDatabaseMissing('meta', ['metable_type' => 'user', 'metable_id' => $user->id]);
+    assertDatabaseMissing('user_meta', ['user_id' => $user->id]);
     assertDatabaseHas('entries', ['id' => $entry->id, 'user_id' => null]);
 });
 

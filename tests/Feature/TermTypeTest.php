@@ -67,7 +67,7 @@ test('keeps meta and entries working for term type classes', function () {
     $genre->setMeta('color', 'blue', 'core');
     $genre->entries()->attach($entry);
 
-    assertDatabaseHas('meta', ['metable_type' => 'term', 'metable_id' => $genre->id, 'key' => 'color']);
+    assertDatabaseHas('term_meta', ['term_id' => $genre->id, 'key' => 'color']);
     assertDatabaseHas('entry_term', ['entry_id' => $entry->id, 'term_id' => $genre->id]);
     expect(Entry::withAnyStatus()->find($entry->id)->terms()->first())->toBeInstanceOf(Genre::class);
 });

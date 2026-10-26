@@ -110,13 +110,13 @@ test('deletes a plugin with its data', function () {
         ->assertSuccessful();
 
     assertDatabaseMissing('entries', ['id' => $owned->id]);
-    assertDatabaseMissing('meta', ['metable_id' => $owned->id]);
-    assertDatabaseMissing('meta', ['key' => 'seo_title']);
+    assertDatabaseMissing('entry_meta', ['entry_id' => $owned->id]);
+    assertDatabaseMissing('entry_meta', ['key' => 'seo_title']);
     assertDatabaseMissing('terms', ['id' => $term->id]);
     assertDatabaseMissing('settings', ['key' => 'seo_settings']);
     assertDatabaseMissing('site_2_settings', ['key' => 'seo_settings']);
     assertDatabaseHas('entries', ['id' => $entry->id]);
-    assertDatabaseHas('meta', ['metable_id' => $entry->id, 'key' => 'views']);
+    assertDatabaseHas('entry_meta', ['entry_id' => $entry->id, 'key' => 'views']);
     assertDatabaseHas('settings', ['key' => 'site_name']);
 });
 
