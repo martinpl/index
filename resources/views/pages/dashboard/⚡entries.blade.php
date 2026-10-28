@@ -68,9 +68,10 @@ new class extends Component
                 ->sortable()
                 ->searchable()
                 ->hideable(false)
-                ->render(fn (Entry $entry): HtmlString|string => $entry->status === EntryStatus::Draft->value && $this->tab !== 'draft'
-                    ? new HtmlString(e($entry->name).' <span class="text-muted-foreground">— '.e(__('Draft')).'</span>')
-                    : $entry->name),
+                ->render(fn (Entry $entry): HtmlString => new HtmlString(
+                    '<a href="'.e(route('dashboard.entries.edit', [$this->type, $entry])).'" wire:navigate class="font-medium hover:underline">'.e($entry->name).'</a>'
+                    .($entry->status === EntryStatus::Draft->value && $this->tab !== 'draft' ? ' <span class="text-muted-foreground">— '.e(__('Draft')).'</span>' : '')
+                )),
             Column::make('user')->label(__('Author'))->render(fn (Entry $entry): ?string => $entry->user?->name),
             Column::make('date')->label(__('Date'))->sortable()->render(fn (Entry $entry): ?string => $entry->date),
             Column::make('modified')->label(__('Modified'))->sortable()->hidden()->render(fn (Entry $entry): ?string => $entry->modified),
@@ -83,6 +84,11 @@ new class extends Component
     protected function actions(): array
     {
         return [
+            Action::make('edit')
+                ->label(__('Edit'))
+                ->icon('lucide-pencil')
+                ->visible(fn (Entry $entry): bool => ! $entry->trashed())
+                ->url(fn (Entry $entry): string => route('dashboard.entries.edit', [$this->type, $entry])),
             Action::make('view')
                 ->label(__('View'))
                 ->icon('lucide-external-link')
@@ -125,5 +131,12 @@ new class extends Component
     }
 };
 ?>
+
+<x-slot:actions>
+    <x-ui.button :href="route('dashboard.entries.create', $type)" size="sm" wire:navigate>
+        <x-lucide-plus />
+        {{ __('Add :type', ['type' => __(\App\Facades\EntryType::get($type)['name'])]) }}
+    </x-ui.button>
+</x-slot:actions>
 
 <x-listing :$listing />

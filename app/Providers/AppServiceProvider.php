@@ -2,13 +2,18 @@
 
 namespace App\Providers;
 
+use App\Blocks\Heading;
+use App\Blocks\Image;
+use App\Blocks\Paragraph;
 use App\EntryTypes\Page;
 use App\Facades\Action as ActionFacade;
+use App\Facades\BlockType as BlockTypeFacade;
 use App\Facades\EntryType as EntryTypeFacade;
 use App\Facades\Settings as SettingsFacade;
 use App\Fields\Text;
 use App\Foundation\Action;
 use App\Foundation\AdminBar;
+use App\Foundation\BlockType;
 use App\Foundation\DashboardMenu;
 use App\Foundation\EntryType;
 use App\Foundation\Filter;
@@ -45,6 +50,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(EntryType::class);
         $this->app->singleton(TermType::class);
+        $this->app->singleton(BlockType::class);
         $this->app->singleton(Plugin::class);
         $this->app->singleton(Theme::class);
         $this->app->singleton(Role::class);
@@ -69,6 +75,10 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         EntryTypeFacade::register(Page::class, [], 'core');
+
+        foreach ([Paragraph::class, Heading::class, Image::class] as $block) {
+            BlockTypeFacade::register($block, [], 'core');
+        }
 
         SettingsFacade::register('general', [
             'title' => 'General',

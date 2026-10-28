@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use App\Blocks\Block;
 use App\Facades\Action;
+use App\Facades\BlockType;
 use App\Facades\EntryType;
 use App\Facades\Filter;
 use App\Facades\Settings;
@@ -44,6 +46,16 @@ abstract class PackageServiceProvider extends ServiceProvider
     {
         foreach ($classes as $class) {
             TermType::register($class, [], static::owner());
+        }
+    }
+
+    /**
+     * @param  list<class-string<Block>>  $classes
+     */
+    protected function addBlockTypes(array $classes): void
+    {
+        foreach ($classes as $class) {
+            BlockType::register($class, [], static::owner());
         }
     }
 

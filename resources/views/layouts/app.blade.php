@@ -45,9 +45,10 @@
             </x-ui.sidebar-content>
         </x-ui.sidebar>
         <x-ui.sidebar-inset>
-            <header class="bg-background sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <header class="bg-background sticky top-10 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4">
                 <x-ui.sidebar-trigger class="-ml-1" />
                 <h1 class="text-base font-medium">{{ $title }}</h1>
+                <div id="actions" class="flex flex-1 items-center gap-2">{{ $actions ?? '' }}</div>
             </header>
             <div class="flex flex-1 flex-col gap-4 p-4">{{ $slot }}</div>
         </x-ui.sidebar-inset>

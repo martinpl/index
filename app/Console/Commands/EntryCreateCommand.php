@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
     {name : The name of the entry}
     {--status=draft : The status of the entry, e.g. publish, draft or trash}
     {--slug= : The slug of the entry, generated from the name when omitted}
-    {--content= : The content of the entry}
+    {--content= : The content of the entry, as a JSON list of blocks or plain text making up a paragraph}
     {--user= : The ID of the user who authored the entry}
     {--parent= : The ID of the parent entry}
     {--order=0 : The order of the entry}

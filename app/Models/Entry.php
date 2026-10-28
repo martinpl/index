@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\AsBlocks;
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
 use App\Models\Concerns\BelongsToSite;
@@ -50,6 +51,16 @@ class Entry extends Model
     ];
 
     protected bool $forceDeleting = false;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'content' => AsBlocks::class,
+        ];
+    }
 
     protected static function booted(): void
     {

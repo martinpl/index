@@ -29,14 +29,14 @@ test('creates an entry', function () {
         'type' => 'post',
         'name' => 'Hello World',
         'slug' => 'hello-world',
-        'content' => 'Welcome to Index.',
         'status' => 'publish',
         'user_id' => $user->id,
         'parent_id' => $parent->id,
         'order' => 3,
     ]);
 
-    expect(Entry::find(2)->date)->not->toBeNull();
+    expect(Entry::find(2)->date)->not->toBeNull()
+        ->and(Entry::find(2)->content->sole()->data)->toBe(['text' => 'Welcome to Index.']);
 });
 
 test('creates a draft entry by default', function () {
