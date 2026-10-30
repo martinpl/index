@@ -25,6 +25,7 @@ class InstallPlugin
 
             File::ensureDirectoryExists(Plugin::path());
             File::moveDirectory($pluginPath, Plugin::path($plugin['slug']));
+            Plugin::link($plugin['slug']);
 
             return $plugin['slug'];
         } finally {

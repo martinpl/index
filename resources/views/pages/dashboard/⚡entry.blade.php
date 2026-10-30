@@ -113,7 +113,10 @@ new class extends Component
 };
 ?>
 
-<form wire:submit="save" class="-m-4 grid flex-1 gap-6 xl:grid-cols-[15rem_minmax(0,1fr)_20rem]">
+<form wire:submit="save" class="-m-4 grid flex-1 xl:grid-cols-[15rem_minmax(0,1fr)_20rem]">
+    @assets
+        {!! \App\Facades\Assets::render('editor') !!}
+    @endassets
     @teleport('#actions')
         <div class="flex flex-1 items-center justify-end gap-2">
             <x-ui.field class="flex-1 md:absolute md:left-1/2 md:w-md md:-translate-x-1/2">
@@ -145,13 +148,14 @@ new class extends Component
         </div>
     </aside>
 
-    <div class="bg-background px-6 py-10 sm:px-12">
-        <x-block-editor.preview :$blocks :$blockTypes :$selectedBlock class="mx-auto w-full max-w-2xl" />
-    </div>
+    <x-block-editor.preview :$blocks :$blockTypes :$selectedBlock class="mx-auto w-full" />
 
     <aside class="border-l">
         <div class="flex flex-col gap-4 p-4 xl:sticky xl:top-26 xl:max-h-[calc(100svh-4rem)] xl:overflow-y-auto">
-            <x-ui.tabs wire:key="settings-tabs-{{ $selectedBlock ? 'block' : 'entry' }}" :value="$selectedBlock ? 'block' : 'entry'">
+            <x-ui.tabs
+                wire:key="settings-tabs-{{ $selectedBlock ? 'block' : 'entry' }}"
+                :value="$selectedBlock ? 'block' : 'entry'"
+            >
                 <x-ui.tabs-list class="w-full">
                     <x-ui.tabs-trigger value="entry" class="flex-1" wire:click="selectBlock(null)">
                         {{ __(\App\Facades\EntryType::get($type)['name']) }}

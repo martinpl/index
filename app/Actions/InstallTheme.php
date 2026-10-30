@@ -25,6 +25,7 @@ class InstallTheme
 
             File::ensureDirectoryExists(Theme::path());
             File::moveDirectory($themePath, Theme::path($theme['slug']));
+            Theme::link($theme['slug']);
 
             return $theme['slug'];
         } finally {

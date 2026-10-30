@@ -13,6 +13,7 @@ use App\Facades\Settings as SettingsFacade;
 use App\Fields\Text;
 use App\Foundation\Action;
 use App\Foundation\AdminBar;
+use App\Foundation\Assets;
 use App\Foundation\BlockType;
 use App\Foundation\DashboardMenu;
 use App\Foundation\EntryType;
@@ -59,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AdminBar::class);
         $this->app->singleton(DashboardMenu::class);
         $this->app->singleton(Settings::class);
+        $this->app->singleton(Assets::class);
     }
 
     /**
@@ -99,6 +101,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(fn (User $user, string $ability): ?bool => $user->hasAbility($ability) ?: null);
 
         if ($this->app->runningInConsole()) {
+            $this->linkPackages();
             $this->bootConsoleSite();
         } else {
             $this->bootRequestSite();
@@ -125,6 +128,18 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Let `storage:link` and `storage:unlink` link the `public` directories of installed plugins and themes.
+     */
+    protected function linkPackages(): void
+    {
+        config(['filesystems.links' => [
+            ...config('filesystems.links', []),
+            ...$this->app->make(Plugin::class)->links(),
+            ...$this->app->make(Theme::class)->links(),
+        ]]);
     }
 
     /**

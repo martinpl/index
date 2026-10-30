@@ -5,7 +5,7 @@
     use Illuminate\Support\Str;
 @endphp
 
-<div {{ $attributes->twMerge('block-preview flex flex-col gap-4') }}>
+<div {{ $attributes->twMerge('block-preview') }}>
     @forelse ($blocks as $block)
         @php
             $blockType = $blockTypes[$block['type']] ?? null;

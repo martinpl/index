@@ -67,7 +67,48 @@ abstract class Package
             });
         }
 
+        $this->unlink($name);
         File::deleteDirectory($this->path($name));
+    }
+
+    /**
+     * Link the package's `public` directory into the app's, serving its assets as `{plugins|themes}/{name}/...`.
+     */
+    public function link(string $name): void
+    {
+        $target = $this->path($name).'/public';
+        $link = $this->publicPath($name);
+
+        if (! File::isDirectory($target) || file_exists($link) || is_link($link)) {
+            return;
+        }
+
+        File::ensureDirectoryExists(dirname($link));
+        File::link($target, $link);
+    }
+
+    public function unlink(string $name): void
+    {
+        if (is_link($link = $this->publicPath($name))) {
+            File::delete($link);
+        }
+    }
+
+    /**
+     * The links of the installed packages' `public` directories, keyed by their location, as `storage:link` expects them.
+     *
+     * @return array<string, string>
+     */
+    public function links(): array
+    {
+        if (! File::isDirectory($this->path())) {
+            return [];
+        }
+
+        return collect(File::directories($this->path()))
+            ->filter(fn (string $path): bool => File::isDirectory($path.'/public'))
+            ->mapWithKeys(fn (string $path): array => [$this->publicPath(basename($path)) => $path.'/public'])
+            ->all();
     }
 
     /**
@@ -116,6 +157,11 @@ abstract class Package
     public function path(?string $name = null): string
     {
         return base_path($this->directory()).($name ? '/'.$name : '');
+    }
+
+    public function publicPath(?string $name = null): string
+    {
+        return public_path($this->directory()).($name ? '/'.$name : '');
     }
 
     public function storagePath(?string $name = null): string

@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     @include('partials.head')
+    @action('dashboard.head')
 </head>
 <body class="min-h-screen antialiased">
     @action('dashboard.body')
