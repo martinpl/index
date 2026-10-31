@@ -8,7 +8,7 @@ use App\Models\Setting;
 use function Pest\Laravel\get;
 
 beforeEach(function (): void {
-    Setting::set('active_theme', 'index', 'core');
+    Setting::set('active_theme', 'howdy', 'core');
     Theme::boot();
 });
 
@@ -19,7 +19,7 @@ test('loads the theme styles on the site', function () {
 
     get($entry->url())
         ->assertOk()
-        ->assertSee(Assets::get('themes/index:theme')->toHtml(), false)
-        ->assertSee(Assets::get('themes/index:blocks')->toHtml(), false)
+        ->assertSee(Assets::get('themes/howdy:theme')->toHtml(), false)
+        ->assertSee(Assets::get('themes/howdy:blocks')->toHtml(), false)
         ->assertSee('<h2 >Welcome</h2>', false);
 });

@@ -1,10 +1,10 @@
 <?php
 
-namespace Index;
+namespace Howdy;
 
 use App\Support\PackageServiceProvider;
 
-class IndexServiceProvider extends PackageServiceProvider
+class HowdyServiceProvider extends PackageServiceProvider
 {
     public function boot(): void
     {

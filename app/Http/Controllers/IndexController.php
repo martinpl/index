@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\EntryTypes\Page;
 use App\Facades\EntryType;
 use App\Facades\Filter;
+use App\Facades\Theme;
 use App\Models\Entry;
 use App\Models\Site;
 use Illuminate\Support\Str;
@@ -14,29 +15,29 @@ class IndexController extends Controller
 {
     public function __invoke(Site $site, ?string $path = null): View
     {
-        $path = trim(Str::after("/$path/", $site->path), '/');
-        if (! $path) {
-            $entry = Page::for('home');
+        abort_if(Theme::isHeadless(), 404);
 
-            abort_unless($entry, 404);
-
-            return $this->view('index', $entry);
-        }
-
-        $entry = Entry::where('slug', Str::afterLast($path, '/'))
-            ->whereIn('type', EntryType::list()->keys())
-            ->get()
-            ->first(fn (Entry $entry): bool => $entry->path() === $path);
+        $entry = $this->findEntry(trim(Str::after("/$path/", $site->path), '/'));
 
         abort_unless($entry, 404);
 
-        return $this->view('index', $entry);
-    }
-
-    protected function view(string $view, Entry $entry): View
-    {
         Filter::add('title.parts', fn ($parts) => [$entry->name, ...$parts]);
 
-        return view($view, ['entry' => $entry]);
+        return view('index', ['entry' => $entry]);
+    }
+
+    /**
+     * Find the published entry at the given path, the home page for an empty one.
+     */
+    protected function findEntry(string $path): ?Entry
+    {
+        if (! $path) {
+            return Page::for('home');
+        }
+
+        return Entry::where('slug', Str::afterLast($path, '/'))
+            ->whereIn('type', EntryType::list()->keys())
+            ->get()
+            ->first(fn (Entry $entry): bool => $entry->path() === $path);
     }
 }

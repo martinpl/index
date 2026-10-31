@@ -7,7 +7,7 @@ use App\Models\Setting;
 use function Pest\Laravel\get;
 
 beforeEach(function (): void {
-    Setting::set('active_theme', 'index', 'core');
+    Setting::set('active_theme', 'howdy', 'core');
 });
 
 test('returns not found without a home entry', function () {
@@ -19,6 +19,15 @@ test('renders the home entry', function () {
     Setting::set('page_roles', ['home' => $entry->id], 'core');
 
     get('/')->assertOk()->assertViewIs('index')->assertSee('Home');
+});
+
+test('serves no frontend without an active theme', function () {
+    Setting::forget('active_theme');
+    $entry = Entry::factory()->published()->create(['type' => 'page', 'slug' => 'home']);
+    Setting::set('page_roles', ['home' => $entry->id], 'core');
+
+    get('/')->assertNotFound();
+    get('/home')->assertNotFound();
 });
 
 test('returns not found when entry is not published', function () {

@@ -13,7 +13,7 @@ use App\Models\Setting;
 use function Pest\Laravel\get;
 
 test('the site renders the blocks of the entry in order with their HTML attributes, escaping their text', function () {
-    Setting::set('active_theme', 'index', 'core');
+    Setting::set('active_theme', 'howdy', 'core');
     $entry = Entry::factory()->published()->create(['type' => 'page', 'content' => [
         ['type' => 'heading', 'data' => ['text' => 'Welcome', 'level' => 'h3'], 'attributes' => ['id' => 'intro', 'class' => 'lead wide']],
         ['type' => 'paragraph', 'data' => ['text' => "First line\n<script>alert(1)</script>"]],

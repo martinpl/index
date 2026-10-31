@@ -91,20 +91,34 @@ class Menus
             }
         }
 
-        $menu->add('users', [
-            'title' => __('Users'),
-            'url' => route('dashboard.users'),
-            'icon' => 'lucide-users',
-            'position' => 80,
-            'can' => 'users.manage',
+        $menu->add('appearance', [
+            'title' => __('Appearance'),
+            'url' => route('dashboard.themes'),
+            'icon' => 'lucide-paintbrush',
+            'position' => 70,
+            'can' => 'themes.manage',
+        ]);
+        $menu->add('appearance.themes', [
+            'title' => __('Themes'),
+            'url' => route('dashboard.themes'),
+            'parent' => 'appearance',
+            'can' => 'themes.manage',
         ]);
 
         $menu->add('plugins', [
             'title' => __('Plugins'),
             'url' => route('dashboard.plugins'),
             'icon' => 'lucide-plug',
-            'position' => 90,
+            'position' => 80,
             'can' => 'plugins.manage',
+        ]);
+
+        $menu->add('users', [
+            'title' => __('Users'),
+            'url' => route('dashboard.users'),
+            'icon' => 'lucide-users',
+            'position' => 90,
+            'can' => 'users.manage',
         ]);
 
         $pages = Settings::list()->filter(fn (array $page): bool => Settings::allows($page['key']));

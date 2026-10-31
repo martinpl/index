@@ -93,7 +93,7 @@ class InstallCommand extends Command
         $this->createDefaultRoles();
         $admin = $this->createAdmin($adminName, $adminEmail, $adminPassword);
         $this->createHomePage($admin);
-        Theme::activate('index');
+        Theme::activate('howdy');
         Plugin::activate('blog');
         $this->info('Site installed successfully.');
 

@@ -29,7 +29,7 @@ test('runs migrations and installs a site on an empty database', function () {
     assertDatabaseCount('sites', 1);
     assertDatabaseCount('settings', 5);
     assertDatabaseHas('settings', ['key' => 'site_name', 'value' => json_encode('My site')]);
-    assertDatabaseHas('settings', ['key' => 'active_theme', 'value' => json_encode('index')]);
+    assertDatabaseHas('settings', ['key' => 'active_theme', 'value' => json_encode('howdy')]);
     assertDatabaseHas('settings', ['key' => 'active_plugins', 'value' => json_encode(['blog'])]);
 
     $admin = User::sole();

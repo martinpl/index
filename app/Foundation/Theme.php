@@ -39,6 +39,14 @@ class Theme extends Package
         return $this->active() === $name;
     }
 
+    /**
+     * Whether the site runs without an active theme, serving no frontend.
+     */
+    public function isHeadless(): bool
+    {
+        return is_null($this->active());
+    }
+
     public function activate(string $name): void
     {
         Setting::set(self::activeTheme, $name, 'core');

@@ -2,10 +2,10 @@
 
 use App\Facades\Theme;
 use App\Models\Setting;
+use Howdy\HowdyServiceProvider;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\View;
-use Index\IndexServiceProvider;
 
 use function Pest\Laravel\artisan;
 use function Pest\Laravel\assertDatabaseHas;
@@ -52,7 +52,7 @@ test('manages a theme through commands', function () {
     artisan('theme:list')
         ->expectsTable(['name', 'status'], [
             ['classic', 'active'],
-            ['index', 'inactive'],
+            ['howdy', 'inactive'],
         ])
         ->assertSuccessful();
 
@@ -84,10 +84,10 @@ test('installs a theme from an URL', function () {
 });
 
 test('boots the active theme', function () {
-    Setting::set('active_theme', 'index', 'core');
+    Setting::set('active_theme', 'howdy', 'core');
 
     Theme::boot();
 
-    expect(app()->getProviders(IndexServiceProvider::class))->toHaveCount(1)
-        ->and(View::getFinder()->getPaths()[0])->toBe(base_path('themes/index/resources/views'));
+    expect(app()->getProviders(HowdyServiceProvider::class))->toHaveCount(1)
+        ->and(View::getFinder()->getPaths()[0])->toBe(base_path('themes/howdy/resources/views'));
 });

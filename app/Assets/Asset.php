@@ -12,7 +12,7 @@ abstract class Asset implements Htmlable
     use Conditionable, Macroable;
 
     /**
-     * The package the asset belongs to, e.g. `core` or `themes/index`, set when it is registered.
+     * The package the asset belongs to, e.g. `core` or `themes/howdy`, set when it is registered.
      */
     public string $owner = 'core';
 
@@ -78,7 +78,7 @@ abstract class Asset implements Htmlable
     }
 
     /**
-     * The key of the asset, unique across packages, like `themes/index:theme`.
+     * The key of the asset, unique across packages, like `themes/howdy:theme`.
      */
     public function key(): string
     {
