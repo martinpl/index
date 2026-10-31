@@ -91,6 +91,14 @@ class Menus
             }
         }
 
+        $menu->add('users', [
+            'title' => __('Users'),
+            'url' => route('dashboard.users'),
+            'icon' => 'lucide-users',
+            'position' => 80,
+            'can' => 'users.manage',
+        ]);
+
         $menu->add('plugins', [
             'title' => __('Plugins'),
             'url' => route('dashboard.plugins'),

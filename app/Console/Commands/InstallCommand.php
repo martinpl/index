@@ -113,7 +113,7 @@ class InstallCommand extends Command
             Role::create($role);
         }
 
-        Role::grant('administrator', ['entries.manage', 'plugins.manage', 'settings.manage']);
+        Role::grant('administrator', ['entries.manage', 'users.manage', 'plugins.manage', 'settings.manage']);
     }
 
     /**

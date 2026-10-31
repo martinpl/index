@@ -3,6 +3,7 @@
 namespace App\Fields;
 
 use Closure;
+use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
@@ -29,7 +30,7 @@ abstract class Field
     protected bool|Closure $visible = true;
 
     /**
-     * @var list<string|ValidationRule>
+     * @var list<string|ValidationRule|Rule>
      */
     protected array $rules = [];
 
@@ -94,12 +95,12 @@ abstract class Field
     }
 
     /**
-     * @param  string|ValidationRule|array<int, string|ValidationRule>  ...$rules
+     * @param  string|ValidationRule|Rule|array<int, string|ValidationRule|Rule>  ...$rules
      */
-    public function rules(string|ValidationRule|array ...$rules): static
+    public function rules(string|ValidationRule|Rule|array ...$rules): static
     {
         $this->rules = [...$this->rules, ...collect($rules)->flatten()->flatMap(
-            fn (string|ValidationRule $rule): array => is_string($rule) ? explode('|', $rule) : [$rule]
+            fn (string|ValidationRule|Rule $rule): array => is_string($rule) ? explode('|', $rule) : [$rule]
         )];
 
         return $this;
@@ -118,7 +119,7 @@ abstract class Field
     /**
      * The validation rules of the field and its descendants, keyed by their path.
      *
-     * @return array<string, list<string|ValidationRule>>
+     * @return array<string, list<string|ValidationRule|Rule>>
      */
     public function getRules(string $path): array
     {

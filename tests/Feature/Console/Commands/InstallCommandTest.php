@@ -39,7 +39,7 @@ test('runs migrations and installs a site on an empty database', function () {
         ->and($admin->hasVerifiedEmail())->toBeTrue()
         ->and($admin->getRoles())->toBe(['administrator'])
         ->and(Role::list()->keys()->all())->toBe(['administrator'])
-        ->and(Role::abilities('administrator'))->toBe(['entries.manage', 'plugins.manage', 'settings.manage'])
+        ->and(Role::abilities('administrator'))->toBe(['entries.manage', 'users.manage', 'plugins.manage', 'settings.manage'])
         ->and(Page::for('home')?->name)->toBe('Home')
         ->and(Page::for('home')->user_id)->toBe($admin->id)
         ->and(page_url('home'))->toBe(url('/'));
