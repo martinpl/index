@@ -18,6 +18,7 @@ use App\Foundation\BlockType;
 use App\Foundation\DashboardMenu;
 use App\Foundation\EntryType;
 use App\Foundation\Filter;
+use App\Foundation\Metabox;
 use App\Foundation\Plugin;
 use App\Foundation\Role;
 use App\Foundation\Settings;
@@ -60,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AdminBar::class);
         $this->app->singleton(DashboardMenu::class);
         $this->app->singleton(Settings::class);
+        $this->app->singleton(Metabox::class);
         $this->app->singleton(Assets::class);
     }
 

@@ -12,12 +12,15 @@ use App\Facades\Assets;
 use App\Facades\BlockType;
 use App\Facades\EntryType;
 use App\Facades\Filter;
+use App\Facades\Metabox;
 use App\Facades\Settings;
 use App\Facades\TermType;
 use App\Fields\Field;
 use App\Models\Entry;
 use App\Models\Term;
 use Closure;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -97,6 +100,14 @@ abstract class PackageServiceProvider extends ServiceProvider
         foreach ($pages as $key => $config) {
             Settings::register($key, $config, static::owner());
         }
+    }
+
+    /**
+     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), fields?: Closure(): list<Field>, with?: array<string, mixed>, location?: string|list<string>, can?: string|null, position?: int}  $config
+     */
+    protected function addMetabox(string $key, array $config): void
+    {
+        Metabox::register($key, $config, static::owner());
     }
 
     /**

@@ -3,14 +3,19 @@
 use App\Blocks\WithBlocks;
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
+use App\Facades\Metabox;
+use App\Facades\TermType;
 use App\Fields\Field;
 use App\Fields\Select;
 use App\Fields\Text;
 use App\Fields\WithFields;
 use App\Models\Entry;
+use App\Models\Term;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -29,6 +34,20 @@ new class extends Component
 
     public string $name = '';
 
+    /**
+     * The IDs of the chosen terms, keyed by the term types of the entry type.
+     *
+     * @var array<string, list<string>>
+     */
+    public array $terms = [];
+
+    /**
+     * The values of the fields of the metaboxes, keyed by metabox and field name.
+     *
+     * @var array<string, array<string, mixed>>
+     */
+    public array $metaboxes = [];
+
     public function mount(string $type, ?string $entry = null): void
     {
         abort_unless(EntryType::has($type), 404);
@@ -39,6 +58,8 @@ new class extends Component
 
         $this->fillValues($this->record?->only(['slug', 'status']) ?? []);
         $this->fillBlocks($this->record->content ?? []);
+        $this->fillTerms();
+        $this->fillMetaboxes();
     }
 
     public function booted(): void
@@ -55,9 +76,9 @@ new class extends Component
 
         try {
             $this->validate(
-                ['name' => ['required', 'string', 'max:255'], ...$form->getRules('values'), ...$this->blockRules()],
+                ['name' => ['required', 'string', 'max:255'], ...$form->getRules('values'), ...$this->blockRules(), ...$this->termRules(), ...$this->metaboxRules()],
                 [],
-                ['name' => __('title'), ...$form->getValidationAttributes('values'), ...$this->blockValidationAttributes()],
+                ['name' => __('title'), ...$form->getValidationAttributes('values'), ...$this->blockValidationAttributes(), ...$this->termValidationAttributes(), ...$this->metaboxValidationAttributes()],
             );
         } catch (ValidationException $exception) {
             $this->selectInvalidBlock(array_keys($exception->errors()));
@@ -70,9 +91,13 @@ new class extends Component
 
         if ($this->record) {
             $this->record->update($attributes);
+            $this->syncTerms($this->record);
+            $this->saveMetaboxes($this->record);
 
             $this->fillValues($this->record->only(['slug', 'status']));
             $this->fillBlocks($this->record->content);
+            $this->fillTerms();
+            $this->fillMetaboxes();
 
             $this->dispatch('toast', type: 'success', title: __(':type updated.', ['type' => $typeName]));
 
@@ -80,10 +105,108 @@ new class extends Component
         }
 
         $entry = Entry::create([...$attributes, 'type' => $this->type, 'user_id' => Auth::id(), 'owner' => 'core']);
+        $this->syncTerms($entry);
+        $this->saveMetaboxes($entry);
 
         $this->dispatch('toast', type: 'success', title: __(':type added.', ['type' => $typeName]));
 
         $this->redirectRoute('dashboard.entries.edit', ['type' => $this->type, 'entry' => $entry], navigate: true);
+    }
+
+    /**
+     * The term types the entry type belongs to.
+     *
+     * @return Collection<string, array{key: string, name: string, entry_types: list<string>}>
+     */
+    protected function termTypes(): Collection
+    {
+        return TermType::list()->filter(fn (array $termType): bool => in_array($this->type, $termType['entry_types']));
+    }
+
+    protected function fillTerms(): void
+    {
+        $this->terms = $this->termTypes()
+            ->map(fn (array $termType): array => $this->record?->terms()->where('type', $termType['key'])->pluck('id')->map(fn (int $id): string => (string) $id)->all() ?? [])
+            ->all();
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    protected function termRules(): array
+    {
+        return $this->termTypes()->flatMap(fn (array $termType): array => [
+            "terms.{$termType['key']}" => ['array'],
+            "terms.{$termType['key']}.*" => ['integer', Rule::exists(Term::class, 'id')->where('type', $termType['key'])],
+        ])->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function termValidationAttributes(): array
+    {
+        return $this->termTypes()
+            ->mapWithKeys(fn (array $termType): array => ["terms.{$termType['key']}.*" => Str::lower(__($termType['name']))])
+            ->all();
+    }
+
+    /**
+     * Replace the terms of the entry's term types with the chosen ones, keeping its terms of other types.
+     */
+    protected function syncTerms(Entry $entry): void
+    {
+        $keys = $this->termTypes()->keys();
+
+        $entry->terms()->sync(
+            $entry->terms()->whereNotIn('type', $keys)->pluck('id')
+                ->merge(collect($this->terms)->only($keys)->flatten()->map(fn (string $id): int => (int) $id))
+        );
+    }
+
+    /**
+     * The keys of the metaboxes the editor shows that have fields.
+     *
+     * @return Collection<int, string>
+     */
+    protected function metaboxKeys(): Collection
+    {
+        return Metabox::for(['entry', "entry.$this->type"])
+            ->filter(fn (array $metabox): bool => filled(Metabox::fields($metabox['key'])))
+            ->keys();
+    }
+
+    protected function fillMetaboxes(): void
+    {
+        $this->metaboxes = $this->metaboxKeys()
+            ->mapWithKeys(fn (string $key): array => [$key => Metabox::values($key, $this->record)])
+            ->all();
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    protected function metaboxRules(): array
+    {
+        return $this->metaboxKeys()->flatMap(fn (string $key): array => Metabox::form($key)->getRules("metaboxes.$key"))->all();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function metaboxValidationAttributes(): array
+    {
+        return $this->metaboxKeys()->flatMap(fn (string $key): array => Metabox::form($key)->getValidationAttributes("metaboxes.$key"))->all();
+    }
+
+    /**
+     * Store the values of the metaboxes the editor shows as meta of the entry.
+     */
+    protected function saveMetaboxes(Entry $entry): void
+    {
+        foreach ($this->metaboxKeys() as $key) {
+            Metabox::save($key, $entry, $this->metaboxes[$key] ?? []);
+        }
     }
 
     /**
@@ -170,6 +293,8 @@ new class extends Component
                 <x-block-editor.settings :$blocks :$blockTypes :$selectedBlock />
             @else
                 <x-fields :$fields :$values />
+
+                <x-metaboxes :location="['entry', 'entry.'.$type]" :arguments="[$record]" :values="$metaboxes" />
             @endif
         </div>
     </aside>

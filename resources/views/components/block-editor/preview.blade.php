@@ -42,7 +42,7 @@
             @endif
         </div>
     @empty
-        <div class="flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center">
+        <div class="flex flex-col items-center gap-3 p-8 text-center">
             <p class="text-muted-foreground text-sm">{{ __('Start writing by adding a block.') }}</p>
             <x-block-editor.inserter :$blockTypes align="center">
                 <x-ui.button variant="outline" size="sm">

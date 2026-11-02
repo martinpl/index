@@ -6,7 +6,9 @@ use App\Blocks\Missing;
 use App\Blocks\Paragraph;
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
+use App\Facades\TermType;
 use App\Models\Entry;
+use App\Models\Term;
 use App\Models\User;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
@@ -181,4 +183,45 @@ test('stores the HTML ID and CSS classes of blocks as their attributes', functio
 
 test('cannot add blocks of unregistered types', function () {
     entryEditor()->call('addBlock', 'gallery')->assertNotFound();
+});
+
+test('shows a terms metabox for each term type of the entry type, nesting child terms under their parents', function () {
+    TermType::register('category', ['entry_types' => ['page'], 'hierarchical' => true], 'core');
+    TermType::register('genre', ['entry_types' => ['book']], 'core');
+    $news = Term::factory()->create(['name' => 'News']);
+    Term::factory()->create(['name' => 'Local', 'parent_id' => $news->id]);
+    Term::factory()->create(['name' => 'Archive']);
+
+    entryEditor()
+        ->assertSeeInOrder(['Categories', 'Archive', 'News', 'padding-left: 1.25rem', 'Local'], false)
+        ->assertDontSee('Genres');
+});
+
+test('saves the chosen terms, keeping terms of types the editor does not show', function () {
+    TermType::register('category', ['entry_types' => ['page']], 'core');
+    [$news, $events, $sports] = Term::factory()->count(3)->create();
+    $tag = Term::factory()->create(['type' => 'tag']);
+    $entry = Entry::factory()->create(['type' => 'page']);
+    $entry->terms()->attach([$news->id, $tag->id]);
+
+    entryEditor($entry)
+        ->assertSet('terms', ['category' => [(string) $news->id]])
+        ->set('terms.category', [(string) $events->id, (string) $sports->id])
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($entry->terms()->pluck('id')->sort()->values()->all())->toBe([$events->id, $sports->id, $tag->id]);
+});
+
+test('rejects terms of another term type', function () {
+    TermType::register('category', ['entry_types' => ['page']], 'core');
+    $tag = Term::factory()->create(['type' => 'tag']);
+
+    entryEditor()
+        ->set('name', 'About us')
+        ->set('terms.category', [(string) $tag->id])
+        ->call('save')
+        ->assertHasErrors('terms.category.0');
+
+    expect(Entry::withAnyStatus()->count())->toBe(0);
 });

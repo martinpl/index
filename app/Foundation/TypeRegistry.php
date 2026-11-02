@@ -45,7 +45,18 @@ abstract class TypeRegistry
             'owner' => $owner,
         ];
 
+        $this->registered($this->types[$key]);
         $this->types[$key]['model']::registered();
+    }
+
+    /**
+     * Called after a type is registered, with its attributes.
+     *
+     * @param  array<string, mixed>  $type
+     */
+    protected function registered(array $type): void
+    {
+        //
     }
 
     public function has(string $key): bool
