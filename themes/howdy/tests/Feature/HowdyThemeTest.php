@@ -20,6 +20,5 @@ test('loads the theme styles on the site', function () {
     get($entry->url())
         ->assertOk()
         ->assertSee(Assets::get('themes/howdy:theme')->toHtml(), false)
-        ->assertSee(Assets::get('themes/howdy:blocks')->toHtml(), false)
-        ->assertSee('<h2 >Welcome</h2>', false);
+        ->assertSee('<h2 class="block-heading">Welcome</h2>', false);
 });

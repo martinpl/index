@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
     plugins: [
         laravel({
-            input: ["resources/css/theme.css", "resources/css/blocks.css"],
+            input: ["resources/css/theme.css"],
             refresh: ["resources/views/**", "src/**"],
         }),
     ],

@@ -21,7 +21,7 @@ test('the site renders the blocks of the entry in order with their HTML attribut
 
     get($entry->url())
         ->assertOk()
-        ->assertSeeInOrder(['<h3 id="intro" class="lead wide">Welcome</h3>', 'First line<br />', '&lt;script&gt;alert(1)&lt;/script&gt;</p>'], false)
+        ->assertSeeInOrder(['<h3 class="block-heading lead wide" id="intro">Welcome</h3>', 'First line<br />', '&lt;script&gt;alert(1)&lt;/script&gt;</p>'], false)
         ->assertDontSee('<script>alert(1)</script>', false);
 });
 
@@ -61,7 +61,7 @@ test('blocks of unregistered types are kept as they are but not rendered', funct
 
     expect($content->first())->toBeInstanceOf(Missing::class)
         ->and($content->first()->toArray())->toBe(['id' => 'gallery', 'type' => 'gallery', 'data' => ['images' => [1, 2]], 'attributes' => ['id' => null, 'class' => null]])
-        ->and($content->toHtml())->toBe('<p >Hello</p>');
+        ->and($content->toHtml())->toBe('<p class="block-paragraph">Hello</p>');
 });
 
 test('plugins can register block types and change the HTML of blocks', function () {
@@ -88,7 +88,7 @@ test('plugins can register block types and change the HTML of blocks', function 
         ['type' => 'paragraph', 'data' => ['text' => 'Hi'], 'attributes' => ['data-theme' => 'dark', 'onclick' => 'dropped']],
     ]]);
 
-    expect($entry->fresh()->content->toHtml())->toBe("<div class=\"callout\"><aside>Note</aside></div>\n<p data-theme=\"dark\">Hi</p>")
+    expect($entry->fresh()->content->toHtml())->toBe("<div class=\"callout\"><aside>Note</aside></div>\n<p class=\"block-paragraph\" data-theme=\"dark\">Hi</p>")
         ->and(BlockType::get('callout'))->toMatchArray(['name' => 'Callout', 'icon' => 'lucide-square', 'owner' => 'plugins/callouts']);
 });
 

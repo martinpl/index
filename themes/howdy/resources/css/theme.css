@@ -1,7 +1,27 @@
-body {
+.blocks {
     background: lightblue;
     color: lightseagreen;
     font:
         1.0625rem/1.75 system-ui,
         sans-serif;
+}
+
+.block-heading {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: #f5f5f4;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+.block-image img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+}
+
+.block-image figcaption {
+    margin-top: 0.5rem;
+    color: #78716c;
+    font-size: 0.875rem;
+    text-align: center;
 }

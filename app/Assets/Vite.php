@@ -3,7 +3,6 @@
 namespace App\Assets;
 
 use Illuminate\Foundation\Vite as LaravelVite;
-use Illuminate\Support\Facades\Http;
 
 /**
  * Entry points built by the package's own Vite, with the `build` directory and `hot` file
@@ -25,24 +24,6 @@ class Vite extends Asset
         $asset->entryPoints = (array) $entryPoints;
 
         return $asset;
-    }
-
-    /**
-     * The `.css` entry points inlined and scoped to the given selector, read from the build, or from the dev server
-     * while it runs, with any other entry points loading as they are.
-     */
-    public function scopedTo(string $selector): string
-    {
-        $vite = $this->vite();
-        [$styles, $scripts] = collect($this->entryPoints)->partition(fn (string $entryPoint): bool => str_ends_with($entryPoint, '.css'));
-
-        $css = $styles->map(fn (string $entryPoint): string => $vite->isRunningHot()
-            ? Http::get($vite->asset($entryPoint).'?direct')->throw()->body()
-            : $vite->content($entryPoint)
-        )->implode("\n");
-
-        return "<style>@scope ($selector) {".$css.'}</style>'
-            .($scripts->isEmpty() ? '' : $vite->withEntryPoints($scripts->values()->all())->toHtml());
     }
 
     /**

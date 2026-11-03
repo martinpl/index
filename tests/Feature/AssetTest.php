@@ -9,7 +9,6 @@ use App\Facades\Filter;
 use App\Facades\Theme;
 use App\Support\PackageServiceProvider;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 
 use function Pest\Laravel\artisan;
 
@@ -36,7 +35,7 @@ test('renders the assets of each context, versioning the files of packages', fun
             '<script src="'.asset('themes/shop/js/cart.js').'" type="module"></script>',
             '<script src="'.asset('js/admin.js').'" defer></script>',
         ]))
-        ->and(Assets::render('editor'))->toBe('<style>@scope (.block-preview) {h1 { color: red; }}</style>');
+        ->and(Assets::render('editor'))->toBe('<link rel="stylesheet" href="'.asset('themes/shop/css/shop.css')."?v=$version\">");
 });
 
 test('loads the entry points built by the package\'s own Vite', function () {
@@ -46,17 +45,6 @@ test('loads the entry points built by the package\'s own Vite', function () {
         ->toContain('<script type="module" src="http://localhost:5173/@vite/client"')
         ->toContain('<link rel="stylesheet" href="http://localhost:5173/resources/css/app.css"')
         ->toContain('<script type="module" src="http://localhost:5173/resources/js/app.js"');
-});
-
-test('scopes the stylesheets built by the package\'s own Vite to the editor preview', function () {
-    Http::fake(['localhost:5173/resources/css/blocks.css?direct' => Http::response('h2 { color: blue; }')]);
-
-    Assets::register(Vite::make('blocks', ['resources/css/blocks.css', 'resources/js/blocks.js'])->editor(), 'themes/shop');
-
-    expect(Assets::render('editor'))
-        ->toStartWith('<style>@scope (.block-preview) {h2 { color: blue; }}</style>')
-        ->toContain('<script type="module" src="http://localhost:5173/resources/js/blocks.js"')
-        ->not->toContain('resources/css/blocks.css');
 });
 
 test('packages add assets by their path, telling their type by it', function () {

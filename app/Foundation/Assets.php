@@ -52,12 +52,12 @@ class Assets
     }
 
     /**
-     * The HTML loading the assets of the given context, with the editor's stylesheets scoped to its preview.
+     * The HTML loading the assets of the given context.
      */
     public function render(string $context): string
     {
         return $this->list($context)
-            ->map(fn (Asset $asset): string => $context === 'editor' ? $asset->scopedTo('.block-preview') : $asset->toHtml())
+            ->map(fn (Asset $asset): string => $asset->toHtml())
             ->implode("\n");
     }
 }

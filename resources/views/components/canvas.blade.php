@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     @action('head')
 </head>
-<body>
-    @action('body')
+<body @filter('body.attributes', new \Illuminate\View\ComponentAttributeBag(['class' => 'blocks']))>
+    @action('body.open')
     {{ $slot }}
     @action('footer')
 </body>

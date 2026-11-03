@@ -58,11 +58,12 @@ abstract class Block implements Arrayable, Htmlable, JsonSerializable
     }
 
     /**
-     * The HTML attributes of the block's root element, leaving out the empty ones.
+     * The HTML attributes of the block's root element, leaving out the empty ones,
+     * with the `block-{type}` class that stylesheets style the block by.
      */
     public function htmlAttributes(): ComponentAttributeBag
     {
-        return new ComponentAttributeBag(array_filter($this->attributes, filled(...)));
+        return (new ComponentAttributeBag(array_filter($this->attributes, filled(...))))->class('block-'.$this->type());
     }
 
     /**

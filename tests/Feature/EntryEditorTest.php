@@ -78,7 +78,7 @@ test('edits the blocks of a draft entry', function () {
 
     get(route('dashboard.entries.edit', ['page', $entry]))
         ->assertOk()
-        ->assertSeeInOrder(['Structure', 'Heading', 'Paragraph', '<h2 >Title</h2>', '<p >First</p>'], false)
+        ->assertSeeInOrder(['Structure', 'Heading', 'Paragraph', '<h2 class="block-heading">Title</h2>', '<p class="block-paragraph">First</p>'], false)
         ->assertSee("addBlock('image', null)", false)
         ->assertDontSee('@js(', false);
 

@@ -1,8 +1,10 @@
 <?php
 
 use App\Facades\EntryType;
+use App\Facades\Filter;
 use App\Models\Entry;
 use App\Models\Setting;
+use Illuminate\View\ComponentAttributeBag;
 
 use function Pest\Laravel\get;
 
@@ -19,6 +21,14 @@ test('renders the home entry', function () {
     Setting::set('page_roles', ['home' => $entry->id], 'core');
 
     get('/')->assertOk()->assertViewIs('index')->assertSee('Home');
+});
+
+test('themes and plugins can change the attributes of the body', function () {
+    $entry = Entry::factory()->published()->create(['type' => 'page', 'name' => 'Home']);
+    Setting::set('page_roles', ['home' => $entry->id], 'core');
+    Filter::add('body.attributes', fn (ComponentAttributeBag $attributes): ComponentAttributeBag => $attributes->class('dark')->merge(['data-page' => 'home']));
+
+    get('/')->assertOk()->assertSee('<body data-page="home" class="dark blocks">', false);
 });
 
 test('serves no frontend without an active theme', function () {

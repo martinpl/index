@@ -30,8 +30,8 @@ class Document
         echo Assets::render('dashboard');
     }
 
-    #[Action('body')]
-    #[Action('dashboard.body')]
+    #[Action('body.open')]
+    #[Action('dashboard.body.open')]
     public function adminBar()
     {
         echo view('partials.admin-bar.admin-bar')->render();

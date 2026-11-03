@@ -48,7 +48,7 @@ abstract class Asset implements Htmlable
     }
 
     /**
-     * Load the asset in the block editor, where stylesheets are scoped to its preview so blocks look there as they do on the site.
+     * Load the asset in the block editor, so blocks look there as they do on the site when styled under the `.blocks` class.
      */
     public function editor(): static
     {
@@ -66,15 +66,6 @@ abstract class Asset implements Htmlable
     public function loadsOn(string $context): bool
     {
         return in_array($context, $this->getContexts(), true);
-    }
-
-    /**
-     * The HTML loading the asset with its styles scoped to the given selector, like the block editor's preview,
-     * which loads assets without styles as they are.
-     */
-    public function scopedTo(string $selector): string
-    {
-        return $this->toHtml();
     }
 
     /**

@@ -8,7 +8,6 @@ class HowdyServiceProvider extends PackageServiceProvider
 {
     public function boot(): void
     {
-        $this->addAsset('theme', 'resources/css/theme.css');
-        $this->addAsset('blocks', 'resources/css/blocks.css')->site()->editor();
+        $this->addAsset('theme', 'resources/css/theme.css')->site()->editor();
     }
 }

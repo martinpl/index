@@ -5,7 +5,7 @@
     @action('dashboard.head')
 </head>
 <body class="min-h-screen antialiased">
-    @action('dashboard.body')
+    @action('dashboard.body.open')
     @php($hasAdminbar = true)
     <x-ui.sidebar-provider @class(['[&>div>div]:h-auto min-h-[calc(100svh-40px)] transform-gpu' => $hasAdminbar])>
         <x-ui.sidebar>

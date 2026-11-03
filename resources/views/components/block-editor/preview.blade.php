@@ -5,7 +5,7 @@
     use Illuminate\Support\Str;
 @endphp
 
-<div {{ $attributes->twMerge('block-preview') }}>
+<div {{ $attributes->twMerge('blocks z-10') }}>
     @forelse ($blocks as $block)
         @php
             $blockType = $blockTypes[$block['type']] ?? null;
@@ -21,7 +21,7 @@
             aria-label="{{ $name }}"
             aria-pressed="{{ $block['id'] === $selectedBlock ? 'true' : 'false' }}"
             @class([
-                'min-h-8 cursor-pointer rounded-sm outline-offset-4 hover:outline hover:outline-1 focus-visible:outline-2',
+                'min-h-8 cursor-pointer outline-offset-4 hover:outline hover:outline-1 focus-visible:outline-2',
                 'outline-primary outline outline-2 hover:outline-2' => $block['id'] === $selectedBlock,
             ])
         >
