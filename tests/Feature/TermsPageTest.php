@@ -42,6 +42,20 @@ test('lists the terms of the type with their entry count', function () {
         ->assertDontSee('Some tag');
 });
 
+test('reorders the terms by dragging them in the custom order, listing the ones sharing a position newest first', function () {
+    $older = Term::factory()->create(['name' => 'Older']);
+    $newer = Term::factory()->create(['name' => 'Newer']);
+    $tag = Term::factory()->create(['type' => 'tag', 'order' => 5]);
+
+    termsPage()
+        ->assertSeeHtml('wire:sort="reorder"')
+        ->assertSeeInOrder(['Newer', 'Older'])
+        ->call('reorder', $older->id, 0)
+        ->assertSeeInOrder(['Older', 'Newer']);
+
+    expect([$older->fresh()->order, $newer->fresh()->order, $tag->fresh()->order])->toBe([0, 1, 5]);
+});
+
 test('adds a term, generating a unique slug from the name', function () {
     termsPage()
         ->set('values.name', 'Latest News')

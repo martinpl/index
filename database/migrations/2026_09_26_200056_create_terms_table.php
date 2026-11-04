@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->foreignId('parent_id')->nullable()->constrained('terms')->nullOnDelete();
+            $table->integer('order')->default(0);
             $table->string('owner');
 
             $table->unique(['type', 'slug']);

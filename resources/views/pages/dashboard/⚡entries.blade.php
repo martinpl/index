@@ -122,7 +122,7 @@ new class extends Component
 
     protected function configure(Listing $listing): void
     {
-        $listing->defaultSort('date', 'desc');
+        $listing->defaultSort('order')->reorderable(thenBy: ['date' => 'desc']);
     }
 
     public function render(): View

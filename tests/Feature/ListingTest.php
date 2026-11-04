@@ -72,6 +72,18 @@ test('lists a collection with tabs, search and sorting', function () {
         ->assertDontSee(['Forms', 'SEO']);
 });
 
+test('sorts by a column in the given direction', function () {
+    Livewire::test(PluginListing::class)
+        ->call('sortBy', 'name', 'desc')
+        ->assertSet('direction', 'desc')
+        ->assertSeeInOrder(['SEO', 'Forms', 'Blog'])
+        ->call('sortBy', 'name', 'desc')
+        ->assertSet('direction', 'desc')
+        ->call('sortBy', 'name', 'sideways')
+        ->assertSet('direction', 'asc')
+        ->assertSeeInOrder(['Blog', 'Forms', 'SEO']);
+});
+
 test('runs a bulk action on the selected records of a collection it is visible for', function () {
     Livewire::test(PluginListing::class)
         ->set('selected', ['blog', 'seo'])

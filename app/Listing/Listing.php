@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use LogicException;
 
 /**
  * A list of records with tabs, search, filters, sorting, pagination and actions, similar to WordPress list tables and DataViews.
@@ -43,6 +44,13 @@ class Listing
      * @var array{0: string, 1: 'asc'|'desc'}|null
      */
     protected ?array $defaultSort = null;
+
+    protected ?string $reorderColumn = null;
+
+    /**
+     * @var array<string, 'asc'|'desc'>
+     */
+    protected array $reorderThenBy = [];
 
     protected int $perPage = 20;
 
@@ -156,6 +164,39 @@ class Listing
     }
 
     /**
+     * Allow reordering the records by dragging them while sorted by the given database column, which stores their position.
+     *
+     * @param  array<string, 'asc'|'desc'>  $thenBy  The database columns sorting the records sharing a position, like new records.
+     */
+    public function reorderable(string $column = 'order', array $thenBy = []): static
+    {
+        $this->reorderColumn = $column;
+        $this->reorderThenBy = $thenBy;
+
+        return $this;
+    }
+
+    public function getReorderColumn(): ?string
+    {
+        return $this->reorderColumn;
+    }
+
+    /**
+     * Whether the records may be dragged into a new order with the given resolved state.
+     *
+     * @param  array{sort: string|null, direction: 'asc'|'desc'}  $state
+     */
+    public function isReorderable(array $state): bool
+    {
+        return $this->reorderColumn !== null && $state['sort'] === $this->reorderColumn && $state['direction'] === 'asc';
+    }
+
+    public function isSortableBy(string $name): bool
+    {
+        return ($this->getColumn($name)?->isSortable() ?? false) || ($name !== '' && $name === $this->reorderColumn);
+    }
+
+    /**
      * @param  list<int>|null  $options
      */
     public function perPage(int $perPage, ?array $options = null): static
@@ -182,13 +223,12 @@ class Listing
      */
     public function resolveState(array $state): array
     {
-        $column = $this->getColumn((string) ($state['sort'] ?? ''));
-        $isSorted = $column?->isSortable() ?? false;
+        $isSorted = $this->isSortableBy((string) ($state['sort'] ?? ''));
 
         return [
             'tab' => $this->getTab((string) ($state['tab'] ?? ''))->name ?? $this->tabs[0]->name ?? null,
             'search' => trim((string) ($state['search'] ?? '')),
-            'sort' => $isSorted ? $column->name : $this->defaultSort[0] ?? null,
+            'sort' => $isSorted ? $state['sort'] : $this->defaultSort[0] ?? null,
             'direction' => match (true) {
                 $isSorted && in_array($state['direction'] ?? null, ['asc', 'desc'], true) => $state['direction'],
                 $isSorted => 'asc',
@@ -260,6 +300,72 @@ class Listing
     }
 
     /**
+     * Move the record with the given key to the given position on the page of records matching the state,
+     * renumbering the positions of every record so they stay unique.
+     *
+     * @param  State  $state
+     */
+    public function reorder(int|string $key, int $position, array $state): void
+    {
+        $state = $this->resolveState($state);
+
+        if (! $this->isReorderable($state)) {
+            return;
+        }
+
+        $keys = $this->paginate($state)->getCollection()->keys()->map(fn (int|string $key): string => (string) $key);
+
+        if (! $keys->contains((string) $key)) {
+            return;
+        }
+
+        $siblings = $keys->reject(fn (string $sibling): bool => $sibling === (string) $key)->values();
+
+        if ($siblings->isEmpty()) {
+            return;
+        }
+
+        $position = max(0, min($position, $siblings->count()));
+        $isBefore = $position < $siblings->count();
+        $neighbor = $siblings[$isBefore ? $position : $position - 1];
+
+        $query = ($this->data)();
+
+        throw_unless($query instanceof Builder, LogicException::class, 'Only listings of queries can be reordered.');
+
+        $positions = $this->orderByPosition($query, 'asc')
+            ->pluck($query->qualifyColumn($this->reorderColumn), $query->getModel()->getQualifiedKeyName())
+            ->mapWithKeys(fn (mixed $position, int|string $key): array => [(string) $key => (int) $position]);
+
+        $order = $positions->keys()->map(fn (int|string $other): string => (string) $other)->reject(fn (string $other): bool => $other === (string) $key)->values()->all();
+        array_splice($order, array_search($neighbor, $order, true) + ($isBefore ? 0 : 1), 0, [(string) $key]);
+
+        foreach ($order as $index => $other) {
+            if ($positions[$other] !== $index) {
+                ($this->data)()->whereKey($other)->toBase()->update([$query->qualifyColumn($this->reorderColumn) => $index]);
+            }
+        }
+    }
+
+    /**
+     * Sort the query by the position of the records, then by the columns sorting the records sharing a position.
+     *
+     * @param  Builder<Model>  $query
+     * @param  'asc'|'desc'  $direction
+     * @return Builder<Model>
+     */
+    protected function orderByPosition(Builder $query, string $direction): Builder
+    {
+        $query->orderBy($query->qualifyColumn($this->reorderColumn), $direction);
+
+        foreach ($this->reorderThenBy as $column => $thenDirection) {
+            $query->orderBy($query->qualifyColumn($column), $thenDirection);
+        }
+
+        return $query->orderBy($query->getModel()->getQualifiedKeyName(), $direction);
+    }
+
+    /**
      * @param  Builder<Model>  $query
      * @param  array{search: string, sort: string|null, direction: 'asc'|'desc', perPage: int}  $state
      * @param  array<int, Column>  $searchable
@@ -275,7 +381,9 @@ class Listing
             });
         }
 
-        if ($state['sort']) {
+        if ($state['sort'] && $state['sort'] === $this->reorderColumn) {
+            $this->orderByPosition($query, $state['direction']);
+        } elseif ($state['sort']) {
             $query->orderBy($query->qualifyColumn($state['sort']), $state['direction'])
                 ->orderBy($query->getModel()->getQualifiedKeyName(), $state['direction']);
         }

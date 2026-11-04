@@ -118,6 +118,8 @@ trait WithListing
                 'counts' => $this->getListing()->counts(),
                 ...$this->getListing()->resolveState($this->getListingState()),
                 'perPageOptions' => $this->getListing()->getPerPageOptions(),
+                'reorderColumn' => $this->getListing()->getReorderColumn(),
+                'isReorderable' => $this->getListing()->isReorderable($this->getListing()->resolveState($this->getListingState())),
                 'hiddenColumns' => $this->hiddenColumns,
                 'selected' => $this->selected,
             ],
@@ -133,19 +135,31 @@ trait WithListing
     }
 
     /**
-     * Sort by the given column, reversing the direction when it is already sorted by it.
+     * Sort by the given column in the given direction, or reversing the direction when it is already sorted by it.
      */
-    public function sortBy(string $column): void
+    public function sortBy(string $column, ?string $direction = null): void
     {
         $state = $this->getListing()->resolveState($this->getListingState());
 
-        if (! $this->getListing()->getColumn($column)?->isSortable()) {
+        if (! $this->getListing()->isSortableBy($column)) {
             return;
         }
 
-        $this->direction = $state['sort'] === $column && $state['direction'] === 'asc' ? 'desc' : 'asc';
+        $this->direction = match (true) {
+            in_array($direction, ['asc', 'desc'], true) => $direction,
+            $state['sort'] === $column && $state['direction'] === 'asc' => 'desc',
+            default => 'asc',
+        };
         $this->sort = $column;
         $this->resetPage();
+    }
+
+    /**
+     * Move the record with the given key to the given position on the current page.
+     */
+    public function reorder(int|string $key, int $position): void
+    {
+        $this->getListing()->reorder($key, $position, $this->getListingState());
     }
 
     public function toggleColumn(string $column): void

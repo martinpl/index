@@ -71,7 +71,7 @@
             @if ($hideableColumns->isNotEmpty())
                 <x-ui.dropdown-menu>
                     <x-ui.dropdown-menu-trigger>
-                        <x-ui.button variant="outline" size="sm" class="ms-auto">
+                        <x-ui.button variant="outline" size="sm" class="ms-auto" :aria-label="__('Columns')">
                             <x-lucide-columns-3 />
                         </x-ui.button>
                     </x-ui.dropdown-menu-trigger>
@@ -93,14 +93,28 @@
     <x-ui.table variant="card" wire:loading.class="opacity-60">
         <x-ui.table-header>
             <x-ui.table-row class="bg-muted/40">
+                @if ($state['reorderColumn'])
+                    <x-ui.table-head class="w-8 ps-3 pe-0" :aria-sort="$state['isReorderable'] ? 'ascending' : null">
+                        <button
+                            @class([
+                                'hover:text-foreground flex items-center',
+                                'text-muted-foreground' => ! $state['isReorderable'],
+                            ])
+                            title="{{ __('Custom order') }}"
+                            aria-label="{{ __('Custom order') }}"
+                            wire:click="sortBy({{ Js::from($state['reorderColumn']) }}, 'asc')"
+                        >
+                            <x-lucide-arrow-down-up class="size-4" />
+                        </button>
+                    </x-ui.table-head>
+                @endif
                 @if ($isSelectable)
                     <x-ui.table-head class="w-10 ps-3">
                         <x-ui.checkbox
-                            native
-                            x-bind:checked="{{ $keys->isNotEmpty() ? Js::from($keys) . '.every((key) => $wire.selected.includes(key))' : 'false' }}"
                             :disabled="$keys->isEmpty()"
                             :aria-label="__('Select all')"
-                            x-on:change="$wire.set('selected', $event.target.checked ? {{ Js::from($keys) }} : [])"
+                            x-effect="checked = {{ Js::from($keys) }}.length > 0 && {{ Js::from($keys) }}.every((key) => $wire.selected.includes(key)); indeterminate = ! checked && {{ Js::from($keys) }}.some((key) => $wire.selected.includes(key))"
+                            x-on:click="$wire.set('selected', {{ Js::from($keys) }}.every((key) => $wire.selected.includes(key)) ? [] : {{ Js::from($keys) }})"
                         />
                     </x-ui.table-head>
                 @endif
@@ -133,17 +147,36 @@
                 @endforeach
             </x-ui.table-row>
         </x-ui.table-header>
-        <x-ui.table-body>
+        <x-ui.table-body :wire:sort="$state['isReorderable'] ? 'reorder' : null">
             @forelse ($records as $key => $record)
                 @php($rowActions = array_filter($actions, fn (Action $action): bool => $action->isVisibleFor($record)))
                 <x-ui.table-row
                     class="group"
                     wire:key="listing-row-{{ $key }}"
                     :data-state="in_array((string) $key, $state['selected'], true) ? 'selected' : null"
+                    :wire:sort:item="$state['isReorderable'] ? $key : null"
                 >
+                    @if ($state['reorderColumn'])
+                        <x-ui.table-cell class="ps-3 pe-0">
+                            @if ($state['isReorderable'])
+                                <button
+                                    type="button"
+                                    class="text-muted-foreground hover:text-foreground flex cursor-grab items-center active:cursor-grabbing"
+                                    aria-label="{{ __('Reorder') }}"
+                                    wire:sort:handle
+                                >
+                                    <x-lucide-grip-vertical class="size-4" />
+                                </button>
+                            @endif
+                        </x-ui.table-cell>
+                    @endif
                     @if ($isSelectable)
                         <x-ui.table-cell class="ps-3">
-                            <x-ui.checkbox native :value="$key" :aria-label="__('Select')" wire:model.live="selected" />
+                            <x-ui.checkbox
+                                :aria-label="__('Select')"
+                                x-effect="checked = $wire.selected.includes({{ Js::from((string) $key) }})"
+                                x-on:click="$wire.set('selected', $wire.selected.includes({{ Js::from((string) $key) }}) ? $wire.selected.filter((key) => key !== {{ Js::from((string) $key) }}) : [...$wire.selected, {{ Js::from((string) $key) }}])"
+                            />
                         </x-ui.table-cell>
                     @endif
                     @foreach ($columns as $column)
@@ -176,7 +209,7 @@
                 </x-ui.table-row>
             @empty
                 <x-ui.table-row class="hover:bg-transparent">
-                    <x-ui.table-cell :colspan="$columns->count() + ($isSelectable ? 1 : 0)">
+                    <x-ui.table-cell :colspan="$columns->count() + ($isSelectable ? 1 : 0) + ($state['reorderColumn'] ? 1 : 0)">
                         <x-ui.empty>
                             <x-ui.empty-header>
                                 <x-ui.empty-media variant="icon"><x-lucide-search-x /></x-ui.empty-media>

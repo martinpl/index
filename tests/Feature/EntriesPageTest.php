@@ -81,6 +81,51 @@ test('searches and sorts the entries of the tab', function () {
         ->assertSeeInOrder(['Beta', 'Alpha']);
 });
 
+test('reorders the entries by dragging them in the custom order', function () {
+    $first = Entry::factory()->create(['type' => 'page', 'name' => 'First', 'order' => 0]);
+    $second = Entry::factory()->create(['type' => 'page', 'name' => 'Second', 'order' => 1]);
+    $third = Entry::factory()->create(['type' => 'page', 'name' => 'Third', 'order' => 2]);
+    $post = Entry::factory()->create(['type' => 'post', 'order' => 7]);
+
+    entriesPage()
+        ->assertSeeHtml(['wire:sort="reorder"', 'wire:sort:item="'.$third->id.'"'])
+        ->call('sortBy', 'name')
+        ->assertDontSeeHtml('wire:sort="reorder"')
+        ->call('reorder', $third->id, 0)
+        ->call('sortBy', 'order', 'asc')
+        ->call('reorder', $third->id, 0)
+        ->assertSeeInOrder(['Third', 'First', 'Second'])
+        ->call('reorder', $third->id, 2)
+        ->assertSeeInOrder(['First', 'Second', 'Third']);
+
+    expect([$first->fresh()->order, $second->fresh()->order, $third->fresh()->order, $post->fresh()->order])->toBe([0, 1, 2, 7]);
+});
+
+test('lists the entries sharing a position newest first, keeping that order when reordering', function () {
+    $older = Entry::factory()->create(['type' => 'page', 'name' => 'Older', 'date' => now()->subDays(2)]);
+    $newer = Entry::factory()->create(['type' => 'page', 'name' => 'Newer', 'date' => now()->subDay()]);
+    $newest = Entry::factory()->create(['type' => 'page', 'name' => 'Newest', 'date' => now()]);
+
+    entriesPage()
+        ->assertSeeInOrder(['Newest', 'Newer', 'Older'])
+        ->call('reorder', $older->id, 1)
+        ->assertSeeInOrder(['Newest', 'Older', 'Newer']);
+
+    expect([$newest->fresh()->order, $older->fresh()->order, $newer->fresh()->order])->toBe([0, 1, 2]);
+});
+
+test('reorders an entry among the entries of the tab', function () {
+    $draft = Entry::factory()->create(['type' => 'page', 'name' => 'Draft', 'order' => 0]);
+    $published = Entry::factory()->published()->create(['type' => 'page', 'name' => 'Published', 'order' => 1]);
+    $other = Entry::factory()->create(['type' => 'page', 'name' => 'Other draft', 'order' => 2]);
+
+    entriesPage()
+        ->set('tab', 'draft')
+        ->call('reorder', $other->id, 0);
+
+    expect([$other->fresh()->order, $draft->fresh()->order, $published->fresh()->order])->toBe([0, 1, 2]);
+});
+
 test('ignores unsupported sorting and tabs', function () {
     Entry::factory()->create(['type' => 'page', 'name' => 'Trashed page', 'status' => EntryStatus::Trash]);
 

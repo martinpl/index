@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['type', 'slug', 'name', 'description', 'parent_id', 'owner'])]
+#[Fillable(['type', 'slug', 'name', 'description', 'parent_id', 'order', 'owner'])]
 class Term extends Model
 {
     use BelongsToSite;
@@ -36,6 +36,10 @@ class Term extends Model
     public $timestamps = false;
 
     protected $table = 'terms';
+
+    protected $attributes = [
+        'order' => 0,
+    ];
 
     protected static function booted(): void
     {

@@ -181,7 +181,7 @@ new class extends Component
 
     protected function configure(Listing $listing): void
     {
-        $listing->defaultSort('name');
+        $listing->defaultSort('order')->reorderable(thenBy: ['id' => 'desc']);
     }
 
     public function render(): View
