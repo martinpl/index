@@ -105,15 +105,18 @@ class InstallCommand extends Command
     }
 
     /**
-     * Create the default roles, granting the administrator every core ability.
+     * Create the default roles, granting the administrator every core ability
+     * and making the member, who has none, the role of new users.
      */
     protected function createDefaultRoles(): void
     {
-        foreach (['administrator'] as $role) {
+        foreach (['administrator', 'member'] as $role) {
             Role::create($role);
         }
 
         Role::grant('administrator', ['entries.manage', 'users.manage', 'plugins.manage', 'settings.manage']);
+
+        Setting::set('default_role', 'member', 'core');
     }
 
     /**

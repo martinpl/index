@@ -1,6 +1,7 @@
 <?php
 
 use App\Facades\Role;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
@@ -45,6 +46,13 @@ test('adds a verified user with the selected roles', function () {
         ->and(Hash::check('secret-password', $user->password))->toBeTrue()
         ->and($user->hasVerifiedEmail())->toBeTrue()
         ->and($user->getRoles())->toBe(['editor']);
+});
+
+test('preselects the default role when adding a user', function () {
+    Setting::set('default_role', 'author', 'core');
+
+    Livewire::test('pages::dashboard.user')
+        ->assertSet('values.roles', ['editor' => false, 'author' => true]);
 });
 
 test('validates the user', function () {

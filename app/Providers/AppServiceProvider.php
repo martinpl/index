@@ -10,7 +10,6 @@ use App\Facades\Action as ActionFacade;
 use App\Facades\BlockType as BlockTypeFacade;
 use App\Facades\EntryType as EntryTypeFacade;
 use App\Facades\Settings as SettingsFacade;
-use App\Fields\Text;
 use App\Foundation\Action;
 use App\Foundation\AdminBar;
 use App\Foundation\Assets;
@@ -30,6 +29,7 @@ use App\Models\Entry;
 use App\Models\Site;
 use App\Models\Term;
 use App\Models\User;
+use App\Settings\General;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -84,15 +84,7 @@ class AppServiceProvider extends ServiceProvider
             BlockTypeFacade::register($block, [], 'core');
         }
 
-        SettingsFacade::register('general', [
-            'title' => 'General',
-            'page_title' => 'General Settings',
-            'can' => 'settings.manage',
-            'position' => 0,
-            'fields' => fn (): array => [
-                Text::make('site_name')->label(__('Site name'))->required()->rules('max:255'),
-            ],
-        ], 'core');
+        SettingsFacade::register('general', General::config(), 'core');
 
         Blade::directive('action', fn (string $expression): string => "<?php \\App\\Facades\\Action::run($expression); ?>");
         Blade::directive('filter', fn (string $expression): string => "<?php echo \\App\\Facades\\Filter::apply($expression); ?>");

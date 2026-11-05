@@ -44,7 +44,7 @@ test('the settings page shows the stored settings', function () {
         ->assertSeeInOrder([route('dashboard.settings', 'general'), 'General']);
 
     Livewire::test('pages::dashboard.settings', ['page' => 'general'])
-        ->assertSet('values', ['site_name' => 'Index']);
+        ->assertSet('values', ['site_name' => 'Index', 'users_can_register' => false, 'default_role' => null]);
 });
 
 test('the settings page validates the values', function () {

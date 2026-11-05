@@ -72,13 +72,13 @@ new class extends Component
     }
 
     /**
-     * Fill the form with the values of the edited user, or with the defaults for adding a new one.
+     * Fill the form with the values of the edited user, or with the defaults for adding a new one, including the default role.
      */
     protected function fillForm(): void
     {
         $this->fillValues([
             ...$this->record?->only(['name', 'email']) ?? [],
-            'roles' => array_fill_keys($this->record?->getRoles() ?? [], true),
+            'roles' => array_fill_keys($this->record?->getRoles() ?? array_filter([setting('default_role', '')], Role::has(...)), true),
         ]);
     }
 

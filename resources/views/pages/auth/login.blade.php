@@ -62,9 +62,11 @@
             </div>
         </form>
 
-        <div class="text-muted-foreground space-x-1 text-center text-sm rtl:space-x-reverse">
-            <span>{{ __('Don\'t have an account?') }}</span>
-            <x-ui.link :href="route('register')" wire:navigate>{{ __('Sign up') }}</x-ui.link>
-        </div>
+        @if (setting('users_can_register'))
+            <div class="text-muted-foreground space-x-1 text-center text-sm rtl:space-x-reverse">
+                <span>{{ __('Don\'t have an account?') }}</span>
+                <x-ui.link :href="route('register')" wire:navigate>{{ __('Sign up') }}</x-ui.link>
+            </div>
+        @endif
     </div>
 </x-layouts::auth>

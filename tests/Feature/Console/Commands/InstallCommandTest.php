@@ -2,6 +2,7 @@
 
 use App\EntryTypes\Page;
 use App\Facades\Role;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -27,7 +28,7 @@ test('runs migrations and installs a site on an empty database', function () {
 
     assertDatabaseHas('sites', ['domain' => 'example.com', 'path' => '/']);
     assertDatabaseCount('sites', 1);
-    assertDatabaseCount('settings', 5);
+    assertDatabaseCount('settings', 6);
     assertDatabaseHas('settings', ['key' => 'site_name', 'value' => json_encode('My site')]);
     assertDatabaseHas('settings', ['key' => 'active_theme', 'value' => json_encode('howdy')]);
     assertDatabaseHas('settings', ['key' => 'active_plugins', 'value' => json_encode(['blog'])]);
@@ -38,8 +39,10 @@ test('runs migrations and installs a site on an empty database', function () {
         ->and(Hash::check('secret-password', $admin->password))->toBeTrue()
         ->and($admin->hasVerifiedEmail())->toBeTrue()
         ->and($admin->getRoles())->toBe(['administrator'])
-        ->and(Role::list()->keys()->all())->toBe(['administrator'])
+        ->and(Role::list()->keys()->all())->toBe(['administrator', 'member'])
         ->and(Role::abilities('administrator'))->toBe(['entries.manage', 'users.manage', 'plugins.manage', 'settings.manage'])
+        ->and(Role::abilities('member'))->toBe([])
+        ->and(Setting::get('default_role'))->toBe('member')
         ->and(Page::for('home')?->name)->toBe('Home')
         ->and(Page::for('home')->user_id)->toBe($admin->id)
         ->and(page_url('home'))->toBe(url('/'));
