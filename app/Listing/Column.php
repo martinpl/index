@@ -4,10 +4,12 @@ namespace App\Listing;
 
 use BackedEnum;
 use Closure;
+use DateTimeInterface;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
@@ -39,6 +41,11 @@ class Column
      * @var (Closure(mixed): (Htmlable|string|null))|null
      */
     protected ?Closure $render = null;
+
+    /**
+     * The date macro, like `toDateFormat`, that shows the value.
+     */
+    protected ?string $dateMacro = null;
 
     final public function __construct(public string $name) {}
 
@@ -178,6 +185,26 @@ class Column
     }
 
     /**
+     * Show the value as a date in the timezone and date format of the site, while it is kept in UTC.
+     */
+    public function date(): static
+    {
+        $this->dateMacro = 'toDateFormat';
+
+        return $this;
+    }
+
+    /**
+     * Show the value as a date and time in the timezone and date and time formats of the site, while it is kept in UTC.
+     */
+    public function dateTime(): static
+    {
+        $this->dateMacro = 'toDateTimeFormat';
+
+        return $this;
+    }
+
+    /**
      * The content of the column's cell for the given record.
      */
     public function getContent(mixed $record): Htmlable|string|null
@@ -191,6 +218,10 @@ class Column
 
         if (is_null($value)) {
             return null;
+        }
+
+        if ($this->dateMacro && $value instanceof DateTimeInterface) {
+            return Date::instance($value)->{$this->dateMacro}();
         }
 
         return $this->getOptions()[$value] ?? $value;

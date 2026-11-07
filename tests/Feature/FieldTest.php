@@ -3,10 +3,12 @@
 use App\Fields\Field;
 use App\Fields\Group;
 use App\Fields\Number;
+use App\Fields\Radio;
 use App\Fields\Repeater;
 use App\Fields\Select;
 use App\Fields\Text;
 use App\Fields\Toggle;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -80,4 +82,26 @@ test('hidden fields are left out of their parent field', function () {
         ->and($form->cast(['title' => 'Home', 'subtitle' => 'dropped', 'faq' => [['question' => 'Why?', 'answer' => 'dropped']]]))
         ->toBe(['title' => 'Home', 'faq' => [['question' => 'Why?']]])
         ->and(validateFields($form->getFields(), ['title' => 'Home']))->toBe([]);
+});
+
+test('searchable select fields render a combobox', function () {
+    $this->withViewErrors([]);
+    $render = fn (Select $field): string => Blade::render('<x-dynamic-component :component="$field->component" :$field path="values.layout" />', ['field' => $field]);
+    $field = Select::make('layout')->options(['wide' => 'Wide', 'narrow' => 'Narrow']);
+
+    expect($render($field))->not->toContain('data-slot="combobox"')
+        ->and($render($field->searchable()))->toContain('data-slot="combobox"', 'Narrow');
+});
+
+test('radio fields render a radio for each option', function () {
+    $this->withViewErrors([]);
+    $field = Radio::make('layout')->options(['wide' => 'Wide', 'narrow' => 'Narrow']);
+
+    expect(Blade::render('<x-dynamic-component :component="$field->component" :$field path="values.layout" />', ['field' => $field]))
+        ->toContain('role="radiogroup"', 'data-value="wide"', 'Wide', 'data-value="narrow"', 'Narrow');
+});
+
+test('fields can be rendered with another component', function () {
+    expect(Radio::make('format')->component)->toBe('fields.radio')
+        ->and(Radio::make('format')->view('settings.date-format')->component)->toBe('settings.date-format');
 });

@@ -14,6 +14,8 @@ class Select extends Field
      */
     protected array|Closure $options = [];
 
+    protected bool $searchable = false;
+
     /**
      * @param  array<string, string>|Closure(): array<string, string>  $options  Labels keyed by value.
      */
@@ -30,6 +32,21 @@ class Select extends Field
     public function getOptions(): array
     {
         return value($this->options);
+    }
+
+    /**
+     * Let the options be searched, for long lists.
+     */
+    public function searchable(bool $condition = true): static
+    {
+        $this->searchable = $condition;
+
+        return $this;
+    }
+
+    public function isSearchable(): bool
+    {
+        return $this->searchable;
     }
 
     public function getRules(string $path): array

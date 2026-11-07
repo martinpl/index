@@ -65,6 +65,16 @@ abstract class Field
         return $this->description;
     }
 
+    /**
+     * Render the field with the given Blade component instead, like `settings.date-format`, receiving `field`, `path` and `value`.
+     */
+    public function view(string $component): static
+    {
+        $this->component = $component;
+
+        return $this;
+    }
+
     public function default(mixed $default): static
     {
         $this->default = $default;

@@ -65,7 +65,7 @@ new class extends Component
                 ->map(fn (string $role): string => __(Role::get($role)['name'] ?? $role))
                 ->join(', ')),
             Column::make('entries_count')->label(__('Entries')),
-            Column::make('created_at')->label(__('Registered'))->sortable()->hidden()->render(fn (User $user): ?string => $user->created_at?->toDateString()),
+            Column::make('created_at')->label(__('Registered'))->sortable()->hidden()->date(),
         ];
     }
 

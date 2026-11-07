@@ -37,9 +37,11 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Locale;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -70,6 +72,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        CarbonImmutable::macro('inTimezone', fn (): CarbonImmutable => $this->timezone(setting('timezone', config('app.timezone'))));
+        CarbonImmutable::macro('toDateFormat', fn (): string => $this->inTimezone()->translatedFormat(General::dateFormat()));
+        CarbonImmutable::macro('toTimeFormat', fn (): string => $this->inTimezone()->translatedFormat(General::timeFormat()));
+        CarbonImmutable::macro('toDateTimeFormat', fn (): string => $this->inTimezone()->translatedFormat(General::dateFormat().' '.General::timeFormat()));
+
         $this->configureDefaults();
 
         Relation::enforceMorphMap([
@@ -122,6 +129,10 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+
+        Lang::determineLocalesUsing(fn (array $locales): array => collect($locales)
+            ->flatMap(fn (string $locale): array => [$locale, Locale::getPrimaryLanguage($locale)])
+            ->all());
     }
 
     /**

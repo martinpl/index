@@ -4,6 +4,7 @@ use App\Models\Entry;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Models\User;
+use Illuminate\Support\Facades\Lang;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
@@ -44,4 +45,45 @@ test('boots plugins active on the requested site only', function () {
 
     get('http://example.com/hello-index')->assertNotFound();
     get('http://blog.example.com/hello-index')->assertOk();
+});
+
+test('uses its own locale', function () {
+    $site = Site::create(['domain' => 'blog.example.com'])->makeCurrent();
+    Setting::set('locale', 'pl', 'core');
+
+    $site->makeCurrent();
+
+    expect(app()->getLocale())->toBe('pl');
+});
+
+test('falls back from a regional locale to its language', function () {
+    Lang::addLines(['messages.greeting' => 'Cześć'], 'pl');
+    Lang::addLines(['messages.farewell' => 'Goodbye'], 'en');
+
+    app()->setLocale('pl_PL');
+
+    expect(__('messages.greeting'))->toBe('Cześć')
+        ->and(__('messages.farewell'))->toBe('Goodbye');
+});
+
+test('shows dates in its own timezone', function () {
+    Setting::set('timezone', 'Europe/Warsaw', 'core');
+
+    $date = now()->setDate(2026, 11, 7)->setTime(23, 30);
+
+    expect($date->inTimezone()->format('Y-m-d H:i'))->toBe('2026-11-08 00:30')
+        ->and($date->timezoneName)->toBe('UTC');
+});
+
+test('formats dates in its own timezone, formats and language', function () {
+    Setting::set('timezone', 'Europe/Warsaw', 'core');
+    Setting::set('date_format', 'j F Y', 'core');
+    Setting::set('time_format', 'H:i', 'core');
+    app()->setLocale('pl');
+
+    $date = now()->setDate(2026, 11, 7)->setTime(23, 30);
+
+    expect($date->toDateFormat())->toBe('8 listopada 2026')
+        ->and($date->toTimeFormat())->toBe('00:30')
+        ->and($date->toDateTimeFormat())->toBe('8 listopada 2026 00:30');
 });

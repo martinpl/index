@@ -75,6 +75,8 @@ class Site extends Model
             'session.table' => $this->tablePrefix().'sessions',
         ]);
 
+        app()->setLocale(Setting::get('locale', config('app.locale')));
+
         Plugin::boot();
         Theme::boot();
 

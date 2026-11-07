@@ -4,6 +4,7 @@ use App\Listing\Action;
 use App\Listing\Column;
 use App\Listing\Tab;
 use App\Listing\WithListing;
+use App\Models\Setting;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\Livewire;
@@ -91,4 +92,22 @@ test('runs a bulk action on the selected records of a collection it is visible f
         ->assertSet('selected', []);
 
     expect(PluginListing::$activated)->toBe(['seo']);
+});
+
+test('date columns show the value in the timezone of the site', function () {
+    Setting::set('timezone', 'Europe/Warsaw', 'core');
+    $record = ['date' => now()->setDate(2026, 11, 7)->setTime(23, 30)];
+
+    expect(Column::make('date')->date()->getContent($record))->toBe('2026-11-08')
+        ->and(Column::make('date')->dateTime()->getContent($record))->toBe('2026-11-08 00:30')
+        ->and(Column::make('date')->getContent(['date' => null]))->toBeNull();
+});
+
+test('date columns use the date and time formats of the site', function () {
+    Setting::set('date_format', 'd.m.Y', 'core');
+    Setting::set('time_format', 'g:i A', 'core');
+    $record = ['date' => now()->setDate(2026, 11, 7)->setTime(13, 5)];
+
+    expect(Column::make('date')->date()->getContent($record))->toBe('07.11.2026')
+        ->and(Column::make('date')->dateTime()->getContent($record))->toBe('07.11.2026 1:05 PM');
 });

@@ -73,8 +73,8 @@ new class extends Component
                     .($entry->status === EntryStatus::Draft->value && $this->tab !== 'draft' ? ' <span class="text-muted-foreground">— '.e(__('Draft')).'</span>' : '')
                 )),
             Column::make('user')->label(__('Author'))->render(fn (Entry $entry): ?string => $entry->user?->name),
-            Column::make('date')->label(__('Date'))->sortable()->render(fn (Entry $entry): ?string => $entry->date),
-            Column::make('modified')->label(__('Modified'))->sortable()->hidden()->render(fn (Entry $entry): ?string => $entry->modified),
+            Column::make('date')->label(__('Date'))->sortable()->dateTime(),
+            Column::make('modified')->label(__('Modified'))->sortable()->hidden()->dateTime(),
         ];
     }
 

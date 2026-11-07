@@ -44,7 +44,7 @@ test('the settings page shows the stored settings', function () {
         ->assertSeeInOrder([route('dashboard.settings', 'general'), 'General']);
 
     Livewire::test('pages::dashboard.settings', ['page' => 'general'])
-        ->assertSet('values', ['site_name' => 'Index', 'users_can_register' => false, 'default_role' => null]);
+        ->assertSet('values', ['site_name' => 'Index', 'users_can_register' => false, 'default_role' => null, 'locale' => 'en', 'timezone' => 'UTC', 'date_format' => 'Y-m-d', 'time_format' => 'H:i', 'week_starts_on' => '1']);
 });
 
 test('the settings page validates the values', function () {
@@ -108,6 +108,35 @@ test('the settings page leaves out hidden fields, keeping their stored settings'
         ->assertHasNoErrors();
 
     expect(Setting::get('tagline'))->toBe('Just another Index site');
+});
+
+test('the general settings page stores a custom date format', function () {
+    $this->travelTo(now()->setDate(2026, 11, 7));
+    actingAs(settingsManager());
+
+    Livewire::test('pages::dashboard.settings', ['page' => 'general'])
+        ->set('values.site_name', 'Index')
+        ->set('values.date_format', 'j F Y')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSee('Preview: 7 November 2026', false)
+        ->set('values.date_format', str_repeat('Y', 256))
+        ->call('save')
+        ->assertHasErrors(['values.date_format' => 'max']);
+
+    expect(Setting::get('date_format'))->toBe('j F Y');
+});
+
+test('the general settings page previews only custom date formats', function () {
+    $this->travelTo(now()->setDate(2026, 11, 7)->setTime(13, 5));
+    actingAs(settingsManager());
+
+    Livewire::test('pages::dashboard.settings', ['page' => 'general'])
+        ->assertDontSee('Preview:')
+        ->set('values.date_format', 'j F Y')
+        ->assertSee('Preview: 7 November 2026')
+        ->set('values.time_format', 'H:i:s')
+        ->assertSee('Preview: 13:05:00');
 });
 
 test('registering a duplicate settings page throws', function () {
