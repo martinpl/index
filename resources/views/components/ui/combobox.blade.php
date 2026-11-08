@@ -14,6 +14,9 @@
     'icon' => null,               // optional leading lucide icon name (input trigger only, e.g. "search")
     'indicator' => 'check',       // check | checkbox | radio — how a selected option is marked in the list
     'id' => null,                 // lands on the focusable control, so <label for="{id}"> names and focuses it
+    'remote' => false,            // true → options come from the server, a page at a time, via the combobox-fetch event
+    'pageSize' => 30,             // remote: rows per page, sent as detail.limit
+    'debounce' => 250,            // remote: ms of quiet typing before a search is sent
 ])
 
 @php
@@ -27,8 +30,9 @@
     $searchPlaceholder ??= __('Search...');
     $empty ??= __('No results found.');
 
+    // Keys beyond value and label stay on the option: they travel with the combobox-select event.
     $opts = collect($options)->map(fn ($o) => is_array($o)
-        ? ['value' => (string) ($o['value'] ?? ''), 'label' => (string) ($o['label'] ?? $o['value'] ?? '')]
+        ? ['value' => (string) ($o['value'] ?? ''), 'label' => (string) ($o['label'] ?? $o['value'] ?? '')] + $o
         : ['value' => (string) $o, 'label' => (string) $o]
     )->values();
 
@@ -50,6 +54,13 @@
     $sizeCls = $sizes[$size] ?? $sizes['default'];
     $minH = ['sm' => 'min-h-8', 'default' => 'min-h-9', 'lg' => 'min-h-10'][$size] ?? 'min-h-9';
 
+    // The button trigger keeps the search box in step with the active option. A consumer x-init
+    // runs after it: two x-init attributes on one element and the browser keeps only the first,
+    // silently dropping the consumer's (issue #46).
+    $xInit = $attributes->get('x-init');
+    $attributes = $attributes->except('x-init');
+    $init = implode('; ', array_filter([$isInput ? null : "\$watch('query', () => ensureActive())", $xInit]));
+
     // Livewire bridge — bind the listbox value to a consumer's wire:model when present, through
     // $blatModel (blatui-core.js): the property path travels as a data attribute so a morph can
     // re-point it.
@@ -66,15 +77,19 @@
 
 <div
     data-slot="combobox"
+    data-blat-value="{{ json_encode($initialValue) }}"
     x-data="blatListbox({
         trigger: @js($trigger),
         multiple: @js((bool) $multiple),
-        model: $blatModel(@js($initialValue)),
+        model: $blatModel(),
         query: @js($initialQuery),
         options: @js($opts),
+        remote: @js((bool) $remote),
+        pageSize: @js(max(1, (int) $pageSize)),
+        debounce: @js(max(0, (int) $debounce)),
     })"
     x-id="['blat-combobox-list', 'blat-combobox-opt']"
-    @unless ($isInput) x-init="$watch('query', () => ensureActive())" @endunless
+    @if ($init) x-init="{{ $init }}" @endif
     {{ $attributes->twMerge('relative '.$width) }}
 >
     @if ($name)
@@ -145,6 +160,47 @@
                     x-bind:class="open && 'rotate-180'"
                     aria-hidden="true"
                 />
+            </div>
+        @elseif (isset($start) || isset($end))
+            {{-- Field with addons: the start and end slots sit inside the border, like an
+             input-group (a search icon, icon-only buttons). Clicking them never opens the list. --}}
+            <div
+                x-ref="control"
+                @click="$event.target === $el && $refs.input.focus()"
+                class="border-input dark:bg-input/30 {{ $minH }} flex w-full items-center gap-1 rounded-md border bg-transparent px-1 shadow-xs transition-[color,box-shadow] has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-ring/50 has-[input:focus-visible]:ring-[3px] [&_svg:not([class*='size-'])]:size-4 {{ $disabled ? 'pointer-events-none opacity-50' : '' }}"
+            >
+                @isset($start)
+                    <div data-slot="combobox-start" class="text-muted-foreground flex shrink-0 items-center gap-1 ps-2">
+                        {{ $start }}
+                    </div>
+                @endisset
+                <input
+                    x-ref="input"
+                    @if ($id) id="{{ $id }}" @endif
+                    x-model="query"
+                    type="text"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    autocomplete="off"
+                    :aria-expanded="open"
+                    :aria-controls="$id('blat-combobox-list')"
+                    :aria-activedescendant="activeValue != null ? $id('blat-combobox-opt', activeValue) : null"
+                    @focus="openList()"
+                    @click="openList()"
+                    @input="onInput()"
+                    @keydown.down.prevent="move(1)"
+                    @keydown.up.prevent="move(-1)"
+                    @keydown.enter.prevent="selectActive()"
+                    @keydown.escape.prevent.stop="close()"
+                    placeholder="{{ $placeholder }}"
+                    @disabled($disabled)
+                    class="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent px-2 text-sm outline-none disabled:cursor-not-allowed {{ $sizeCls }}"
+                />
+                @isset($end)
+                    <div data-slot="combobox-end" class="text-muted-foreground flex shrink-0 items-center gap-1 pe-1">
+                        {{ $end }}
+                    </div>
+                @endisset
             </div>
         @else
             <div class="relative">
@@ -239,6 +295,7 @@
             x-show="open"
             x-cloak
             data-slot="combobox-content"
+            @unless ($isInput) x-trap.noreturn="open && $blatInModal" @endunless
             {{-- x-blat-anchor, not Alpine's x-anchor: same house directive as select-content and
              dropdown-menu-content, so a panel opened from inside a modal's top layer positions
              the same way everywhere, and a long list opened from a low trigger gets capped to the
@@ -278,6 +335,7 @@
                             :aria-activedescendant="activeValue != null ? $id('blat-combobox-opt', activeValue) : null"
                             @keydown.down.prevent="move(1)"
                             @keydown.up.prevent="move(-1)"
+                            @input="queueFetch()"
                             @keydown.home.prevent="edge('first')"
                             @keydown.end.prevent="edge('last')"
                             @keydown.enter.prevent="selectActive()"
@@ -292,6 +350,7 @@
                     tabindex="-1"
                     :aria-multiselectable="multiple"
                     :id="$id('blat-combobox-list')"
+                    @if ($remote) @scroll.passive="fillList()" @endif
                     @if (! $isInput && ! $searchable)
                         @keydown.down.prevent="move(1)"
                         @keydown.up.prevent="move(-1)"
@@ -301,12 +360,12 @@
                     @endif
                     class="max-h-[300px] min-h-0 scroll-py-1 overflow-x-hidden overflow-y-auto {{ $isInput ? '' : 'p-1' }} outline-hidden"
                 >
-                    <div x-show="visibleCount === 0" class="py-6 text-center text-sm">{{ $empty }}</div>
+                    <div x-show="visibleCount === 0 && ! loading" class="py-6 text-center text-sm">{{ $empty }}</div>
                     <template x-for="option in options" :key="option.value">
                         <div
                             role="option"
                             :id="$id('blat-combobox-opt', option.value)"
-                            x-show="visible.some((o) => o.value === option.value)"
+                            x-show="isVisible(option)"
                             @click="select(option.value)"
                             @mouseenter="activeValue = option.value"
                             :aria-selected="isSelected(option.value)"
@@ -348,6 +407,17 @@
                             <span x-text="option.label"></span>
                         </div>
                     </template>
+                    @if ($remote)
+                        <div
+                            role="status"
+                            x-show="loading"
+                            x-cloak
+                            class="text-muted-foreground flex items-center justify-center gap-2 py-3 text-sm"
+                        >
+                            <x-ui.spinner class="size-4" aria-hidden="true" />
+                            <span>{{ __('Loading…') }}</span>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

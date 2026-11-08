@@ -9,11 +9,9 @@
         @foreach ($field->getOptions() as $optionValue => $optionLabel)
             <x-ui.field orientation="horizontal">
                 <x-ui.radio-group-item :id="$field->id($path).'-'.$optionValue" :value="(string) $optionValue" />
-                <x-ui.field-label
-                    :for="$field->id($path).'-'.$optionValue"
-                    class="font-normal"
-                >
-                    {{ $optionLabel }}</x-ui.field-label>
+                <x-ui.field-label :for="$field->id($path).'-'.$optionValue" class="font-normal">
+                    {{ $optionLabel }}
+                </x-ui.field-label>
             </x-ui.field>
         @endforeach
     </x-ui.radio-group>

@@ -37,11 +37,9 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use Locale;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -129,10 +127,6 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
-
-        Lang::determineLocalesUsing(fn (array $locales): array => collect($locales)
-            ->flatMap(fn (string $locale): array => [$locale, Locale::getPrimaryLanguage($locale)])
-            ->all());
     }
 
     /**

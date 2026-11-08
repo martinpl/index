@@ -4,7 +4,6 @@ use App\Models\Entry;
 use App\Models\Setting;
 use App\Models\Site;
 use App\Models\User;
-use Illuminate\Support\Facades\Lang;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
@@ -54,16 +53,6 @@ test('uses its own locale', function () {
     $site->makeCurrent();
 
     expect(app()->getLocale())->toBe('pl');
-});
-
-test('falls back from a regional locale to its language', function () {
-    Lang::addLines(['messages.greeting' => 'Cześć'], 'pl');
-    Lang::addLines(['messages.farewell' => 'Goodbye'], 'en');
-
-    app()->setLocale('pl_PL');
-
-    expect(__('messages.greeting'))->toBe('Cześć')
-        ->and(__('messages.farewell'))->toBe('Goodbye');
 });
 
 test('shows dates in its own timezone', function () {

@@ -70,13 +70,14 @@ class General
     }
 
     /**
-     * Every locale known to the system, labeled in its own language. Untranslated ones fall back to the fallback locale.
+     * The languages known to the system, without regional variants like `pl_PL`, labeled in their own language.
      *
      * @return array<string, string>
      */
     public static function locales(): array
     {
         return collect(ResourceBundle::getLocales(''))
+            ->filter(fn (string $locale): bool => $locale === Locale::getPrimaryLanguage($locale))
             ->mapWithKeys(fn (string $locale): array => [$locale => mb_ucfirst(Locale::getDisplayName($locale, $locale))])
             ->sort()
             ->all();

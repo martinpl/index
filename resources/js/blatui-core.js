@@ -197,6 +197,20 @@ function _parse(s) {
 function _sameDay(a, b) { return a && b && _ymd(a) === _ymd(b); }
 function _addMonths(d, n) { return new Date(d.getFullYear(), d.getMonth() + n, 1); }
 
+/**
+ * A locale tag the Intl APIs accept, or `fallback`. The tag usually comes from the app locale
+ * (`app()->getLocale()`), which is whatever the app configured — `es`, `pt-BR`, but also a
+ * custom name no browser knows — and `toLocaleString` throws a RangeError on a malformed one.
+ */
+function blatLocale(tag, fallback = 'en-US') {
+    if (! tag) return fallback;
+    try {
+        return new Intl.DateTimeFormat(tag).resolvedOptions().locale;
+    } catch {
+        return fallback;
+    }
+}
+
 const calendar = (cfg = {}) => ({
     // Instance handle. Set it with the `calendar-id` prop (or a plain `id`) and every
     // incoming hook can be aimed at THIS calendar even when broadcast on `window`, and
@@ -205,7 +219,7 @@ const calendar = (cfg = {}) => ({
     // sheet, say) need this: an un-targeted window dispatch reaches all of them.
     calendarId: cfg.calendarId || null,
     mode: cfg.mode || 'single',
-    locale: cfg.locale || 'en-US',
+    locale: blatLocale(cfg.locale),
     // aria-label fragments, localised by the Blade layer (never hardcode English here).
     todayLabel: cfg.todayLabel || 'Today, :date',
     selectedLabel: cfg.selectedLabel || 'selected',
@@ -988,9 +1002,43 @@ function stableIds(owner) {
     return (node, role, prefix) => {
         if (node.id) return (minted[role] = node.id);
         node.id = minted[role] || mintId(prefix);
+        node._blatMintedId = node.id;
 
         return (minted[role] = node.id);
     };
+}
+
+/**
+ * Take the ids stableIds() minted back off the children of a node a Livewire morph is about
+ * to patch.
+ *
+ * Livewire keys elements by `id`. The live node carries the id we minted, the server's markup
+ * has none, so the keys differ and the morph REPLACES the node instead of patching it: an
+ * input whose label has no `for` was swapped on every re-render, and the focus (and caret) of
+ * whoever was typing in it went to <body>. With the id gone the keys match again and the node
+ * is patched in place. keepWired()'s observer puts the same id back once the morph is done —
+ * stableIds() hands back the one it memoised.
+ *
+ * It has to be `morph.updating`, which fires on each parent right before its children are
+ * compared. The component-level `morph` hook is too early: Livewire awaits a transition between
+ * the two, the observer runs in that gap, and the ids are back by the time keys are compared.
+ *
+ * Only an id we minted that is still in place: an id the app wrote, or put over ours, stays.
+ *
+ * Half of the fix. The other half is registering the stableIds() directives with
+ * skipDuringClone: Livewire runs Alpine over its copy of the server's tree before the morph,
+ * and wiring that copy minted ids on IT — the keys differed again, the other way round.
+ */
+function stripMintedIds(parent) {
+    for (const child of parent.children) {
+        if (child._blatMintedId && child.id === child._blatMintedId) child.removeAttribute('id');
+    }
+}
+
+function hookLivewireMorph() {
+    const hook = () => window.Livewire.hook('morph.updating', ({ el }) => stripMintedIds(el));
+    if (window.Livewire?.hook) hook();
+    else document.addEventListener('livewire:init', hook, { once: true });
 }
 
 /**
@@ -1136,6 +1184,57 @@ function blatLabelledByDirective(el, { expression }, { evaluate, cleanup }) {
 // render behind the modal (and be inert). Inside the dialog it shares the top layer and stays
 // interactive. With no native <dialog> ancestor it stays in <body> (the teleport default),
 // still escaping any overflow-clipping ancestor. Pure DOM — works in any component's scope.
+// blatSidebarProvider — the state every sidebar part reads: open (desktop), openMobile,
+// isMobile, collapsed, toggle().
+//
+// It lives in one plain reactive object, and the scope on the provider only forwards to it.
+// That is what lets a sidebar kept in @persist survive a wire:navigate visit (#57): the visit
+// renders a NEW provider with a new scope, but the persisted sidebar keeps its DOM, its
+// bindings and therefore the OLD provider's scope. Two scopes holding their own `open` meant
+// the header trigger (new scope) toggled a value the sidebar (old scope) no longer read. A
+// provider that persists under a cookie name now picks up the state the previous one left
+// behind, so both scopes forward to the same object and the trigger drives the sidebar again.
+// The state is kept as it is rather than reset to what the server painted: a page restored
+// from the history cache carries a stale `open`, the live state does not.
+//
+// The accessors never touch `this`: Alpine calls them with whichever merged proxy READ the
+// property, so `this.open` in a getter would hand a tooltip or collapsible its own `open` —
+// the reason `collapsed` used to be a plain value kept in sync by an x-effect.
+const sidebarStates = new Map();
+
+const blatSidebarProvider = (Alpine, { open = true, key = null, mobileQuery = '(max-width: 767px)' } = {}) => {
+    let state = key && sidebarStates.get(key);
+    if (!state) {
+        state = Alpine.reactive({ open, openMobile: false, isMobile: false });
+        if (key) sidebarStates.set(key, state);
+        // Once per state, not per provider: a provider replaced by a visit would otherwise leave
+        // its listener and its cookie writer behind.
+        const mq = window.matchMedia(mobileQuery);
+        state.isMobile = mq.matches;
+        mq.addEventListener('change', (e) => (state.isMobile = e.matches));
+        if (key) {
+            let last = state.open;
+            Alpine.effect(() => {
+                const v = state.open;
+                if (v === last) return;
+                last = v;
+                document.cookie = `${key}=${v}; path=/; max-age=31536000; SameSite=Lax`;
+            });
+        }
+    }
+
+    return {
+        get open() { return state.open; },
+        set open(v) { state.open = v; },
+        get openMobile() { return state.openMobile; },
+        set openMobile(v) { state.openMobile = v; },
+        get isMobile() { return state.isMobile; },
+        set isMobile(v) { state.isMobile = v; },
+        get collapsed() { return !state.isMobile && !state.open; },
+        toggle() { state.isMobile ? (state.openMobile = !state.openMobile) : (state.open = !state.open); },
+    };
+};
+
 // blatSidebarFlyout — a sidebar submenu, reachable from the icon rail (#39).
 //
 // Collapsed to icons, a <x-ui.sidebar-menu-sub> has nowhere to go: the rail is 3rem wide, so
@@ -1425,7 +1524,27 @@ function blatAnchorDirective(el, { modifiers, expression }, { evaluateLater, cle
 
     getReference((initial) => rebind(initial));
 
-    cleanup(() => stop && stop());
+    // `.match-width`: widen the popover the moment it is shown, before the browser lays it out.
+    // Left to size() alone, the first width arrived from inside autoUpdate's ResizeObserver
+    // callback — the observer reported the popover at its content width, the update it ran
+    // resized the very node it was observing, and WebKit logged "ResizeObserver loop completed
+    // with undelivered notifications" on every first open of a combobox. Written here, in the
+    // microtask that follows x-show, the observer's first report is already the final size and
+    // size() finds nothing left to change.
+    let shown = el.style.display !== 'none';
+    const presize = new MutationObserver(() => {
+        const wasShown = shown;
+        shown = el.style.display !== 'none';
+        if (! matchWidth || wasShown || ! shown || ! reference?.getBoundingClientRect) return;
+        const width = reference.getBoundingClientRect().width;
+        if (width > 0) el.style.minWidth = `${Math.round(width)}px`;
+    });
+    presize.observe(el, { attributes: true, attributeFilter: ['style'] });
+
+    cleanup(() => {
+        presize.disconnect();
+        if (stop) stop();
+    });
 }
 
 // Left one-shot on purpose, unlike its neighbours. The others were re-derived because a
@@ -1435,7 +1554,8 @@ function blatAnchorDirective(el, { modifiers, expression }, { evaluateLater, cle
 // re-derived across a morph because no morph could be made to break it: re-rendering a native
 // <dialog>'s subtree closes the modal outright, which is the app's problem long before it is
 // this directive's. Change that if a report ever shows otherwise — not before.
-function blatDialogLayerDirective(el) {
+function blatDialogLayerDirective(el, _, { cleanup }) {
+    keepInModal(el, cleanup);
     queueMicrotask(() => {
         const home = el._x_teleportBack;
         if (!home) return;
@@ -1448,6 +1568,54 @@ function blatDialogLayerDirective(el) {
             // against the new containing block so the popover re-anchors to its trigger.
             requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
         }
+    });
+}
+
+// A teleported layer opened from inside a modal (issue #45). <x-ui.dialog> and the other modals
+// trap focus with x-trap.inert, and the layer lives in <body>, outside that trap: the trap took
+// every focus the layer received straight back, and its .inert hid the layer from assistive tech
+// as one of <body>'s other children. Moving the layer into the modal is no answer, because the
+// next Livewire morph of the modal removes a node it did not render. So the layer stays where it
+// is and, while it is open inside a modal, runs a trap of its own: `x-trap.noreturn="open &&
+// $blatInModal"` on the layer, which focus-trap stacks on top of the modal's and pauses it.
+//
+// Two things follow, handled here for every layer at once:
+//   - The layer's trap starts a few ms after the component has already moved focus into it, and
+//     in that window the modal's trap pulls the focus back out. When the layer's trap then starts
+//     with nothing focused inside, it falls back to the layer itself. The focus is handed on to
+//     the element the component meant to focus, so the selected option or the search box gets it.
+//   - The modal's .inert writes aria-hidden onto the layer, which is removed again while the
+//     layer belongs to that modal.
+function blatInModal(el) {
+    for (let n = el; n; n = n._x_teleportBack ?? n.parentElement) {
+        if (n.matches?.('[aria-modal="true"]')) return true;
+    }
+
+    return false;
+}
+
+function keepInModal(el, cleanup) {
+    let intended = null;
+    const onFocus = (e) => {
+        if (e.target !== el) {
+            intended = e.target;
+        } else if (intended && el.contains(intended) && intended.offsetParent !== null && blatInModal(el)) {
+            intended.focus();
+        }
+    };
+    el.addEventListener('focus', onFocus, true);
+
+    // x-show hides the layer through its style: what was focused in it then is forgotten, so a
+    // later opening never hands the focus to an element remembered from an earlier one.
+    const observer = new MutationObserver(() => {
+        if (el.style.display === 'none') intended = null;
+        if (el.getAttribute('aria-hidden') === 'true' && blatInModal(el)) el.removeAttribute('aria-hidden');
+    });
+    observer.observe(el, { attributes: true, attributeFilter: ['aria-hidden', 'style'] });
+
+    cleanup(() => {
+        el.removeEventListener('focus', onFocus, true);
+        observer.disconnect();
     });
 }
 
@@ -1479,7 +1647,8 @@ function blatDialogLayerDirective(el) {
 // and the same object simply holds the value locally, so a component behaves identically.
 //
 // Usage, in a component's x-data (the Blade bridge renders the data attributes):
-//     _model: $blatModel(@js($default)),
+//     data-blat-value="{{ json_encode($default) }}"   ← on the x-data element
+//     _model: $blatModel(),
 //     get value() { return this._model.value },
 //     set value(v) { this._model.value = v },
 // ---------------------------------------------------------------------------
@@ -1520,11 +1689,52 @@ function blatWire(el) {
     return (root && window.Livewire.find(root.getAttribute('wire:id'))) || null;
 }
 
-function blatModelMagic(el) {
-    return (fallback = null) => ({
-        // Where the value lives when nothing is bound. Declared here (rather than captured
-        // in a closure) so Alpine's reactivity covers it and a local component still re-renders.
-        local: fallback,
+function blatModelMagic(el, { Alpine, cleanup }) {
+    return (...args) => {
+        // Called with no argument, the starting value comes from the element's `data-blat-value`
+        // (JSON) instead of from the x-data expression — and that is the form every component
+        // uses. A value written into x-data made the expression itself change whenever the
+        // value did: with `:value="$x" wire:model.live="x"` every round trip did, and Alpine
+        // (3.16+) re-applies a changed expression to the live component, resetting every key in
+        // it — the date-picker's popover closed after the first day of a range (#53), a select
+        // lost its labels (#48). With the value in an attribute the expression never changes.
+        const seeded = args.length === 0;
+        const state = Alpine.reactive({ local: seeded ? readSeed(el) : (args[0] ?? null) });
+
+        // What the attribute used to do through x-data, kept: a component that is not bound
+        // follows a new value from the server. A bound one reads the property, not `local`.
+        if (seeded && ! el._blatSeedWatch) {
+            let seed = el.dataset.blatValue;
+            el._blatSeedWatch = new MutationObserver(() => {
+                if (el.dataset.blatValue === seed) return;
+                seed = el.dataset.blatValue;
+                state.local = readSeed(el);
+            });
+            el._blatSeedWatch.observe(el, { attributes: true, attributeFilter: ['data-blat-value'] });
+            cleanup(() => {
+                el._blatSeedWatch?.disconnect();
+                delete el._blatSeedWatch;
+            });
+        }
+
+        return blatModelFor(el, state);
+    };
+}
+
+function readSeed(el) {
+    try {
+        return JSON.parse(el.dataset.blatValue ?? 'null');
+    } catch {
+        return null;
+    }
+}
+
+function blatModelFor(el, state) {
+    return {
+        // Where the value lives when nothing is bound. Reactive (Alpine.reactive above) so a
+        // local component re-renders, and so the seed observer can move it from outside.
+        get local() { return state.local; },
+        set local(v) { state.local = v; },
 
         get path() { return el.dataset.blatModel || null; },
 
@@ -1562,7 +1772,7 @@ function blatModelMagic(el) {
             const wire = this.path && el.dataset.blatModelLive === '1' ? blatWire(el) : null;
             if (wire) wire.$set(this.path, wire.$get(this.path), true);
         },
-    });
+    };
 }
 
 
@@ -1955,6 +2165,128 @@ const blatTreeGrid = (config = {}) => ({
 });
 
 
+/**
+ * Does a link's href name the page we are on? The rule is Livewire's `wire:current`, so a
+ * sidebar marked both ways never disagrees with itself: same host, trailing slashes ignored,
+ * and by default every segment of the href is a prefix of the page's (`/orders` is current on
+ * `/orders/12`). `exact` wants the whole path. The root is always exact, or `/` would be
+ * current everywhere. Kept in step with blatCurrentPath() in sidebar-menu-button.blade.php.
+ */
+function blatPathMatches(href, url, exact) {
+    if (href.hostname !== url.hostname) return false;
+    const want = href.pathname.replace(/\/+$/, '');
+    const have = url.pathname.replace(/\/+$/, '');
+    if (exact || want === '') return want === have;
+    return have === want || have.startsWith(want + '/');
+}
+
+// x-blat-current="'exact'" — keeps data-active + aria-current on a menu link in step with the
+//   page, for a sidebar the server does not re-render on every visit: one inside @persist, or a
+//   Livewire component whose update request only knows the /livewire/update route (#54).
+//   Re-checked on each wire:navigate visit and whenever a morph rewrites the attributes from
+//   the server's copy. Becoming current dispatches `blat-current`, which opens the enclosing
+//   <x-ui.collapsible>s, so a group follows the page without an :open the server can't know.
+const blatCurrentPages = new Set();
+let blatCurrentListening = false;
+
+function blatCurrentDirective(el, { expression }, { evaluate, cleanup }) {
+    const exact = (expression ? evaluate(expression) : null) === 'exact';
+    // menu-action and menu-badge style off the tooltip wrapper when there is one (it stands in
+    // as their peer), so the state goes there too.
+    const peer = () => (el.parentElement?.dataset.slot === 'sidebar-menu-button-tooltip' ? el.parentElement : null);
+    let was = false;
+
+    const sync = () => {
+        const href = el.getAttribute('href');
+        const now = !!href && !href.startsWith('#') && blatPathMatches(new URL(href, location.href), new URL(location.href), exact);
+        setAttr(el, 'data-active', now ? 'true' : null);
+        if (el.tagName === 'A') setAttr(el, 'aria-current', now ? 'page' : null);
+        const p = peer();
+        if (p) setAttr(p, 'data-active', now ? 'true' : null);
+        if (now && was === false) el.dispatchEvent(new CustomEvent('blat-current', { bubbles: true }));
+        was = now;
+    };
+
+    if (!blatCurrentListening) {
+        blatCurrentListening = true;
+        const all = () => blatCurrentPages.forEach((fn) => fn());
+        document.addEventListener('livewire:navigated', all);
+        window.addEventListener('popstate', all);
+    }
+    // The first pass dispatches too, once Alpine has given the collapsibles above their scope:
+    // a reload of a page deep in a closed group opens it.
+    queueMicrotask(sync);
+    blatCurrentPages.add(sync);
+    const observer = new MutationObserver(sync);
+    observer.observe(el, { attributes: true, attributeFilter: ['href', 'data-active', 'aria-current'] });
+    cleanup(() => {
+        blatCurrentPages.delete(sync);
+        observer.disconnect();
+    });
+}
+
+// x-blat-closed="dialog" — on the teleported wrapper of a dialog, sheet or alert-dialog: once
+//   it has finished closing, dispatches `{kind}-closed` from the component's root (#59). That is
+//   the moment to reset a form: on `open = false` the leave transition is still playing, and a
+//   reset that lands then empties the fields while they are fading out. Alpine hides this
+//   wrapper only after the transitions inside it have run, so its display going to none is
+//   exactly "closed and off screen", whatever closed it. Dispatched from the root, not from
+//   here in <body>, so `x-on:dialog-closed` / `wire:dialog-closed` on <x-ui.dialog> hears it.
+function blatClosedDirective(el, { expression }, { cleanup }) {
+    let shown = false;
+    const observer = new MutationObserver(() => {
+        if (el.style.display !== 'none') { shown = true; return; }
+        if (! shown) return;
+        shown = false;
+        const root = el._x_teleportBack?.closest(`[data-slot="${expression}"]`) || el;
+        root.dispatchEvent(new CustomEvent(`${expression}-closed`, { bubbles: true }));
+    });
+    observer.observe(el, { attributes: true, attributeFilter: ['style'] });
+    cleanup(() => observer.disconnect());
+}
+
+// x-blat-scroll-memory="'sidebar_scroll'" — remembers how far a list was scrolled, per tab, in
+//   sessionStorage under that key, and puts it back when the list is rendered again: after a
+//   wire:navigate visit or a reload, without @persist (#54). A copy that is hidden when it
+//   starts (the mobile drawer) is restored the moment it gets a size.
+function blatScrollMemoryDirective(el, { expression }, { evaluate, cleanup }) {
+    const key = 'blat:scroll:' + (expression ? evaluate(expression) : 'sidebar_scroll');
+    const read = () => {
+        try { return Number(sessionStorage.getItem(key)) || 0; } catch { return 0; }
+    };
+    let restored = false;
+    const restore = () => {
+        if (restored || el.clientHeight === 0) return;
+        restored = true;
+        el.scrollTop = read();
+    };
+    const save = () => {
+        if (el.clientHeight === 0) return;
+        try { sessionStorage.setItem(key, String(Math.round(el.scrollTop))); } catch {}
+    };
+    restore();
+    el.addEventListener('scroll', save, { passive: true });
+    // Hidden → shown restores again: each opening of the drawer lands where the list was left.
+    const resize = new ResizeObserver(() => {
+        if (el.clientHeight === 0) restored = false;
+        else restore();
+    });
+    resize.observe(el);
+    // @persist carries this very node into the next page, and moving a node resets its scroll.
+    // The move happens within one task, so the observer above never sees it leave.
+    const navigated = () => {
+        restored = false;
+        restore();
+    };
+    document.addEventListener('livewire:navigated', navigated);
+    cleanup(() => {
+        el.removeEventListener('scroll', save);
+        document.removeEventListener('livewire:navigated', navigated);
+        resize.disconnect();
+    });
+}
+
+
 // x-blat-field — wires a form field's control to its label/description/error:
 //   aria-describedby ← description + error ids, aria-invalid + data-invalid when
 //   an error is present, and label[for] ← control id when not already set. Radix/
@@ -2227,6 +2559,23 @@ const blatSelect = (config = {}) => ({
     },
     _list: null,
     _trigger: null,
+    _seedWatch: null,
+    // The server's value arrives in data-blat-value (kept out of x-data, see select.blade.php).
+    // Bound to wire:model, the property is the value and the attribute is only its first seed.
+    // Unbound, a re-render that hands the select a different value moves it, as it always did.
+    init() {
+        if (config.wired) return;
+        let seed = this.$el.dataset.blatValue;
+        this._seedWatch = new MutationObserver(() => {
+            if (this.$el.dataset.blatValue === seed) return;
+            seed = this.$el.dataset.blatValue;
+            this.value = normaliseSelectValue({ value: JSON.parse(seed) }, this.multiple).value;
+        });
+        this._seedWatch.observe(this.$el, { attributes: true, attributeFilter: ['data-blat-value'] });
+    },
+    destroy() {
+        this._seedWatch?.disconnect();
+    },
     get _options() {
         return this._list
             ? Array.from(this._list.querySelectorAll('[role="option"]')).filter(
@@ -2348,106 +2697,241 @@ const blatCommand = () => ({
 //
 // Shared primitives (single-sourced here): isSelected, selected, matches,
 // visible, visibleCount, ensureActive, move, edge, selectActive, select, remove.
-const blatListbox = (config = {}) => ({
-    trigger: config.trigger || 'button', // 'button' | 'input'
-    open: false,
-    // `filtering` only matters for the input trigger: the list shows ALL options
-    // until the user actually types, so opening a field with a value shows siblings.
-    filtering: false,
-    multiple: !!config.multiple,
-    // The value lives in the caller's model — a $blatModel bound to wire:model, or the same
-    // object holding it locally when there is none. One source of truth either way.
-    _model: config.model ?? { value: config.value ?? (config.multiple ? [] : '') },
-    get value() { const v = this._model.value; return v ?? (this.multiple ? [] : ''); },
-    set value(v) { this._model.value = v; },
-    activeValue: null,
-    options: config.options || [],
-    // Seed the query: input/single starts showing the selected label.
-    query: config.query ?? '',
+//
+// remote: true — the options come from the server, a page at a time (issue #61). The list stops
+// filtering (the server already did) and asks for options with a `combobox-fetch` event:
+// detail { query, offset, limit, respond }. offset 0 replaces the list, a higher one appends to
+// it; respond() takes an array, or { options, hasMore }, or a promise of either — so a handler
+// can be `$event.detail.respond($wire.search(…))`. It asks while the user types (debounced),
+// when the list opens on a query it has not fetched, and when the list is scrolled near its end
+// while the last answer said hasMore. An answer that a newer search has overtaken is dropped.
+//
+// Filtering is linear (issue #63): every option row asks isVisible() about itself, rather than
+// searching `visible` (a fresh filter of the whole list) for its own value, which was n² matches()
+// per render and per keystroke. Folded strings are memoised outside the reactive object, so each
+// label is folded once, and the query once per change.
+const blatListbox = (config = {}) => {
+    const folds = new Map();
+    const fold = (text) => {
+        const key = String(text);
+        let out = folds.get(key);
+        if (out === undefined) {
+            // Queries accumulate as the user types; a long session must not grow without end.
+            if (folds.size > 10000) folds.clear();
+            out = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            folds.set(key, out);
+        }
+        return out;
+    };
+    return {
+        trigger: config.trigger || 'button', // 'button' | 'input'
+        open: false,
+        // `filtering` only matters for the input trigger: the list shows ALL options
+        // until the user actually types, so opening a field with a value shows siblings.
+        filtering: false,
+        multiple: !!config.multiple,
+        // The value lives in the caller's model — a $blatModel bound to wire:model, or the same
+        // object holding it locally when there is none. One source of truth either way.
+        _model: config.model ?? { value: config.value ?? (config.multiple ? [] : '') },
+        get value() { const v = this._model.value; return v ?? (this.multiple ? [] : ''); },
+        set value(v) { this._model.value = v; },
+        activeValue: null,
+        options: config.options || [],
+        // Seed the query: input/single starts showing the selected label.
+        query: config.query ?? '',
+        remote: !!config.remote,
+        pageSize: config.pageSize ?? 30,
+        debounce: config.debounce ?? 250,
+        loading: false,
+        hasMore: false,
+        // Every option that has been picked, by value. A remote list replaces its options on each
+        // search, and the trigger label and the chips must not go blank because the chosen option
+        // is no longer among them.
+        known: {},
+        _seq: 0,
+        _timer: null,
+        _fetched: null,
+        _enter: false,
 
-    isSelected(v) { return this.multiple ? this.value.includes(v) : this.value === v; },
-    get selected() { return this.options.filter((o) => this.isSelected(o.value)); },
-    // Single-select trigger label (button variant renders this).
-    get label() { const o = this.options.find((o) => o.value === this.value); return o ? o.label : ''; },
-    matches(label) { return label.toLowerCase().includes(this.query.toLowerCase()); },
-    get visible() {
-        // Input trigger only filters once the user types; button always filters by query.
-        if (this.trigger === 'input' && !this.filtering) return this.options;
-        return this.options.filter((o) => this.matches(o.label));
-    },
-    get visibleCount() { return this.visible.length; },
-    ensureActive() {
-        const v = this.visible;
-        if (!v.length) { this.activeValue = null; return; }
-        if (!v.some((o) => o.value === this.activeValue)) {
-            this.activeValue = (v.find((o) => this.isSelected(o.value)) || v[0]).value;
-        }
-    },
-    move(dir) {
-        if (this.trigger === 'input' && !this.open) { this.openList(); return; }
-        const v = this.visible;
-        if (!v.length) return;
-        let i = v.findIndex((o) => o.value === this.activeValue);
-        i = i < 0 ? 0 : (i + dir + v.length) % v.length;
-        this.activeValue = v[i].value;
-    },
-    edge(pos) {
-        const v = this.visible;
-        if (!v.length) return;
-        this.activeValue = (pos === 'last' ? v[v.length - 1] : v[0]).value;
-    },
-    openList() {
-        this.open = true;
-        if (this.trigger === 'button') {
-            this.query = '';
-            this.$nextTick(() => { this.ensureActive(); (this.$refs.search || this.$refs.list)?.focus(); });
-        } else {
-            this.filtering = false;
+        isSelected(v) { return this.multiple ? this.value.includes(v) : this.value === v; },
+        optionFor(v) { return this.options.find((o) => o.value === v) || this.known[v] || null; },
+        get selected() {
+            const listed = this.options.filter((o) => this.isSelected(o.value));
+            const values = this.multiple ? this.value : (this.value === '' || this.value == null ? [] : [this.value]);
+            const kept = values.filter((v) => ! listed.some((o) => o.value === v)).map((v) => this.known[v]).filter(Boolean);
+            return [...listed, ...kept];
+        },
+        // Single-select trigger label (button variant renders this).
+        get label() { const o = this.optionFor(this.value); return o ? o.label : ''; },
+        // Case- and accent-insensitive: "jose" finds "José".
+        fold(text) { return fold(text); },
+        matches(label) { return fold(label).includes(fold(this.query)); },
+        // Whether the query filters the list at all. A remote list is the server's answer to the
+        // query: filtering it again here would hide rows the server matched differently (word order,
+        // accents, a document number). The input trigger only filters once the user types; the
+        // button trigger always filters by query.
+        get filters() { return ! this.remote && (this.trigger !== 'input' || this.filtering); },
+        // One option row's own question — what its x-show asks.
+        isVisible(option) { return ! this.filters || this.matches(option.label); },
+        get visible() {
+            if (! this.filters) return this.options;
+            const q = fold(this.query);
+            return this.options.filter((o) => fold(o.label).includes(q));
+        },
+        // What a remote list asks the server for. An input trigger that has not been typed in shows
+        // the selected label, which is not a search.
+        get term() { return this.trigger === 'input' && ! this.filtering ? '' : this.query; },
+        queueFetch() {
+            if (! this.remote) return;
+            clearTimeout(this._timer);
+            this._timer = setTimeout(() => this.fetch(0), this.debounce);
+        },
+        fetch(offset = 0) {
+            clearTimeout(this._timer);
+            this._timer = null;
+            const seq = ++this._seq;
+            const query = this.term;
+            this.loading = true;
+            const respond = (answer) => Promise.resolve(answer).then((result) => {
+                if (seq !== this._seq) return;
+                const list = Array.isArray(result) ? result : (result?.options ?? []);
+                this.hasMore = ! Array.isArray(result) && !! result?.hasMore;
+                this.options = offset ? [...this.options, ...list] : list;
+                if (! offset) {
+                    this._fetched = query;
+                    // A new answer starts at the top. Left where the last one was scrolled, the
+                    // list would sit at its end and ask for a second page nobody scrolled to.
+                    if (this.$refs.list) this.$refs.list.scrollTop = 0;
+                }
+                this.loading = false;
+                this.$nextTick(() => {
+                    if (this._enter && ! offset) {
+                        this._enter = false;
+                        // A scanner types a code and presses Enter before the answer arrives: an
+                        // answer with exactly one match is the item it scanned.
+                        if (this.visible.length === 1) return this.select(this.visible[0].value);
+                    }
+                    this.ensureActive();
+                    this.fillList();
+                });
+            }, () => {
+                if (seq === this._seq) { this.loading = false; this._enter = false; }
+            });
+            this.$root.dispatchEvent(new CustomEvent('combobox-fetch', {
+                bubbles: true,
+                detail: { query, offset, limit: this.pageSize, respond },
+            }));
+        },
+        more() {
+            if (this.remote && this.hasMore && ! this.loading) this.fetch(this.options.length);
+        },
+        // Ask for the next page when the list is scrolled near its end — or cannot scroll at all yet,
+        // which a scroll event would never report.
+        fillList() {
+            const list = this.$refs.list;
+            if (! list || ! this.open) return;
+            if (list.scrollHeight - list.scrollTop - list.clientHeight < 48) this.more();
+        },
+        get visibleCount() { return this.visible.length; },
+        ensureActive() {
+            const v = this.visible;
+            if (!v.length) { this.activeValue = null; return; }
+            if (!v.some((o) => o.value === this.activeValue)) {
+                this.activeValue = (v.find((o) => this.isSelected(o.value)) || v[0]).value;
+            }
+        },
+        move(dir) {
+            if (this.trigger === 'input' && !this.open) { this.openList(); return; }
+            const v = this.visible;
+            if (!v.length) return;
+            let i = v.findIndex((o) => o.value === this.activeValue);
+            i = i < 0 ? 0 : (i + dir + v.length) % v.length;
+            this.activeValue = v[i].value;
+        },
+        edge(pos) {
+            const v = this.visible;
+            if (!v.length) return;
+            this.activeValue = (pos === 'last' ? v[v.length - 1] : v[0]).value;
+        },
+        openList() {
+            this.open = true;
+            if (this.trigger === 'button') {
+                this.query = '';
+                this.$nextTick(() => { this.ensureActive(); (this.$refs.search || this.$refs.list)?.focus(); });
+            } else {
+                this.filtering = false;
+                this.$nextTick(() => this.ensureActive());
+            }
+            if (this.remote && ! this._timer && this._fetched !== this.term) this.fetch(0);
+        },
+        // Input trigger: typing opens + filters; single select clears the committed value.
+        onInput() {
+            if (!this.multiple) this.value = '';
+            this.open = true;
+            this.filtering = true;
+            this.queueFetch();
             this.$nextTick(() => this.ensureActive());
-        }
-    },
-    // Input trigger: typing opens + filters; single select clears the committed value.
-    onInput() {
-        if (!this.multiple) this.value = '';
-        this.open = true;
-        this.filtering = true;
-        this.$nextTick(() => this.ensureActive());
-    },
-    toggle() { this.open ? this.close(false) : this.openList(); },
-    close(returnFocus = true) {
-        if (!this.open) return;
-        this.open = false;
-        this.filtering = false;
-        if (this.trigger === 'button' && returnFocus) this.$nextTick(() => this.$refs.trigger?.focus());
-    },
-    selectActive() { if (this.activeValue != null) this.select(this.activeValue); },
-    select(v) {
-        if (this.multiple) {
-            // Assign rather than push/splice: `value` may BE the bound Livewire property, and a
-            // mutation nobody assigned is a change wire:model.live never hears about.
-            const current = this.value;
-            this.value = current.includes(v) ? current.filter((x) => x !== v) : [...current, v];
-            if (this.trigger === 'input') {
+        },
+        toggle() { this.open ? this.close(false) : this.openList(); },
+        close(returnFocus = true) {
+            if (!this.open) return;
+            this.open = false;
+            this.filtering = false;
+            if (this.trigger === 'button' && returnFocus) this.$nextTick(() => this.$refs.trigger?.focus());
+        },
+        selectActive() {
+            // The list on screen is an answer to an older query: wait for this one.
+            if (this.remote && (this._timer || (this.loading && this._fetched !== this.term))) {
+                this._enter = true;
+                if (this._timer) this.fetch(0);
+                return;
+            }
+            if (this.activeValue != null) this.select(this.activeValue);
+        },
+        select(v) {
+            const option = this.optionFor(v);
+            if (option) this.known[v] = option;
+            // Announce the pick with the whole option — a remote option can carry whatever the page
+            // needs (a document number, a price) beyond value and label. A listener that calls
+            // preventDefault() takes the pick over: nothing is stored, and the field empties for the
+            // next one (add a line to a table, scan the next code).
+            const picked = new CustomEvent('combobox-select', { bubbles: true, cancelable: true, detail: { value: v, option } });
+            this.$root.dispatchEvent(picked);
+            if (picked.defaultPrevented) {
                 this.query = '';
                 this.filtering = false;
-                this.$nextTick(() => this.$refs.input?.focus());
+                this.close(false);
+                if (this.trigger === 'input') this.$nextTick(() => (this.$refs.input || this.$refs.control)?.focus());
+                return;
             }
-            return; // keep the list open for further picks
-        }
-        if (this.trigger === 'input') {
-            const o = this.options.find((x) => x.value === v);
-            if (o) { this.value = o.value; this.query = o.label; }
+            if (this.multiple) {
+                // Assign rather than push/splice: `value` may BE the bound Livewire property, and a
+                // mutation nobody assigned is a change wire:model.live never hears about.
+                const current = this.value;
+                this.value = current.includes(v) ? current.filter((x) => x !== v) : [...current, v];
+                if (this.trigger === 'input') {
+                    this.query = '';
+                    this.filtering = false;
+                    this.$nextTick(() => this.$refs.input?.focus());
+                }
+                return; // keep the list open for further picks
+            }
+            if (this.trigger === 'input') {
+                if (option) { this.value = option.value; this.query = option.label; }
+                this.close();
+                return;
+            }
+            this.value = this.value === v ? '' : v; // toggle off in single button mode (matches shadcn)
             this.close();
-            return;
-        }
-        this.value = this.value === v ? '' : v; // toggle off in single button mode (matches shadcn)
-        this.close();
-        this.query = '';
-    },
-    remove(v) { this.value = this.value.filter((x) => x !== v); },
-    // Input trigger: Backspace on an empty query pops the last chip.
-    backspace() { if (this.multiple && this.query === '' && this.value.length) this.value = this.value.slice(0, -1); },
-});
+            this.query = '';
+        },
+        remove(v) { this.value = this.value.filter((x) => x !== v); },
+        // Input trigger: Backspace on an empty query pops the last chip.
+        backspace() { if (this.multiple && this.query === '' && this.value.length) this.value = this.value.slice(0, -1); },
+    };
+};
+
+export { blatListbox };
 
 // ---------------------------------------------------------------------------
 // Register every BlatUI Alpine piece — plugins, the theme store, the calendar
@@ -2475,15 +2959,25 @@ export function registerBlatUI(Alpine, options = {}) {
     Alpine.data('blatListbox', blatListbox);
     Alpine.data('blatCommand', blatCommand);
     Alpine.data('blatTreeGrid', blatTreeGrid);
+    Alpine.data('blatSidebarProvider', (options) => blatSidebarProvider(Alpine, options));
     Alpine.data('blatSidebarFlyout', blatSidebarFlyout);
     Alpine.directive('blat-trigger', blatTriggerDirective);
-    Alpine.directive('blat-labelledby', blatLabelledByDirective);
+    // Not while Livewire clones the server's tree before a morph: wiring that detached copy
+    // gives its nodes ids the live ones do not have yet, the keys differ, and the morph replaces
+    // the live nodes (see stripMintedIds). The real tree is re-wired right after the morph.
+    Alpine.directive('blat-labelledby', Alpine.skipDuringClone(blatLabelledByDirective));
     Alpine.directive('blat-anchor', blatAnchorDirective);
     Alpine.directive('blat-dialog-layer', blatDialogLayerDirective);
-    Alpine.directive('blat-field', blatFieldDirective);
+    Alpine.directive('blat-field', Alpine.skipDuringClone(blatFieldDirective));
+    Alpine.directive('blat-current', Alpine.skipDuringClone(blatCurrentDirective));
+    Alpine.directive('blat-scroll-memory', Alpine.skipDuringClone(blatScrollMemoryDirective));
+    Alpine.directive('blat-closed', Alpine.skipDuringClone(blatClosedDirective));
     Alpine.magic('blatModel', blatModelMagic);
     Alpine.magic('blatWire', blatWire);
     Alpine.magic('blatNumber', () => blatNumber);
+    Alpine.magic('blatInModal', (el) => blatInModal(el));
+    Alpine.magic('blatLocale', () => blatLocale);
     Alpine.magic('blatNav', blatNavMagic);
     Alpine.magic('blatType', blatTypeMagic);
+    hookLivewireMorph();
 }
