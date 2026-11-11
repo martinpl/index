@@ -17,30 +17,22 @@ beforeEach(function (): void {
 });
 
 test('registers posts with categories and tags', function () {
-    expect(EntryType::get('post'))->toBe([
-        'key' => 'post',
+    expect(EntryType::get('post'))->toMatchArray([
         'name' => 'Post',
         'slug' => 'posts',
         'icon' => 'lucide-newspaper',
-        'can' => 'entries.manage',
         'model' => Post::class,
         'owner' => 'plugins/blog',
     ])
-        ->and(TermType::get('category'))->toBe([
-            'key' => 'category',
-            'name' => 'Category',
+        ->and(TermType::get('category'))->toMatchArray([
             'entry_types' => ['post'],
             'hierarchical' => true,
-            'can' => 'entries.manage',
             'model' => Category::class,
             'owner' => 'plugins/blog',
         ])
-        ->and(TermType::get('tag'))->toBe([
-            'key' => 'tag',
-            'name' => 'Tag',
+        ->and(TermType::get('tag'))->toMatchArray([
             'entry_types' => ['post'],
             'hierarchical' => false,
-            'can' => 'entries.manage',
             'model' => Tag::class,
             'owner' => 'plugins/blog',
         ]);

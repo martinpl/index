@@ -33,6 +33,8 @@ test('registers an entry type from a class', function () {
         'slug' => 'shop/products',
         'icon' => 'lucide-file-text',
         'can' => 'entries.manage',
+        'listing' => 'pages::dashboard.entries',
+        'editor' => 'pages::dashboard.entry',
         'model' => Product::class,
         'owner' => 'core',
     ]);

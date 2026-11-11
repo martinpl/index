@@ -23,6 +23,8 @@ test('gets an entry type', function () {
             ['slug', ''],
             ['icon', 'lucide-file'],
             ['can', 'entries.manage'],
+            ['listing', 'pages::dashboard.entries'],
+            ['editor', 'pages::dashboard.entry'],
             ['owner', 'core'],
         ])
         ->assertSuccessful();

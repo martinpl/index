@@ -1,5 +1,6 @@
 <?php
 
+use App\EntryTypes\Page;
 use App\Enums\EntryStatus;
 use App\Models\Entry;
 use App\Models\Term;
@@ -15,6 +16,12 @@ test('generates a unique slug of the type from the name when saved without one',
     expect($entry->slug)->toBe('about-us-3')
         ->and($post->slug)->toBe('about-us')
         ->and(Term::create(['type' => 'tag', 'name' => 'About us', 'owner' => 'core'])->slug)->toBe('about-us');
+});
+
+test('generates a unique slug of the type for models of a type class', function () {
+    Page::create(['name' => 'About us', 'owner' => 'core']);
+
+    expect(Page::create(['name' => 'About us', 'owner' => 'core'])->slug)->toBe('about-us-2');
 });
 
 test('keeps a given slug and regenerates a cleared one ignoring the model itself', function () {

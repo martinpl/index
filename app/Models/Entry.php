@@ -62,6 +62,16 @@ class Entry extends Model
         ];
     }
 
+    protected static function booting(): void
+    {
+        // Registered before the traits boot, so `HasSlug` makes the slug unique within the type.
+        if (static::class !== self::class) {
+            static::saving(function (Entry $entry): void {
+                $entry->type ??= static::$type;
+            });
+        }
+    }
+
     protected static function booted(): void
     {
         static::addGlobalScope('published', function (Builder $query): void {
@@ -71,10 +81,6 @@ class Entry extends Model
         if (static::class !== self::class) {
             static::addGlobalScope('type', function (Builder $query): void {
                 $query->where($query->qualifyColumn('type'), static::$type);
-            });
-
-            static::creating(function (Entry $entry): void {
-                $entry->type ??= static::$type;
             });
         }
     }

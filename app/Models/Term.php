@@ -41,15 +41,21 @@ class Term extends Model
         'order' => 0,
     ];
 
+    protected static function booting(): void
+    {
+        // Registered before the traits boot, so `HasSlug` makes the slug unique within the type.
+        if (static::class !== self::class) {
+            static::saving(function (Term $term): void {
+                $term->type ??= static::$type;
+            });
+        }
+    }
+
     protected static function booted(): void
     {
         if (static::class !== self::class) {
             static::addGlobalScope('type', function (Builder $query): void {
                 $query->where($query->qualifyColumn('type'), static::$type);
-            });
-
-            static::creating(function (Term $term): void {
-                $term->type ??= static::$type;
             });
         }
     }
