@@ -31,7 +31,7 @@ class EntryDeleteCommand extends Command
         }
 
         $entry->delete();
-        $this->info("Trashed entry [$entryId].");
+        $this->info($entry->exists ? "Trashed entry [$entryId]." : "Deleted entry [$entryId].");
 
         return self::SUCCESS;
     }

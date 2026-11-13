@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Blocks\Heading;
 use App\Blocks\Image;
 use App\Blocks\Paragraph;
+use App\EntryTypes\Media;
 use App\EntryTypes\Page;
 use App\Facades\Action as ActionFacade;
 use App\Facades\BlockType as BlockTypeFacade;
@@ -83,6 +84,7 @@ class AppServiceProvider extends ServiceProvider
             'user' => User::class,
         ]);
 
+        EntryTypeFacade::register(Media::class, [], 'core');
         EntryTypeFacade::register(Page::class, [], 'core');
 
         foreach ([Paragraph::class, Heading::class, Image::class] as $block) {

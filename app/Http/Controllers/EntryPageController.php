@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Renders the dashboard pages of an entry type with the Livewire components its type is registered with,
- * like the media library for attachments.
+ * like the media library.
  */
 class EntryPageController extends Controller
 {

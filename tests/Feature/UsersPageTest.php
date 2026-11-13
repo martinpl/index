@@ -1,5 +1,6 @@
 <?php
 
+use App\EntryTypes\Media;
 use App\Facades\Role;
 use App\Models\Entry;
 use App\Models\User;
@@ -31,16 +32,19 @@ test('users without the ability cannot manage users', function () {
     get(route('dashboard.home'))->assertDontSee(route('dashboard.users'));
 });
 
-test('lists the users with their roles and published entry count', function () {
+test('lists the users with their roles and published entry count, leaving out their media files', function () {
     Role::create('editor');
     $user = User::factory()->create(['name' => 'Jane Doe', 'email' => 'jane@example.com']);
     $user->giveRole('editor');
     Entry::factory(2)->published()->create(['user_id' => $user->id]);
     Entry::factory()->create(['user_id' => $user->id]);
+    Media::factory(3)->create(['user_id' => $user->id]);
 
-    usersPage()
-        ->assertSeeInOrder(['Jane Doe', 'jane@example.com', 'Editor', '2'])
+    $page = usersPage()
+        ->assertSeeInOrder(['Jane Doe', 'jane@example.com', 'Editor'])
         ->assertSeeText('Me — You');
+
+    expect($page->html())->toMatch('/wire:key="listing-cell-'.$user->id.'-entries_count".*?"\s*>\s*2\s*</s');
 });
 
 test('escapes the names of the users', function () {

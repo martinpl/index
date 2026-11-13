@@ -4,6 +4,7 @@ use App\Blocks\Block;
 use App\Blocks\Heading;
 use App\Blocks\Missing;
 use App\Blocks\Paragraph;
+use App\EntryTypes\Media;
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
 use App\Facades\TermType;
@@ -127,7 +128,7 @@ test('validates the title and the fields of the blocks, selecting the first inva
             'name' => 'The title field is required.',
             'values.slug',
             'blocks.0.attributes.id' => 'The html id field format is invalid.',
-            'blocks.1.data.url' => 'The image url field is required.',
+            'blocks.1.data.media' => 'The image field is required.',
         ])
         ->assertHasNoErrors(['blocks.0.data.text', 'blocks.2.data.text'])
         ->assertSet('selectedBlock', $editor->get('blocks.0.id'));
@@ -143,8 +144,8 @@ test('stays on the selected block when it is invalid, and leaves the blocks when
 
     $editor->call('save')->assertSet('selectedBlock', $editor->get('blocks.1.id'));
 
-    $editor->set('blocks.0.data.url', 'https://example.com/a.jpg')
-        ->set('blocks.1.data.url', 'https://example.com/b.jpg')
+    $editor->set('blocks.0.data.media', Media::factory()->create()->id)
+        ->set('blocks.1.data.media', Media::factory()->create()->id)
         ->set('values.slug', 'Not a slug')
         ->call('save')
         ->assertHasErrors('values.slug')

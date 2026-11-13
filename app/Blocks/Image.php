@@ -2,7 +2,10 @@
 
 namespace App\Blocks;
 
+use App\EntryTypes\Media;
+use App\Fields\MediaPicker;
 use App\Fields\Text;
+use Illuminate\Contracts\View\View;
 
 class Image extends Block
 {
@@ -19,12 +22,28 @@ class Image extends Block
     public static function fields(): array
     {
         return [
-            Text::make('url')->label(__('Image URL'))->type('url')->required()->rules('url', 'max:2048'),
+            MediaPicker::make('media')->label(__('Image'))->type('image')->required(),
             Text::make('alt')
                 ->label(__('Alternative text'))
-                ->description(__('Describes the image for people who cannot see it.'))
+                ->description(__('Describes the image for people who cannot see it, defaulting to the one of the chosen image.'))
                 ->rules('string', 'max:255'),
             Text::make('caption')->label(__('Caption'))->rules('string', 'max:255'),
         ];
+    }
+
+    /**
+     * Render the chosen image of the media library, or nothing when it was deleted.
+     */
+    public function render(): View
+    {
+        $media = filled($this->data['media'] ?? null) ? Media::ofType('image')->whereKey($this->data['media'])->first() : null;
+
+        return view('blocks.image', [
+            'block' => $this,
+            'attributes' => $this->htmlAttributes(),
+            'media' => $media,
+            'alt' => ($this->data['alt'] ?? null) ?: $media?->alt(),
+            'caption' => $this->data['caption'] ?? null,
+        ]);
     }
 }

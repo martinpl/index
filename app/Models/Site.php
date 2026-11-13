@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\EntryTypes\Media;
 use App\Facades\Plugin;
 use App\Facades\Theme;
 use Closure;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Fillable(['domain', 'path'])]
@@ -39,6 +41,8 @@ class Site extends Model
         static::deleted(function (Site $site): void {
             if (! $site->isMain()) {
                 $site->dropTables();
+
+                Storage::disk(Media::DISK)->deleteDirectory($site->mediaDirectory());
             }
         });
     }
@@ -106,6 +110,14 @@ class Site extends Model
     public function tablePrefix(): string
     {
         return $this->isMain() ? '' : "site_{$this->id}_";
+    }
+
+    /**
+     * The directory of the site's media library on the media disk.
+     */
+    public function mediaDirectory(): string
+    {
+        return $this->isMain() ? 'media' : "sites/{$this->id}/media";
     }
 
     public function createTables(): void
