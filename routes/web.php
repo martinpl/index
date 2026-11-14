@@ -18,6 +18,9 @@ Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'verified'])
     Route::livewire('users/create', 'pages::dashboard.user')->name('users.create');
     Route::livewire('users/{user}', 'pages::dashboard.user')->whereNumber('user')->name('users.edit');
     Route::livewire('settings/{page}', 'pages::dashboard.settings')->name('settings');
+    Route::livewire('sites', 'pages::dashboard.sites')->name('sites');
+    Route::livewire('sites/create', 'pages::dashboard.site')->name('sites.create');
+    Route::livewire('sites/{site}', 'pages::dashboard.site')->whereNumber('site')->name('sites.edit');
 });
 
 require __DIR__.'/settings.php';

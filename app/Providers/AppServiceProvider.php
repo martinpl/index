@@ -173,7 +173,7 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Make the site matching the request current, before any middleware runs.
+     * Mount the site matching the request and make it current, before any middleware runs.
      */
     protected function bootRequestSite(): void
     {
@@ -181,6 +181,6 @@ class AppServiceProvider extends ServiceProvider
 
         abort_unless($site, 404);
 
-        $site->makeCurrent();
+        $site->mount($this->app['request'])->makeCurrent();
     }
 }

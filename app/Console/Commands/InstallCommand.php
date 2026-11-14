@@ -2,15 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\InstallSite;
 use App\Concerns\ProfileValidationRules;
-use App\EntryTypes\Page;
-use App\Enums\EntryStatus;
-use App\Facades\Plugin;
-use App\Facades\Role;
-use App\Facades\Theme;
-use App\Models\Setting;
 use App\Models\Site;
-use App\Models\User;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -29,7 +23,7 @@ class InstallCommand extends Command
 {
     use ProfileValidationRules;
 
-    public function handle(): int
+    public function handle(InstallSite $installSite): int
     {
         $exitCode = $this->call('migrate');
         if ($exitCode !== self::SUCCESS) {
@@ -86,15 +80,8 @@ class InstallCommand extends Command
             return self::FAILURE;
         }
 
-        Site::create([
-            'domain' => $domain,
-        ]);
-        Setting::set('site_name', $name, 'core');
-        $this->createDefaultRoles();
-        $admin = $this->createAdmin($adminName, $adminEmail, $adminPassword);
-        $this->createHomePage($admin);
-        Theme::activate('howdy');
-        Plugin::activate('blog');
+        $site = Site::create(['domain' => $domain]);
+        $installSite($site, $name, ['name' => $adminName, 'email' => $adminEmail, 'password' => $adminPassword]);
         $this->info('Site installed successfully.');
 
         if ($this->option('admin-password') === null) {
@@ -102,48 +89,5 @@ class InstallCommand extends Command
         }
 
         return self::SUCCESS;
-    }
-
-    /**
-     * Create the default roles, granting the administrator every core ability
-     * and making the member, who has none, the role of new users.
-     */
-    protected function createDefaultRoles(): void
-    {
-        foreach (['administrator', 'member'] as $role) {
-            Role::create($role);
-        }
-
-        Role::grant('administrator', ['entries.manage', 'entries.media.manage', 'users.manage', 'plugins.manage', 'settings.manage']);
-
-        Setting::set('default_role', 'member', 'core');
-    }
-
-    /**
-     * Create a published page and assign it to the home page role.
-     */
-    protected function createHomePage(User $author): void
-    {
-        $page = Page::create([
-            'status' => EntryStatus::Publish,
-            'slug' => 'home',
-            'name' => __('Home'),
-            'user_id' => $author->id,
-            'owner' => 'core',
-        ]);
-
-        Setting::set('page_roles', ['home' => $page->id], 'core');
-    }
-
-    /**
-     * Create the verified administrator account.
-     */
-    protected function createAdmin(string $name, string $email, string $password): User
-    {
-        $user = User::create(['name' => $name, 'email' => $email, 'password' => $password]);
-        $user->markEmailAsVerified();
-        $user->giveRole('administrator');
-
-        return $user;
     }
 }

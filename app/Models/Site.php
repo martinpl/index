@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 #[Fillable(['domain', 'path'])]
@@ -64,6 +65,28 @@ class Site extends Model
             ->first();
     }
 
+    /**
+     * Serve the request from the site's path, as if the app was installed in that directory, so every
+     * route matches below it and generated URLs include it, while assets keep their public root.
+     */
+    public function mount(Request $request): static
+    {
+        if ($this->path === '/') {
+            return $this;
+        }
+
+        URL::useAssetOrigin(config('app.asset_url') ?? $request->root());
+
+        $baseUrl = $request->getBaseUrl().$this->path;
+
+        (function () use ($baseUrl): void {
+            $this->baseUrl = $baseUrl;
+            $this->basePath = $this->pathInfo = null;
+        })->call($request);
+
+        return $this;
+    }
+
     public function makeCurrent(): static
     {
         app()->instance(static::class, $this);
@@ -77,6 +100,7 @@ class Site extends Model
             'queue.batching.table' => $this->tablePrefix().'job_batches',
             'queue.failed.table' => $this->tablePrefix().'failed_jobs',
             'session.table' => $this->tablePrefix().'sessions',
+            'session.path' => $this->path,
         ]);
 
         app()->setLocale(Setting::get('locale', config('app.locale')));
@@ -105,6 +129,24 @@ class Site extends Model
     public function isMain(): bool
     {
         return $this->id === 1;
+    }
+
+    /**
+     * Get the value of the site's setting.
+     */
+    public function setting(string $key, mixed $default = null): mixed
+    {
+        return $this->execute(fn (): mixed => Setting::get($key, $default));
+    }
+
+    /**
+     * The URL of the given path on the site, keeping the scheme and port of the current request.
+     */
+    public function url(string $path = ''): string
+    {
+        $root = Str::replaceFirst(request()->getHost(), $this->domain, request()->getSchemeAndHttpHost());
+
+        return rtrim($root.rtrim($this->path, '/').Str::start($path, '/'), '/');
     }
 
     public function tablePrefix(): string

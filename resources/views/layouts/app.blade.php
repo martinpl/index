@@ -9,8 +9,20 @@
     @php($hasAdminbar = true)
     <x-ui.sidebar-provider @class(['[&>div>div]:h-auto min-h-[calc(100svh-40px)] transform-gpu' => $hasAdminbar])>
         <x-ui.sidebar>
-            <x-ui.sidebar-header class="border-sidebar-border h-16 border-b">
-                <x-app-logo :sidebar="true" href="{{ route('dashboard.home') }}" />
+            <x-ui.sidebar-header class="border-sidebar-border h-16 flex-row items-center border-b">
+                <x-app-logo :sidebar="true" href="{{ route('dashboard.home') }}" class="min-w-0 flex-1" />
+                @if (\App\Models\Site::current()?->isMain() && auth()->user()->can('sites.manage'))
+                    <x-ui.button
+                        :href="route('dashboard.sites')"
+                        wire:navigate
+                        :variant="request()->routeIs('dashboard.sites', 'dashboard.sites.*') ? 'secondary' : 'ghost'"
+                        size="icon"
+                        aria-label="{{ __('Sites') }}"
+                        title="{{ __('Sites') }}"
+                    >
+                        <x-lucide-network />
+                    </x-ui.button>
+                @endif
             </x-ui.sidebar-header>
             <x-ui.sidebar-content>
                 <x-ui.sidebar-group>

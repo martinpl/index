@@ -161,7 +161,7 @@ class Entry extends Model
 
     public function url(): string
     {
-        return url(rtrim(Site::current()?->path ?? '/', '/').'/'.$this->path());
+        return url($this->path());
     }
 
     public function path(): string

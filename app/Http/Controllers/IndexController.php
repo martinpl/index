@@ -7,17 +7,16 @@ use App\Facades\EntryType;
 use App\Facades\Filter;
 use App\Facades\Theme;
 use App\Models\Entry;
-use App\Models\Site;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class IndexController extends Controller
 {
-    public function __invoke(Site $site, ?string $path = null): View
+    public function __invoke(?string $path = null): View
     {
         abort_if(Theme::isHeadless(), 404);
 
-        $entry = $this->findEntry(trim(Str::after("/$path/", $site->path), '/'));
+        $entry = $this->findEntry(trim($path ?? '', '/'));
 
         abort_unless($entry, 404);
 

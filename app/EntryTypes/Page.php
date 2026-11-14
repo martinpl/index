@@ -4,7 +4,6 @@ namespace App\EntryTypes;
 
 use App\Models\Entry;
 use App\Models\Setting;
-use App\Models\Site;
 use DomainException;
 use Illuminate\Support\Str;
 
@@ -62,6 +61,6 @@ class Page extends Entry
 
     public function url(): string
     {
-        return $this->role() === 'home' ? url(Site::current()?->path ?? '/') : parent::url();
+        return $this->role() === 'home' ? url('/') : parent::url();
     }
 }

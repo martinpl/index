@@ -15,6 +15,7 @@
                     @if ($menu['children']->isEmpty())
                         <a
                             href="{{ $menu['url'] }}"
+                            @if ($menu['label']) aria-label="{{ $menu['label'] }}" @endif
                             class="hover:bg-accent hover:text-accent-foreground [&_svg]:size-4 flex items-center gap-2 rounded-sm px-2 py-1 text-sm font-medium"
                         >
                             @if ($menu['icon'])
@@ -24,7 +25,7 @@
                         </a>
                     @else
                         <x-ui.menubar-menu>
-                            <x-ui.menubar-trigger class="[&_svg]:size-4 gap-2">
+                            <x-ui.menubar-trigger class="[&_svg]:size-4 gap-2" :aria-label="$menu['label']">
                                 @if ($menu['icon'])
                                     <x-dynamic-component :component="$menu['icon']" />
                                 @endif
@@ -34,6 +35,25 @@
                                 @foreach ($menu['children'] as $item)
                                     @if ($item['title'] instanceof \Illuminate\Contracts\Support\Htmlable)
                                         {{ $item['title'] }}
+                                    @elseif ($item['children']->isNotEmpty())
+                                        <x-ui.menubar-sub>
+                                            <x-ui.menubar-sub-trigger>
+                                                @if ($item['icon'])
+                                                    <x-dynamic-component :component="$item['icon']" />
+                                                @endif
+                                                {{ $item['title'] }}
+                                            </x-ui.menubar-sub-trigger>
+                                            <x-ui.menubar-sub-content>
+                                                @foreach ($item['children'] as $child)
+                                                    <x-ui.menubar-item :href="$child['url']">
+                                                        @if ($child['icon'])
+                                                            <x-dynamic-component :component="$child['icon']" />
+                                                        @endif
+                                                        {{ $child['title'] }}
+                                                    </x-ui.menubar-item>
+                                                @endforeach
+                                            </x-ui.menubar-sub-content>
+                                        </x-ui.menubar-sub>
                                     @else
                                         <x-ui.menubar-item :href="$item['url']">
                                             @if ($item['icon'])

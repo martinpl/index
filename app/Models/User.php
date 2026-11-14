@@ -83,4 +83,18 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
             : $initials;
     }
+
+    /**
+     * Determine if the user may manage the sites, which their account with the same email does on the main site.
+     */
+    public function canManageSites(): bool
+    {
+        if (Site::current()?->isMain() ?? true) {
+            return $this->can('sites.manage');
+        }
+
+        return (bool) Site::find(1)?->execute(
+            fn (): ?bool => static::query()->firstWhere('email', $this->email)?->can('sites.manage'),
+        );
+    }
 }

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Gate;
 abstract class MenuRegistry
 {
     /**
-     * @var array<string, array{key: string, title: string|Htmlable|Closure, url: string|Closure|null, icon: string|null, parent: string|null, position: int, can: string|Closure|null, align: string}>
+     * @var array<string, array{key: string, title: string|Htmlable|Closure|null, url: string|Closure|null, label: string|null, icon: string|null, parent: string|null, position: int, can: string|Closure|null, align: string}>
      */
     protected array $items = [];
 
@@ -25,9 +25,10 @@ abstract class MenuRegistry
     /**
      * Add an item; `icon` is a Blade component name, `can` an ability or a closure receiving the user,
      * and `align` places a top-level item at the `start` or `end`. An item whose title is Htmlable, such as
-     * a view, renders its own markup and needs no `url`.
+     * a view, renders its own markup and needs no `url`. An item without a title shows only its icon,
+     * so it needs a `label` naming it for assistive technologies.
      *
-     * @param  array{title: string|Htmlable|Closure, url?: string|Closure|null, icon?: string|null, parent?: string|null, position?: int, can?: string|Closure|null, align?: 'start'|'end'}  $item
+     * @param  array{title?: string|Htmlable|Closure|null, url?: string|Closure|null, label?: string|null, icon?: string|null, parent?: string|null, position?: int, can?: string|Closure|null, align?: 'start'|'end'}  $item
      */
     public function add(string $key, array $item): void
     {
@@ -37,8 +38,9 @@ abstract class MenuRegistry
 
         $this->items[$key] = [
             'key' => $key,
-            'title' => $item['title'],
+            'title' => $item['title'] ?? null,
             'url' => $item['url'] ?? null,
+            'label' => $item['label'] ?? null,
             'icon' => $item['icon'] ?? null,
             'parent' => $item['parent'] ?? null,
             'position' => $item['position'] ?? 10,
@@ -65,7 +67,7 @@ abstract class MenuRegistry
     /**
      * The items visible to the current user, resolved, sorted by position and nested under their parents.
      *
-     * @return Collection<int, array{key: string, title: string|Htmlable, url: string|null, icon: string|null, align: string, active: bool, children: Collection}>
+     * @return Collection<int, array{key: string, title: string|Htmlable|null, url: string|null, label: string|null, icon: string|null, align: string, active: bool, children: Collection}>
      */
     public function tree(?string $parent = null): Collection
     {
@@ -81,6 +83,7 @@ abstract class MenuRegistry
                 'key' => $item['key'],
                 'title' => value($item['title']),
                 'url' => $url = value($item['url']),
+                'label' => $item['label'],
                 'icon' => $item['icon'],
                 'align' => $item['align'],
                 'active' => $url === request()->url(),

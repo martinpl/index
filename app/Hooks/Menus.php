@@ -8,6 +8,8 @@ use App\Facades\Settings;
 use App\Facades\TermType;
 use App\Foundation\AdminBar;
 use App\Foundation\DashboardMenu;
+use App\Models\Site;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -19,10 +21,12 @@ class Menus
     {
         $inDashboard = fn (): bool => request()->routeIs('dashboard.*', 'profile.*', 'security.*');
 
+        $this->mySites($bar);
+
         $bar->add('site', [
             'title' => setting('site_name'),
             'icon' => 'app-logo-icon',
-            'position' => 0,
+            'position' => 5,
         ]);
         $bar->add('dashboard', [
             'title' => __('Dashboard'),
@@ -60,6 +64,54 @@ class Menus
             'title' => fn (): View => view('partials.admin-bar.logout'),
             'parent' => 'account',
             'position' => 100,
+        ]);
+    }
+
+    /**
+     * Add the menu switching between the sites, with their dashboards and front pages, for users managing them when there are several.
+     */
+    protected function mySites(AdminBar $bar): void
+    {
+        $sites = Site::query()->orderBy('id')->get();
+
+        if ($sites->count() < 2) {
+            return;
+        }
+
+        $bar->add('my-sites', [
+            'label' => __('My Sites'),
+            'icon' => 'lucide-network',
+            'position' => 0,
+            'can' => fn (?User $user): bool => (bool) $user?->canManageSites(),
+        ]);
+
+        foreach ($sites as $site) {
+            $bar->add("my-sites.{$site->id}", [
+                'title' => fn (): string => $site->setting('site_name', $site->domain),
+                'icon' => 'app-logo-icon',
+                'parent' => 'my-sites',
+                'position' => $site->id,
+            ]);
+            $bar->add("my-sites.{$site->id}.dashboard", [
+                'title' => __('Dashboard'),
+                'url' => $site->url('dashboard'),
+                'icon' => 'lucide-layout-dashboard',
+                'parent' => "my-sites.{$site->id}",
+            ]);
+            $bar->add("my-sites.{$site->id}.visit", [
+                'title' => __('Visit'),
+                'url' => $site->url(),
+                'icon' => 'lucide-external-link',
+                'parent' => "my-sites.{$site->id}",
+            ]);
+        }
+
+        $bar->add('my-sites.manage', [
+            'title' => __('Manage Sites'),
+            'url' => $sites->first()->url('dashboard/sites'),
+            'icon' => 'lucide-settings',
+            'parent' => 'my-sites',
+            'position' => $sites->last()->id + 1,
         ]);
     }
 

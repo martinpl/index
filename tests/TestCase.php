@@ -22,7 +22,7 @@ abstract class TestCase extends BaseTestCase
     {
         $request = parent::createTestRequest($symfonyRequest);
 
-        Site::findForRequest($request)?->makeCurrent();
+        Site::findForRequest($request)?->mount($request)->makeCurrent();
 
         return $request;
     }

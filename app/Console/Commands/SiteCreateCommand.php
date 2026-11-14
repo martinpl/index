@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Concerns\SiteValidationRules;
 use App\Models\Site;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 #[Signature('site:create
     {domain : The domain of the site}
@@ -15,6 +15,8 @@ use Illuminate\Validation\Rule;
 #[Description('Creates a site')]
 class SiteCreateCommand extends Command
 {
+    use SiteValidationRules;
+
     public function handle(): int
     {
         $attributes = [
@@ -23,8 +25,8 @@ class SiteCreateCommand extends Command
         ];
 
         $validator = Validator::make($attributes, [
-            'domain' => ['required', 'string', 'max:255', Rule::unique(Site::class)->where('path', Site::make($attributes)->path)],
-            'path' => ['required', 'string', 'max:255'],
+            'domain' => $this->domainRules($attributes['path']),
+            'path' => $this->pathRules(),
         ]);
 
         if ($validator->fails()) {

@@ -5,6 +5,7 @@ use App\Models\Setting;
 use App\Models\Site;
 use App\Models\User;
 
+use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\get;
@@ -23,6 +24,22 @@ test('serves entries of the site matching the domain and path', function () {
     get('http://example.com/blog/hello')->assertOk()->assertSee('Blog hello');
     get('http://localhost/blogger')->assertOk()->assertSee('Main blogger');
     get('http://example.com/blog/missing')->assertNotFound();
+});
+
+test('serves every route below its path, keeping assets at the public root', function () {
+    Site::create(['domain' => 'example.com', 'path' => 'blog'])->makeCurrent();
+    $home = Entry::factory()->published()->create(['type' => 'page', 'slug' => 'home']);
+    Setting::set('page_roles', ['home' => $home->id], 'core');
+    actingAs(User::factory()->create());
+
+    get('http://example.com/blog/dashboard')
+        ->assertOk()
+        ->assertSee('href="http://example.com/blog/dashboard"', false);
+
+    expect(url('hello'))->toBe('http://example.com/blog/hello')
+        ->and(page_url('home'))->toBe('http://example.com/blog')
+        ->and(asset('build/app.js'))->toBe('http://example.com/build/app.js')
+        ->and(config('session.path'))->toBe('/blog');
 });
 
 test('uses its own tables', function () {
