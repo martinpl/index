@@ -4,8 +4,12 @@ use App\Facades\EntryType;
 use App\Facades\Filter;
 use App\Models\Entry;
 use App\Models\Setting;
+use App\Models\User;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\View\ComponentAttributeBag;
 
+use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 beforeEach(function (): void {
@@ -28,7 +32,23 @@ test('themes and plugins can change the attributes of the body', function () {
     Setting::set('page_roles', ['home' => $entry->id], 'core');
     Filter::add('body.attributes', fn (ComponentAttributeBag $attributes): ComponentAttributeBag => $attributes->class('dark')->merge(['data-page' => 'home']));
 
-    get('/')->assertOk()->assertSee('<body data-page="home" class="dark blocks">', false);
+    get('/')->assertOk()->assertSee('<body data-page="home" class="dark canvas">', false);
+});
+
+test('the site marks its markup, so the dashboard styles of the admin bar reach only the bar and its menus', function () {
+    $entry = Entry::factory()->published()->create(['type' => 'page', 'name' => 'Home']);
+    Setting::set('page_roles', ['home' => $entry->id], 'core');
+    File::put($hotFile = storage_path('framework/testing/hot'), 'http://localhost:5173');
+    Vite::useHotFile($hotFile);
+    actingAs(User::factory()->create());
+
+    get('/')->assertOk()
+        ->assertSee('<html lang="en" data-canvas>', false)
+        ->assertSee('http://localhost:5173/resources/css/app.css', false)
+        ->assertSee('id="admin-bar"', false)
+        ->assertSee('data-admin-bar', false);
+
+    File::delete($hotFile);
 });
 
 test('serves no frontend without an active theme', function () {

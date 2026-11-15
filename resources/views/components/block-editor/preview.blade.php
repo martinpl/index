@@ -5,7 +5,7 @@
     use Illuminate\Support\Str;
 @endphp
 
-<div {{ $attributes->twMerge('blocks z-10') }}>
+<div {{ $attributes->twMerge('canvas z-10') }}>
     @forelse ($blocks as $block)
         @php
             $blockType = $blockTypes[$block['type']] ?? null;
@@ -26,7 +26,7 @@
             ])
         >
             @if ($html !== '')
-                {!! $html !!}
+                <div data-canvas>{!! $html !!}</div>
             @else
                 <div class="text-muted-foreground flex items-center gap-2 rounded-md border border-dashed px-4 py-3 text-sm">
                     <x-dynamic-component

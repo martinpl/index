@@ -6,6 +6,7 @@
     @endif
     <x-ui.menubar
         id="admin-bar"
+        data-admin-bar
         class="text-foreground sticky top-0 z-50 h-10 rounded-none border-x-0 border-t-0 px-2 font-sans text-base/normal shadow-none"
     >
         @php($menus = \App\Facades\AdminBar::tree())
@@ -31,7 +32,11 @@
                                 @endif
                                 {{ $menu['title'] }}
                             </x-ui.menubar-trigger>
-                            <x-ui.menubar-content :align="$align" @class(['min-w-56' => $align === 'end'])>
+                            <x-ui.menubar-content
+                                data-admin-bar
+                                :align="$align"
+                                @class(['min-w-56' => $align === 'end'])
+                            >
                                 @foreach ($menu['children'] as $item)
                                     @if ($item['title'] instanceof \Illuminate\Contracts\Support\Htmlable)
                                         {{ $item['title'] }}
@@ -43,7 +48,7 @@
                                                 @endif
                                                 {{ $item['title'] }}
                                             </x-ui.menubar-sub-trigger>
-                                            <x-ui.menubar-sub-content>
+                                            <x-ui.menubar-sub-content data-admin-bar>
                                                 @foreach ($item['children'] as $child)
                                                     <x-ui.menubar-item :href="$child['url']">
                                                         @if ($child['icon'])

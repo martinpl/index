@@ -48,7 +48,7 @@ abstract class Asset implements Htmlable
     }
 
     /**
-     * Load the asset in the block editor, so blocks look there as they do on the site when styled under the `.blocks` class.
+     * Load the asset in the block editor, so blocks look there as they do on the site when styled under the `.canvas` class.
      */
     public function editor(): static
     {
