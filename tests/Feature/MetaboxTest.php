@@ -1,10 +1,10 @@
 <?php
 
 use App\Facades\Metabox;
-use App\Fields\Text;
-use App\Fields\Toggle;
 use App\Models\Entry;
 use App\Models\User;
+use App\Schema\Text;
+use App\Schema\Toggle;
 use Illuminate\Support\HtmlString;
 use Livewire\Livewire;
 
@@ -25,7 +25,7 @@ test('registers a metabox with defaults', function () {
     expect(Metabox::get('summary'))->toBe([
         'key' => 'summary',
         'render' => $render,
-        'fields' => null,
+        'schema' => null,
         'values' => null,
         'save' => null,
         'with' => ['title' => 'Summary', 'seamless' => false],
@@ -86,7 +86,7 @@ test('the editor shows seamless metaboxes in line, without their title', functio
 });
 
 test('the editor fills the fields of metaboxes from the meta of the entry, falling back to their defaults', function () {
-    Metabox::register('seo', ['fields' => fn (): array => [
+    Metabox::register('seo', ['schema' => fn (): array => [
         Text::make('seo_title')->label('SEO title'),
         Toggle::make('seo_index')->default(true),
     ]], 'plugins/seo');
@@ -99,7 +99,7 @@ test('the editor fills the fields of metaboxes from the meta of the entry, falli
 });
 
 test('the editor validates the fields of metaboxes and stores them as meta owned by the metabox owner', function () {
-    Metabox::register('seo', ['fields' => fn (): array => [
+    Metabox::register('seo', ['schema' => fn (): array => [
         Text::make('seo_title')->rules('max:10'),
         Text::make('seo_description'),
     ]], 'plugins/seo');
@@ -122,7 +122,7 @@ test('the editor validates the fields of metaboxes and stores them as meta owned
 });
 
 test('the editor does not store the fields of metaboxes the user may not see', function () {
-    Metabox::register('secret', ['fields' => fn (): array => [Text::make('secret')], 'can' => 'secrets.manage'], 'core');
+    Metabox::register('secret', ['schema' => fn (): array => [Text::make('secret')], 'can' => 'secrets.manage'], 'core');
     $entry = Entry::factory()->create(['type' => 'page']);
 
     Livewire::test('pages::dashboard.entry', ['type' => 'page', 'entry' => $entry->id])

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
 class Number extends Field
 {
-    public string $component = 'fields.number';
+    public string $view = 'schema.number';
 
     public int|float|null $min = null;
 

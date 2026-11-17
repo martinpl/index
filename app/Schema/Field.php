@@ -1,33 +1,18 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
-use Closure;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Str;
-use Illuminate\Support\Traits\Conditionable;
-use Illuminate\Support\Traits\Macroable;
 
-abstract class Field
+abstract class Field extends Component
 {
-    use Conditionable, Macroable;
-
-    /**
-     * The Blade component that renders the field, receiving `field` and `path` attributes.
-     */
-    public string $component;
-
     protected ?string $label = null;
 
     protected ?string $description = null;
 
     protected mixed $default = null;
-
-    /**
-     * @var bool|Closure(): bool
-     */
-    protected bool|Closure $visible = true;
 
     /**
      * @var list<string|ValidationRule|Rule>
@@ -65,16 +50,6 @@ abstract class Field
         return $this->description;
     }
 
-    /**
-     * Render the field with the given Blade component instead, like `settings.date-format`, receiving `field`, `path` and `value`.
-     */
-    public function view(string $component): static
-    {
-        $this->component = $component;
-
-        return $this;
-    }
-
     public function default(mixed $default): static
     {
         $this->default = $default;
@@ -85,23 +60,6 @@ abstract class Field
     public function getDefault(): mixed
     {
         return value($this->default);
-    }
-
-    /**
-     * Show the field only when the condition is true, leaving it out of the form, validation and saving otherwise.
-     *
-     * @param  bool|Closure(): bool  $condition
-     */
-    public function visible(bool|Closure $condition = true): static
-    {
-        $this->visible = $condition;
-
-        return $this;
-    }
-
-    public function isVisible(): bool
-    {
-        return (bool) value($this->visible);
     }
 
     /**
@@ -144,6 +102,11 @@ abstract class Field
     public function getValidationAttributes(string $path): array
     {
         return [$path => Str::lower($this->getLabel())];
+    }
+
+    public function getFields(): array
+    {
+        return [$this];
     }
 
     /**

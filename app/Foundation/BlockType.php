@@ -5,9 +5,9 @@ namespace App\Foundation;
 use App\Blocks\Block;
 use App\Blocks\Missing;
 use App\Facades\Filter;
-use App\Fields\Field;
-use App\Fields\Group;
-use App\Fields\Text;
+use App\Schema\Component;
+use App\Schema\Group;
+use App\Schema\Text;
 use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -67,38 +67,38 @@ class BlockType
     }
 
     /**
-     * The visible fields of the block type, which plugins may change through the `blocks.{key}.fields` filter.
+     * The visible components of the block type, which plugins may change through the `blocks.{key}.schema` filter.
      *
-     * @return list<Field>
+     * @return list<Component>
      */
-    public function fields(string $key): array
+    public function schema(string $key): array
     {
         if (! $this->has($key)) {
             return [];
         }
 
-        $fields = Filter::apply("blocks.$key.fields", $this->types[$key]['class']::fields(), $key);
+        $schema = Filter::apply("blocks.$key.schema", $this->types[$key]['class']::schema(), $key);
 
-        return array_values(array_filter($fields, fn (Field $field): bool => $field->isVisible()));
+        return array_values(array_filter($schema, fn (Component $component): bool => $component->isVisible()));
     }
 
     /**
-     * The fields of the block type grouped under the block's `data`.
+     * The schema of the block type grouped under the block's `data`.
      */
     public function form(string $key): Group
     {
-        return Group::make('data')->fields($this->fields($key));
+        return Group::make('data')->schema($this->schema($key));
     }
 
     /**
-     * The visible fields every block has, each setting the HTML attribute of its name on the block's root element,
-     * which plugins may change through the `block.attributes.fields` filter.
+     * The visible components every block has, each setting the HTML attribute of its name on the block's root element,
+     * which plugins may change through the `block.attributes.schema` filter.
      *
-     * @return list<Field>
+     * @return list<Component>
      */
-    public function attributeFields(): array
+    public function attributeSchema(): array
     {
-        $fields = Filter::apply('block.attributes.fields', [
+        $schema = Filter::apply('block.attributes.schema', [
             Text::make('id')
                 ->label(__('HTML ID'))
                 ->description(__('A unique ID letting links point straight to the block, like #team.'))
@@ -108,15 +108,15 @@ class BlockType
                 ->rules('regex:/^[\w\s-]*$/', 'max:255'),
         ]);
 
-        return array_values(array_filter($fields, fn (Field $field): bool => $field->isVisible()));
+        return array_values(array_filter($schema, fn (Component $component): bool => $component->isVisible()));
     }
 
     /**
-     * The fields every block has, grouped under the block's `attributes`.
+     * The schema every block has, grouped under the block's `attributes`.
      */
     public function attributesForm(): Group
     {
-        return Group::make('attributes')->fields($this->attributeFields());
+        return Group::make('attributes')->schema($this->attributeSchema());
     }
 
     /**

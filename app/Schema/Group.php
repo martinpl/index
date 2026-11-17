@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
-use App\Fields\Concerns\HasFields;
+use App\Schema\Concerns\HasSchema;
 
 class Group extends Field
 {
-    use HasFields;
+    use HasSchema;
 
-    public string $component = 'fields.group';
+    public string $view = 'schema.group';
 
     public function getDefault(): array
     {

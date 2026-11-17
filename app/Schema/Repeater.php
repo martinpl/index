@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
-use App\Fields\Concerns\HasFields;
+use App\Schema\Concerns\HasSchema;
 
 class Repeater extends Field
 {
-    use HasFields;
+    use HasSchema;
 
-    public string $component = 'fields.repeater';
+    public string $view = 'schema.repeater';
 
     protected mixed $default = [];
 

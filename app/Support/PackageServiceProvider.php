@@ -15,9 +15,9 @@ use App\Facades\Filter;
 use App\Facades\Metabox;
 use App\Facades\Settings;
 use App\Facades\TermType;
-use App\Fields\Field;
 use App\Models\Entry;
 use App\Models\Term;
+use App\Schema\Component;
 use Closure;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
@@ -93,7 +93,7 @@ abstract class PackageServiceProvider extends ServiceProvider
     }
 
     /**
-     * @param  array<string, array{title?: string, fields: Closure(): list<Field>, can?: string|null, position?: int}>  $pages
+     * @param  array<string, array{title?: string, schema: Closure(): list<Component>, can?: string|null, position?: int}>  $pages
      */
     protected function addSettings(array $pages): void
     {
@@ -103,7 +103,7 @@ abstract class PackageServiceProvider extends ServiceProvider
     }
 
     /**
-     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), fields?: Closure(): list<Field>, with?: array<string, mixed>, location?: string|list<string>, can?: string|null, position?: int}  $config
+     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), schema?: Closure(): list<Component>, with?: array<string, mixed>, location?: string|list<string>, can?: string|null, position?: int}  $config
      */
     protected function addMetabox(string $key, array $config): void
     {

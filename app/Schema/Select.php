@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
 use Closure;
 use Illuminate\Validation\Rule;
 
 class Select extends Field
 {
-    public string $component = 'fields.select';
+    public string $view = 'schema.select';
 
     /**
      * @var array<string, string>|Closure(): array<string, string>

@@ -1,35 +1,46 @@
 <?php
 
-namespace App\Fields\Concerns;
+namespace App\Schema\Concerns;
 
-use App\Fields\Field;
+use App\Schema\Component;
+use App\Schema\Field;
 use Closure;
 
-trait HasFields
+trait HasSchema
 {
     /**
-     * @var list<Field>|Closure(): list<Field>
+     * @var list<Component>|Closure(): list<Component>
      */
-    protected array|Closure $fields = [];
+    protected array|Closure $schema = [];
 
     /**
-     * @param  list<Field>|Closure(): list<Field>  $fields
+     * @param  list<Component>|Closure(): list<Component>  $schema
      */
-    public function fields(array|Closure $fields): static
+    public function schema(array|Closure $schema): static
     {
-        $this->fields = $fields;
+        $this->schema = $schema;
 
         return $this;
     }
 
     /**
-     * The visible child fields.
+     * The visible child components.
+     *
+     * @return list<Component>
+     */
+    public function getSchema(): array
+    {
+        return array_values(array_filter(value($this->schema), fn (Component $component): bool => $component->isVisible()));
+    }
+
+    /**
+     * The visible fields holding the values of the child components.
      *
      * @return list<Field>
      */
-    public function getFields(): array
+    public function getChildFields(): array
     {
-        return array_values(array_filter(value($this->fields), fn (Field $field): bool => $field->isVisible()));
+        return array_merge(...array_map(fn (Component $component): array => $component->getFields(), $this->getSchema()));
     }
 
     /**
@@ -39,7 +50,7 @@ trait HasFields
      */
     protected function childDefaults(): array
     {
-        return collect($this->getFields())
+        return collect($this->getChildFields())
             ->mapWithKeys(fn (Field $field): array => [$field->name => $field->getDefault()])
             ->all();
     }
@@ -53,7 +64,7 @@ trait HasFields
     {
         $values = is_array($values) ? $values : [];
 
-        return collect($this->getFields())
+        return collect($this->getChildFields())
             ->mapWithKeys(fn (Field $field): array => [$field->name => $field->cast($values[$field->name] ?? $field->getDefault())])
             ->all();
     }
@@ -63,7 +74,7 @@ trait HasFields
      */
     protected function childRules(string $path): array
     {
-        return collect($this->getFields())
+        return collect($this->getChildFields())
             ->flatMap(fn (Field $field): array => $field->getRules("$path.$field->name"))
             ->all();
     }
@@ -73,7 +84,7 @@ trait HasFields
      */
     protected function childValidationAttributes(string $path): array
     {
-        return collect($this->getFields())
+        return collect($this->getChildFields())
             ->flatMap(fn (Field $field): array => $field->getValidationAttributes("$path.$field->name"))
             ->all();
     }

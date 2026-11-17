@@ -1,5 +1,7 @@
 <?php
 
+use App\Schema\Component;
+use App\Schema\Concerns\HasSchema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +49,22 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * A layout component holding the given components, whose fields hold their values among the values of its parent.
+ *
+ * @param  list<Component>  $schema
+ */
+function layout(array $schema): Component
+{
+    return (new class extends Component
+    {
+        use HasSchema;
+
+        public function getFields(): array
+        {
+            return $this->getChildFields();
+        }
+    })->schema($schema);
 }

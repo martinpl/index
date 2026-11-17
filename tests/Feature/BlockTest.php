@@ -6,9 +6,9 @@ use App\Blocks\Missing;
 use App\Blocks\Paragraph;
 use App\Facades\BlockType;
 use App\Facades\Filter;
-use App\Fields\Text;
 use App\Models\Entry;
 use App\Models\Setting;
+use App\Schema\Text;
 
 use function Pest\Laravel\get;
 
@@ -69,7 +69,7 @@ test('plugins can register block types and change the HTML of blocks', function 
     {
         public static string $type = 'callout';
 
-        public static function fields(): array
+        public static function schema(): array
         {
             return [Text::make('text')];
         }
@@ -81,7 +81,7 @@ test('plugins can register block types and change the HTML of blocks', function 
     };
     BlockType::register($callout::class, ['name' => 'Callout'], 'plugins/callouts');
     Filter::add('block.render', fn (string $html, Block $block): string => $block->type() === 'callout' ? "<div class=\"callout\">$html</div>" : $html);
-    Filter::add('block.attributes.fields', fn (array $fields): array => [...$fields, Text::make('data-theme')]);
+    Filter::add('block.attributes.schema', fn (array $schema): array => [...$schema, Text::make('data-theme')]);
 
     $entry = Entry::factory()->create(['content' => [
         ['type' => 'callout', 'data' => ['text' => 'Note']],

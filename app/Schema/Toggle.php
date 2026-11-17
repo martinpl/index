@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
 class Toggle extends Field
 {
-    public string $component = 'fields.toggle';
+    public string $view = 'schema.toggle';
 
     protected mixed $default = false;
 

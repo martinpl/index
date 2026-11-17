@@ -2,8 +2,8 @@
 
 namespace App\Blocks;
 
-use App\Fields\Select;
-use App\Fields\Text;
+use App\Schema\Select;
+use App\Schema\Text;
 
 class Heading extends Block
 {
@@ -17,7 +17,7 @@ class Heading extends Block
         return ['icon' => 'lucide-heading', 'description' => 'A title introducing a section.'];
     }
 
-    public static function fields(): array
+    public static function schema(): array
     {
         return [
             Text::make('text')->label(__('Text'))->rules('string', 'max:255'),

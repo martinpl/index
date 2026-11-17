@@ -3,14 +3,14 @@
 use App\Actions\StoreMedia;
 use App\Entries\Media;
 use App\Facades\EntryType;
-use App\Fields\Field;
-use App\Fields\Text;
-use App\Fields\WithFields;
 use App\Listing\Action;
 use App\Listing\Column;
 use App\Listing\Listing;
 use App\Listing\Tab;
 use App\Listing\WithListing;
+use App\Schema\Component as SchemaComponent;
+use App\Schema\Text;
+use App\Schema\WithSchema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -26,9 +26,9 @@ use Livewire\WithFileUploads;
 
 new class extends Component
 {
-    use WithFields;
     use WithFileUploads;
     use WithListing;
+    use WithSchema;
 
     /**
      * The files being added to the media library.
@@ -127,9 +127,9 @@ new class extends Component
     }
 
     /**
-     * @return list<Field>
+     * @return list<SchemaComponent>
      */
-    protected function fields(): array
+    protected function schema(): array
     {
         return [
             Text::make('name')
@@ -305,7 +305,7 @@ new class extends Component
                         </x-ui.button>
                     </div>
                 </x-ui.field>
-                <x-fields :$fields :$values />
+                <x-schema :$schema :$values />
                 <div class="flex gap-2">
                     <x-ui.button type="submit">{{ __('Update') }}</x-ui.button>
                     <x-ui.button type="button" variant="outline" wire:click="resetForm">{{ __('Cancel') }}</x-ui.button>

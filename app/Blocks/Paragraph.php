@@ -2,7 +2,7 @@
 
 namespace App\Blocks;
 
-use App\Fields\Textarea;
+use App\Schema\Textarea;
 
 class Paragraph extends Block
 {
@@ -16,7 +16,7 @@ class Paragraph extends Block
         return ['icon' => 'lucide-pilcrow', 'description' => 'Plain text, broken into lines.'];
     }
 
-    public static function fields(): array
+    public static function schema(): array
     {
         return [
             Textarea::make('text')->label(__('Text'))->rows(3)->rules('string'),

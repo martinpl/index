@@ -4,9 +4,9 @@ namespace App\Entries;
 
 use App\Facades\Filter;
 use App\Facades\Metabox;
-use App\Fields\Select;
 use App\Models\Entry;
 use App\Models\Setting;
+use App\Schema\Select;
 use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -28,7 +28,7 @@ class Page extends Entry
         static::registerRole('home', 'Home page');
 
         Metabox::register('page-role', [
-            'fields' => fn (): array => [
+            'schema' => fn (): array => [
                 Select::make('role')
                     ->label(__('Role'))
                     ->options(fn (): array => array_map(__(...), static::roles())),

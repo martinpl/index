@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
 class Textarea extends Text
 {
-    public string $component = 'fields.textarea';
+    public string $view = 'schema.textarea';
 
     public int $rows = 4;
 

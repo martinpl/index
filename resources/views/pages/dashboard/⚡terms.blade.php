@@ -1,28 +1,27 @@
 <?php
 
 use App\Facades\TermType;
-use App\Fields\Field;
-use App\Fields\Select;
-use App\Fields\Text;
-use App\Fields\Textarea;
-use App\Fields\WithFields;
 use App\Listing\Action;
 use App\Listing\Column;
 use App\Listing\Listing;
 use App\Listing\WithListing;
 use App\Models\Term;
+use App\Schema\Component as SchemaComponent;
+use App\Schema\Select;
+use App\Schema\Text;
+use App\Schema\Textarea;
+use App\Schema\WithSchema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 new class extends Component
 {
-    use WithFields;
     use WithListing;
+    use WithSchema;
 
     public string $type;
 
@@ -86,9 +85,9 @@ new class extends Component
     }
 
     /**
-     * @return list<Field>
+     * @return list<SchemaComponent>
      */
-    protected function fields(): array
+    protected function schema(): array
     {
         $parentOptions = $this->parentOptions();
 
@@ -193,7 +192,7 @@ new class extends Component
 
 <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,4fr)]">
     <form wire:submit="save" wire:key="term-form-{{ $editing ?? 'new' }}" class="flex flex-col gap-6">
-        <x-fields :$fields :$values />
+        <x-schema :$schema :$values />
         <div class="flex gap-2">
             <x-ui.button type="submit">
                 {{ $editing ? __('Update') : __('Add New :type', ['type' => __(TermType::get($type)['name'])]) }}

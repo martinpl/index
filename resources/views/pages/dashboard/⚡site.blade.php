@@ -3,11 +3,11 @@
 use App\Actions\InstallSite;
 use App\Concerns\ProfileValidationRules;
 use App\Concerns\SiteValidationRules;
-use App\Fields\Field;
-use App\Fields\Group;
-use App\Fields\Text;
-use App\Fields\WithFields;
 use App\Models\Site;
+use App\Schema\Component as SchemaComponent;
+use App\Schema\Group;
+use App\Schema\Text;
+use App\Schema\WithSchema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +19,7 @@ new class extends Component
 {
     use ProfileValidationRules;
     use SiteValidationRules;
-    use WithFields;
+    use WithSchema;
 
     /**
      * The site being edited, or null when adding a new one.
@@ -77,9 +77,9 @@ new class extends Component
     }
 
     /**
-     * @return list<Field>
+     * @return list<SchemaComponent>
      */
-    protected function fields(): array
+    protected function schema(): array
     {
         return [
             Text::make('domain')
@@ -98,7 +98,7 @@ new class extends Component
                 ->label(__('Administrator'))
                 ->description(__('Users are separate for each site, so the site gets its own administrator account.'))
                 ->visible(! $this->record)
-                ->fields([
+                ->schema([
                     Text::make('name')
                         ->label(__('Name'))
                         ->rules($this->nameRules()),
@@ -123,7 +123,7 @@ new class extends Component
 ?>
 
 <form wire:submit="save" class="flex w-full max-w-lg flex-col gap-6">
-    <x-fields :$fields :$values />
+    <x-schema :$schema :$values />
     <div>
         <x-ui.button type="submit">{{ $record ? __('Update') : __('Add Site') }}</x-ui.button>
     </div>

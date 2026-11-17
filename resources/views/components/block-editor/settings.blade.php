@@ -78,16 +78,16 @@
             <p class="text-muted-foreground text-sm">
                 {{ __('The :type block type is not available, so the block is kept as it is but not shown on the site.', ['type' => $block['type']]) }}
             </p>
-        @elseif ($fields = BlockType::fields($block['type']))
-            <x-fields :$fields :values="$block['data']" :path="'blocks.'.$index.'.data'" />
+        @elseif ($schema = BlockType::schema($block['type']))
+            <x-schema :$schema :values="$block['data']" :path="'blocks.'.$index.'.data'" />
         @endif
 
         <x-ui.separator />
 
         <x-ui.field-set>
             <x-ui.field-legend>{{ __('Advanced') }}</x-ui.field-legend>
-            <x-fields
-                :fields="BlockType::attributeFields()"
+            <x-schema
+                :schema="BlockType::attributeSchema()"
                 :values="$block['attributes'] ?? []"
                 :path="'blocks.'.$index.'.attributes'"
             />

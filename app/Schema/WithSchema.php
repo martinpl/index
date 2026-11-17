@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
 use Illuminate\Contracts\View\View;
 
 /**
- * Holds the values of the component's fields, passing the visible fields to its view
- * as `$fields`, ready for the `<x-fields :$fields :$values />` component.
+ * Holds the values of the Livewire component's fields, passing the visible components of its schema to its view
+ * as `$schema`, ready for the `<x-schema :$schema :$values />` component.
  */
-trait WithFields
+trait WithSchema
 {
     /**
      * @var array<string, mixed>
@@ -16,9 +16,9 @@ trait WithFields
     public array $values = [];
 
     /**
-     * @return list<Field>
+     * @return list<Component>
      */
-    abstract protected function fields(): array;
+    abstract protected function schema(): array;
 
     /**
      * Fill the values with the given ones cast by the fields, falling back to each field's default.
@@ -41,21 +41,21 @@ trait WithFields
 
         $validated = $this->validate($form->getRules('values'), [], $form->getValidationAttributes('values'))['values'] ?? [];
 
-        return collect($form->getFields())
+        return collect($form->getChildFields())
             ->mapWithKeys(fn (Field $field): array => [$field->name => $field->cast($validated[$field->name] ?? null)])
             ->all();
     }
 
-    public function renderingWithFields(View $view): void
+    public function renderingWithSchema(View $view): void
     {
-        $view->with('fields', $this->form()->getFields());
+        $view->with('schema', $this->form()->getSchema());
     }
 
     /**
-     * The fields grouped under the `values` property.
+     * The schema grouped under the `values` property.
      */
     protected function form(): Group
     {
-        return Group::make('values')->fields($this->fields());
+        return Group::make('values')->schema($this->schema());
     }
 }

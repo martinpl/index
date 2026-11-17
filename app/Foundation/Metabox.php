@@ -3,9 +3,10 @@
 namespace App\Foundation;
 
 use App\Facades\Filter;
-use App\Fields\Field;
-use App\Fields\Group;
 use App\Models\Concerns\HasMeta;
+use App\Schema\Component;
+use App\Schema\Field;
+use App\Schema\Group;
 use Closure;
 use DomainException;
 use Illuminate\Contracts\Support\Htmlable;
@@ -18,21 +19,21 @@ use Illuminate\Support\Str;
 class Metabox
 {
     /**
-     * @var array<string, array{key: string, render: Closure|null, fields: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @var array<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
      */
     protected array $metaboxes = [];
 
     /**
      * Register a box shown at the given location, or any of a list of them, whose `with` data, like
      * the `title` heading the box, describes it, while a `seamless` box shows its content in line,
-     * with no collapsible heading. The box shows its `fields`, stored as meta of the edited model
-     * named after each field, followed by whatever its `render` callback returns. Fields stored
+     * with no collapsible heading. The box shows its `schema`, whose fields are stored as meta of the edited
+     * model named after each field, followed by whatever its `render` callback returns. Fields stored
      * elsewhere are read by the `values` callback, receiving the model, and stored by the `save`
      * callback, receiving the model and the cast values.
      * The entry editor shows the boxes of the `entry` location and of `entry.{type}` for its entry type,
      * passing their callbacks the entry being edited, or null when adding one.
      *
-     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), fields?: Closure(): list<Field>, values?: Closure(Model|null): array<string, mixed>, save?: Closure(Model, array<string, mixed>): void, with?: array<string, mixed>, location?: string|list<string>, can?: string|null, position?: int}  $config
+     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), schema?: Closure(): list<Component>, values?: Closure(Model|null): array<string, mixed>, save?: Closure(Model, array<string, mixed>): void, with?: array<string, mixed>, location?: string|list<string>, can?: string|null, position?: int}  $config
      * @param  string  $owner  Same format as the data owner column, e.g. `core` or `plugins/blog`.
      */
     public function register(string $key, array $config, string $owner): void
@@ -44,7 +45,7 @@ class Metabox
         $this->metaboxes[$key] = [
             'key' => $key,
             'render' => $config['render'] ?? null,
-            'fields' => $config['fields'] ?? null,
+            'schema' => $config['schema'] ?? null,
             'values' => $config['values'] ?? null,
             'save' => $config['save'] ?? null,
             'with' => ['title' => Str::headline($key), 'seamless' => false, ...$config['with'] ?? []],
@@ -61,7 +62,7 @@ class Metabox
     }
 
     /**
-     * @return array{key: string, render: Closure|null, fields: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}|null
+     * @return array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}|null
      */
     public function get(string $key): ?array
     {
@@ -69,7 +70,7 @@ class Metabox
     }
 
     /**
-     * @return Collection<string, array{key: string, render: Closure|null, fields: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @return Collection<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
      */
     public function list(): Collection
     {
@@ -80,7 +81,7 @@ class Metabox
      * The metaboxes of any of the locations the current user may see, sorted by position.
      *
      * @param  string|list<string>  $locations
-     * @return Collection<string, array{key: string, render: Closure|null, fields: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @return Collection<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
      */
     public function for(string|array $locations): Collection
     {
@@ -89,27 +90,27 @@ class Metabox
     }
 
     /**
-     * The visible fields of the metabox, which plugins may change through the `metaboxes.{key}.fields` filter.
+     * The visible components of the metabox, which plugins may change through the `metaboxes.{key}.schema` filter.
      *
-     * @return list<Field>
+     * @return list<Component>
      */
-    public function fields(string $key): array
+    public function schema(string $key): array
     {
-        if (! $this->metaboxes[$key]['fields']) {
+        if (! $this->metaboxes[$key]['schema']) {
             return [];
         }
 
-        $fields = Filter::apply("metaboxes.$key.fields", ($this->metaboxes[$key]['fields'])(), $key);
+        $schema = Filter::apply("metaboxes.$key.schema", ($this->metaboxes[$key]['schema'])(), $key);
 
-        return array_values(array_filter($fields, fn (Field $field): bool => $field->isVisible()));
+        return array_values(array_filter($schema, fn (Component $component): bool => $component->isVisible()));
     }
 
     /**
-     * The fields of the metabox grouped under its key.
+     * The schema of the metabox grouped under its key.
      */
     public function form(string $key): Group
     {
-        return Group::make($key)->fields($this->fields($key));
+        return Group::make($key)->schema($this->schema($key));
     }
 
     /**
@@ -123,7 +124,7 @@ class Metabox
     {
         $values = $this->metaboxes[$key]['values']
             ? ($this->metaboxes[$key]['values'])($model)
-            : collect($this->fields($key))->mapWithKeys(fn (Field $field): array => [$field->name => $model?->getMeta($field->name)])->all();
+            : collect($this->form($key)->getChildFields())->mapWithKeys(fn (Field $field): array => [$field->name => $model?->getMeta($field->name)])->all();
 
         return $this->form($key)->cast($values);
     }

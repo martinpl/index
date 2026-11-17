@@ -3,10 +3,10 @@
 namespace App\Settings;
 
 use App\Facades\Role;
-use App\Fields\Field;
-use App\Fields\Select;
-use App\Fields\Text;
-use App\Fields\Toggle;
+use App\Schema\Component;
+use App\Schema\Select;
+use App\Schema\Text;
+use App\Schema\Toggle;
 use Closure;
 use DateTimeZone;
 use Locale;
@@ -15,7 +15,7 @@ use ResourceBundle;
 class General
 {
     /**
-     * @return array{title: string, page_title: string, can: string, position: int, fields: Closure(): list<Field>}
+     * @return array{title: string, page_title: string, can: string, position: int, schema: Closure(): list<Component>}
      */
     public static function config(): array
     {
@@ -24,14 +24,14 @@ class General
             'page_title' => 'General Settings',
             'can' => 'settings.manage',
             'position' => 0,
-            'fields' => static::fields(...),
+            'schema' => static::schema(...),
         ];
     }
 
     /**
-     * @return list<Field>
+     * @return list<Component>
      */
-    public static function fields(): array
+    public static function schema(): array
     {
         return [
             Text::make('site_name')->label(__('Site name'))->required()->rules('max:255'),

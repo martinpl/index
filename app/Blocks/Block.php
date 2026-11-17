@@ -3,7 +3,7 @@
 namespace App\Blocks;
 
 use App\Facades\Filter;
-use App\Fields\Field;
+use App\Schema\Component;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
@@ -43,11 +43,11 @@ abstract class Block implements Arrayable, Htmlable, JsonSerializable
     }
 
     /**
-     * The fields holding the block's data, edited in the block editor.
+     * The components whose fields hold the block's data, edited in the block editor.
      *
-     * @return list<Field>
+     * @return list<Component>
      */
-    public static function fields(): array
+    public static function schema(): array
     {
         return [];
     }

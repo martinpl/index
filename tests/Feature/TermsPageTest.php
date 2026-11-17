@@ -102,7 +102,7 @@ test('edits a term in the form', function () {
         ->assertSet('editing', $term->id)
         ->assertSet('values.slug', 'news')
         ->assertSee('Update')
-        ->assertViewHas('fields', fn (array $fields): bool => array_keys($fields[2]->getOptions()) === [$parent->id]);
+        ->assertViewHas('schema', fn (array $schema): bool => array_keys($schema[2]->getOptions()) === [$parent->id]);
 
     $page->set('values.name', 'Updates')
         ->set('values.slug', 'news')
@@ -122,7 +122,7 @@ test('leaves out the parent of a flat type', function () {
     Term::factory()->create(['type' => 'tag']);
 
     Livewire::test('pages::dashboard.terms', ['type' => 'tag'])
-        ->assertViewHas('fields', fn (array $fields): bool => ! in_array('parent_id', array_column($fields, 'name'), true))
+        ->assertViewHas('schema', fn (array $schema): bool => ! in_array('parent_id', array_column($schema, 'name'), true))
         ->assertViewHas('listing', fn (array $listing): bool => ! in_array('parent', array_column($listing['columns'], 'name'), true))
         ->set('values.name', 'Laravel')
         ->set('values.parent_id', '1')

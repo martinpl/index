@@ -1,14 +1,14 @@
 <?php
 
 use App\Facades\Settings;
-use App\Fields\Field;
-use App\Fields\WithFields;
+use App\Schema\Component as SchemaComponent;
+use App\Schema\WithSchema;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 new class extends Component
 {
-    use WithFields;
+    use WithSchema;
 
     public string $page;
 
@@ -36,11 +36,11 @@ new class extends Component
     }
 
     /**
-     * @return list<Field>
+     * @return list<SchemaComponent>
      */
-    protected function fields(): array
+    protected function schema(): array
     {
-        return Settings::fields($this->page);
+        return Settings::schema($this->page);
     }
 
     public function render(): View
@@ -51,7 +51,7 @@ new class extends Component
 ?>
 
 <form wire:submit="save" class="flex w-full max-w-lg flex-col gap-6">
-    <x-fields :$fields :$values />
+    <x-schema :$schema :$values />
     <div>
         <x-ui.button type="submit">{{ __('Save') }}</x-ui.button>
     </div>

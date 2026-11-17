@@ -5,12 +5,12 @@ use App\Enums\EntryStatus;
 use App\Facades\EntryType;
 use App\Facades\Metabox;
 use App\Facades\TermType;
-use App\Fields\Field;
-use App\Fields\Select;
-use App\Fields\Text;
-use App\Fields\WithFields;
 use App\Models\Entry;
 use App\Models\Term;
+use App\Schema\Component as SchemaComponent;
+use App\Schema\Select;
+use App\Schema\Text;
+use App\Schema\WithSchema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +23,7 @@ use Livewire\Component;
 new class extends Component
 {
     use WithBlocks;
-    use WithFields;
+    use WithSchema;
 
     public string $type;
 
@@ -165,14 +165,14 @@ new class extends Component
     }
 
     /**
-     * The keys of the metaboxes the editor shows that have fields.
+     * The keys of the metaboxes the editor shows that have a schema.
      *
      * @return Collection<int, string>
      */
     protected function metaboxKeys(): Collection
     {
         return Metabox::for(['entry', "entry.$this->type"])
-            ->filter(fn (array $metabox): bool => filled(Metabox::fields($metabox['key'])))
+            ->filter(fn (array $metabox): bool => filled(Metabox::schema($metabox['key'])))
             ->keys();
     }
 
@@ -210,9 +210,9 @@ new class extends Component
     }
 
     /**
-     * @return list<Field>
+     * @return list<SchemaComponent>
      */
-    protected function fields(): array
+    protected function schema(): array
     {
         return [
             Select::make('status')
@@ -291,7 +291,7 @@ new class extends Component
             @if ($selectedBlock)
                 <x-block-editor.settings :$blocks :$blockTypes :$selectedBlock />
             @else
-                <x-fields :$fields :$values />
+                <x-schema :$schema :$values />
 
                 <x-metaboxes :location="['entry', 'entry.'.$type]" :arguments="[$record]" :values="$metaboxes" />
             @endif

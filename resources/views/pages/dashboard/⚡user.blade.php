@@ -2,12 +2,12 @@
 
 use App\Concerns\ProfileValidationRules;
 use App\Facades\Role;
-use App\Fields\Field;
-use App\Fields\Group;
-use App\Fields\Text;
-use App\Fields\Toggle;
-use App\Fields\WithFields;
 use App\Models\User;
+use App\Schema\Component as SchemaComponent;
+use App\Schema\Group;
+use App\Schema\Text;
+use App\Schema\Toggle;
+use App\Schema\WithSchema;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
@@ -17,7 +17,7 @@ use Livewire\Component;
 new class extends Component
 {
     use ProfileValidationRules;
-    use WithFields;
+    use WithSchema;
 
     /**
      * The user being edited, or null when adding a new one.
@@ -83,9 +83,9 @@ new class extends Component
     }
 
     /**
-     * @return list<Field>
+     * @return list<SchemaComponent>
      */
-    protected function fields(): array
+    protected function schema(): array
     {
         $roles = Role::list();
 
@@ -111,7 +111,7 @@ new class extends Component
             Group::make('roles')
                 ->label(__('Roles'))
                 ->visible($roles->isNotEmpty())
-                ->fields($roles->map(fn (array $role): Toggle => Toggle::make($role['key'])->label(__($role['name'])))->values()->all()),
+                ->schema($roles->map(fn (array $role): Toggle => Toggle::make($role['key'])->label(__($role['name'])))->values()->all()),
         ];
     }
 
@@ -123,7 +123,7 @@ new class extends Component
 ?>
 
 <form wire:submit="save" class="flex w-full max-w-lg flex-col gap-6">
-    <x-fields :$fields :$values />
+    <x-schema :$schema :$values />
     <div>
         <x-ui.button type="submit">{{ $record ? __('Update') : __('Add User') }}</x-ui.button>
     </div>

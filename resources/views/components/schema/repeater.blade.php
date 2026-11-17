@@ -9,9 +9,9 @@
     @foreach ($value ?? [] as $index => $row)
         <div wire:key="{{ $path }}.{{ $index }}" class="flex flex-col gap-4 rounded-lg border p-4">
             <x-ui.field-group>
-                @foreach ($field->getFields() as $child)
+                @foreach ($field->getSchema() as $child)
                     <x-dynamic-component
-                        :component="$child->component"
+                        :component="$child->view"
                         :field="$child"
                         :path="$path.'.'.$index.'.'.$child->name"
                         :value="$row[$child->name] ?? null"

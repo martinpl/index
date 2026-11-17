@@ -2,12 +2,12 @@
 
 use App\Facades\Filter;
 use App\Facades\Settings;
-use App\Fields\Repeater;
-use App\Fields\Select;
-use App\Fields\Text;
-use App\Fields\Toggle;
 use App\Models\Setting;
 use App\Models\User;
+use App\Schema\Repeater;
+use App\Schema\Select;
+use App\Schema\Text;
+use App\Schema\Toggle;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -61,10 +61,10 @@ test('the settings page validates the values', function () {
 
 test('the settings page stores cast values as settings owned by the page owner', function () {
     Settings::register('reading', [
-        'fields' => fn (): array => [
+        'schema' => fn (): array => [
             Toggle::make('comments_open'),
             Select::make('order')->options(['asc' => 'Oldest first', 'desc' => 'Newest first'])->default('desc'),
-            Repeater::make('links')->fields([Text::make('url')->required()]),
+            Repeater::make('links')->schema([Text::make('url')->required()]),
         ],
     ], 'plugins/reading');
     actingAs(User::factory()->create());
@@ -83,8 +83,17 @@ test('the settings page stores cast values as settings owned by the page owner',
         ->and(Setting::exists('injected'))->toBeFalse();
 });
 
+test('settings pages store the fields of layout components as settings', function () {
+    Settings::register('reading', ['schema' => fn (): array => [layout([Toggle::make('comments_open')])]], 'plugins/reading');
+
+    Settings::save('reading', ['comments_open' => '1']);
+
+    expect(Setting::get('comments_open'))->toBeTrue()
+        ->and(Settings::values('reading'))->toBe(['comments_open' => true]);
+});
+
 test('plugins can add fields to a settings page', function () {
-    Filter::add('settings.general.fields', fn (array $fields): array => [...$fields, Text::make('tagline')]);
+    Filter::add('settings.general.schema', fn (array $schema): array => [...$schema, Text::make('tagline')]);
     actingAs(settingsManager());
 
     Livewire::test('pages::dashboard.settings', ['page' => 'general'])
@@ -97,7 +106,7 @@ test('plugins can add fields to a settings page', function () {
 });
 
 test('the settings page leaves out hidden fields, keeping their stored settings', function () {
-    Filter::add('settings.general.fields', fn (array $fields): array => [...$fields, Text::make('tagline')->visible(false)]);
+    Filter::add('settings.general.schema', fn (array $schema): array => [...$schema, Text::make('tagline')->visible(false)]);
     Setting::set('tagline', 'Just another Index site', 'core');
     actingAs(settingsManager());
 
@@ -140,5 +149,5 @@ test('the general settings page previews only custom date formats', function () 
 });
 
 test('registering a duplicate settings page throws', function () {
-    Settings::register('general', ['fields' => fn (): array => []], 'plugins/blog');
+    Settings::register('general', ['schema' => fn (): array => []], 'plugins/blog');
 })->throws(DomainException::class, 'Settings page [general] is already registered by [core].');

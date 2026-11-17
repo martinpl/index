@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
 use App\Entries\Media;
 use Closure;
@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class MediaPicker extends Field
 {
-    public string $component = 'fields.media-picker';
+    public string $view = 'schema.media-picker';
 
     protected ?string $type = null;
 

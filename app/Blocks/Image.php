@@ -3,8 +3,8 @@
 namespace App\Blocks;
 
 use App\Entries\Media;
-use App\Fields\MediaPicker;
-use App\Fields\Text;
+use App\Schema\MediaPicker;
+use App\Schema\Text;
 use Illuminate\Contracts\View\View;
 
 class Image extends Block
@@ -19,7 +19,7 @@ class Image extends Block
         return ['icon' => 'lucide-image', 'description' => 'An image with an optional caption.'];
     }
 
-    public static function fields(): array
+    public static function schema(): array
     {
         return [
             MediaPicker::make('media')->label(__('Image'))->type('image')->required(),

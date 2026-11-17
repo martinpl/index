@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Fields;
+namespace App\Schema;
 
 class Text extends Field
 {
-    public string $component = 'fields.text';
+    public string $view = 'schema.text';
 
     public string $type = 'text';
 

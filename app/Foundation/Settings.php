@@ -3,8 +3,9 @@
 namespace App\Foundation;
 
 use App\Facades\Filter;
-use App\Fields\Field;
 use App\Models\Setting;
+use App\Schema\Component;
+use App\Schema\Field;
 use Closure;
 use DomainException;
 use Illuminate\Support\Collection;
@@ -14,14 +15,14 @@ use Illuminate\Support\Str;
 class Settings
 {
     /**
-     * @var array<string, array{key: string, title: string, page_title: string, fields: Closure(): list<Field>, can: string|null, parent: string, position: int, owner: string}>
+     * @var array<string, array{key: string, title: string, page_title: string, schema: Closure(): list<Component>, can: string|null, parent: string, position: int, owner: string}>
      */
     protected array $pages = [];
 
     /**
      * Register a settings page whose fields are stored as settings named after each field.
      *
-     * @param  array{title?: string, page_title?: string, fields: Closure(): list<Field>, can?: string|null, parent?: string, position?: int}  $config  The `title` labels the menu item, the `page_title` heads the page.
+     * @param  array{title?: string, page_title?: string, schema: Closure(): list<Component>, can?: string|null, parent?: string, position?: int}  $config  The `title` labels the menu item, the `page_title` heads the page.
      * @param  string  $owner  Same format as the data owner column, e.g. `core` or `plugins/blog`.
      */
     public function register(string $key, array $config, string $owner): void
@@ -34,7 +35,7 @@ class Settings
             'key' => $key,
             'title' => $title = $config['title'] ?? Str::headline($key),
             'page_title' => $config['page_title'] ?? $title,
-            'fields' => $config['fields'],
+            'schema' => $config['schema'],
             'can' => $config['can'] ?? null,
             'parent' => $config['parent'] ?? 'settings',
             'position' => $config['position'] ?? 10,
@@ -53,7 +54,7 @@ class Settings
     }
 
     /**
-     * @return Collection<string, array{key: string, title: string, page_title: string, fields: Closure(): list<Field>, can: string|null, parent: string, position: int, owner: string}>
+     * @return Collection<string, array{key: string, title: string, page_title: string, schema: Closure(): list<Component>, can: string|null, parent: string, position: int, owner: string}>
      */
     public function list(): Collection
     {
@@ -61,15 +62,25 @@ class Settings
     }
 
     /**
-     * The visible fields of the page, which plugins may change through the `settings.{key}.fields` filter.
+     * The visible components of the page, which plugins may change through the `settings.{key}.schema` filter.
+     *
+     * @return list<Component>
+     */
+    public function schema(string $key): array
+    {
+        $schema = Filter::apply("settings.$key.schema", ($this->pages[$key]['schema'])(), $key);
+
+        return array_values(array_filter($schema, fn (Component $component): bool => $component->isVisible()));
+    }
+
+    /**
+     * The visible fields holding the values of the page, each stored as the setting of its name.
      *
      * @return list<Field>
      */
     public function fields(string $key): array
     {
-        $fields = Filter::apply("settings.$key.fields", ($this->pages[$key]['fields'])(), $key);
-
-        return array_values(array_filter($fields, fn (Field $field): bool => $field->isVisible()));
+        return array_merge(...array_map(fn (Component $component): array => $component->getFields(), $this->schema($key)));
     }
 
     public function allows(string $key): bool
