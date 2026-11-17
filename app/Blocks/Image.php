@@ -2,7 +2,7 @@
 
 namespace App\Blocks;
 
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Fields\MediaPicker;
 use App\Fields\Text;
 use Illuminate\Contracts\View\View;

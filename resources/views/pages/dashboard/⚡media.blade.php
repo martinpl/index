@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\StoreMedia;
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Facades\EntryType;
 use App\Fields\Field;
 use App\Fields\Text;

@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Models\Site;
 use DomainException;
 use Illuminate\Http\UploadedFile;

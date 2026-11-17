@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\EntryTypes\Page;
+use App\Entries\Page;
 use App\Enums\EntryStatus;
 use App\Facades\Plugin;
 use App\Facades\Role;

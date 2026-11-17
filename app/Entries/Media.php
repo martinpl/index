@@ -1,6 +1,6 @@
 <?php
 
-namespace App\EntryTypes;
+namespace App\Entries;
 
 use App\Enums\EntryStatus;
 use App\Facades\Filter;

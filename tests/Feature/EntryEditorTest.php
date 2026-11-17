@@ -4,7 +4,7 @@ use App\Blocks\Block;
 use App\Blocks\Heading;
 use App\Blocks\Missing;
 use App\Blocks\Paragraph;
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
 use App\Facades\TermType;

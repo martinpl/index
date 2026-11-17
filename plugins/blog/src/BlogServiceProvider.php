@@ -3,9 +3,9 @@
 namespace Blog;
 
 use App\Support\PackageServiceProvider;
-use Blog\EntryTypes\Post;
-use Blog\TermTypes\Category;
-use Blog\TermTypes\Tag;
+use Blog\Entries\Post;
+use Blog\Terms\Category;
+use Blog\Terms\Tag;
 
 class BlogServiceProvider extends PackageServiceProvider
 {

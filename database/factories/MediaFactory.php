@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Enums\EntryStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;

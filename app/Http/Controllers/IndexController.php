@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\EntryTypes\Page;
+use App\Entries\Page;
 use App\Facades\EntryType;
 use App\Facades\Filter;
 use App\Facades\Theme;

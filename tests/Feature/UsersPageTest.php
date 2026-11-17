@@ -1,6 +1,6 @@
 <?php
 
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Facades\Role;
 use App\Models\Entry;
 use App\Models\User;

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Facades\Plugin;
 use App\Facades\Theme;
 use Closure;

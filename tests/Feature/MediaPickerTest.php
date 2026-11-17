@@ -1,7 +1,7 @@
 <?php
 
-use App\EntryTypes\Media;
-use App\EntryTypes\Page;
+use App\Entries\Media;
+use App\Entries\Page;
 use App\Enums\EntryStatus;
 use App\Models\Entry;
 use App\Models\Setting;

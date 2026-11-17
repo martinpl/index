@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\EntryTypes\Page;
+use App\Entries\Page;
 use App\Models\Setting;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;

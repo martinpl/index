@@ -1,6 +1,6 @@
 <?php
 
-use App\EntryTypes\Page;
+use App\Entries\Page;
 use App\Facades\EntryType;
 use App\Models\Entry;
 use App\Models\Term;

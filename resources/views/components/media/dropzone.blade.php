@@ -12,7 +12,7 @@
     <x-ui.file-upload
         wire:model="{{ $model }}"
         :$multiple
-        :accept="collect(\App\EntryTypes\Media::extensions())->map(fn (string $extension): string => '.'.$extension)->join(',')"
+        :accept="collect(\App\Entries\Media::extensions())->map(fn (string $extension): string => '.'.$extension)->join(',')"
     />
     <x-ui.field-error :$messages />
 </div>

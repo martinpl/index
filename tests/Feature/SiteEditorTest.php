@@ -1,6 +1,6 @@
 <?php
 
-use App\EntryTypes\Page;
+use App\Entries\Page;
 use App\Facades\Role;
 use App\Models\Setting;
 use App\Models\Site;

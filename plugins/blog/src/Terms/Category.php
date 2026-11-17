@@ -1,9 +1,9 @@
 <?php
 
-namespace Blog\TermTypes;
+namespace Blog\Terms;
 
 use App\Models\Term;
-use Blog\EntryTypes\Post;
+use Blog\Entries\Post;
 
 class Category extends Term
 {

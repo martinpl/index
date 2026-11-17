@@ -1,15 +1,15 @@
 <?php
 
-use App\EntryTypes\Page;
+use App\Entries\Page;
 use App\Facades\EntryType;
 use App\Facades\Plugin;
 use App\Facades\TermType;
 use App\Models\Entry;
 use App\Models\Setting;
 use App\Models\Term;
-use Blog\EntryTypes\Post;
-use Blog\TermTypes\Category;
-use Blog\TermTypes\Tag;
+use Blog\Entries\Post;
+use Blog\Terms\Category;
+use Blog\Terms\Tag;
 
 beforeEach(function (): void {
     Setting::set('active_plugins', ['blog'], 'core');

@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\StoreMedia;
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Enums\EntryStatus;
 use App\Facades\Filter;
 use App\Models\Entry;

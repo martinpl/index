@@ -2,7 +2,7 @@
 
 namespace App\Fields;
 
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Builder;

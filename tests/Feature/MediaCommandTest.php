@@ -1,6 +1,6 @@
 <?php
 
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;

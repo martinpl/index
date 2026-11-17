@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\StoreMedia;
-use App\EntryTypes\Media;
+use App\Entries\Media;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
