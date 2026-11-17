@@ -8,7 +8,6 @@ use App\Listing\WithListing;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\HtmlString;
 use Livewire\Component;
 
 new class extends Component
@@ -39,10 +38,7 @@ new class extends Component
                 ->sortable()
                 ->searchable()
                 ->hideable(false)
-                ->render(fn (array $theme): HtmlString => new HtmlString(
-                    '<span class="font-medium">'.e($theme['name']).'</span>'
-                    .($theme['status'] === 'active' ? ' <span class="text-muted-foreground">— '.e(__('Active')).'</span>' : '')
-                )),
+                ->states(fn (array $theme): array => [when($theme['status'] === 'active', __('Active'))]),
             Column::make('description')->label(__('Description'))->searchable(),
             Column::make('version')->label(__('Version')),
         ];

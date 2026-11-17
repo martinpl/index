@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\HtmlString;
 use Livewire\Component;
 
 new class extends Component
@@ -56,10 +55,8 @@ new class extends Component
                 ->sortable()
                 ->searchable()
                 ->hideable(false)
-                ->render(fn (User $user): HtmlString => new HtmlString(
-                    '<a href="'.e(route('dashboard.users.edit', $user)).'" wire:navigate class="font-medium hover:underline">'.e($user->name).'</a>'
-                    .($user->is(Auth::user()) ? ' <span class="text-muted-foreground">— '.e(__('You')).'</span>' : '')
-                )),
+                ->url(fn (User $user): string => route('dashboard.users.edit', $user))
+                ->states(fn (User $user): array => [when($user->is(Auth::user()), __('You'))]),
             Column::make('email')->label(__('Email'))->sortable()->searchable(),
             Column::make('roles')->label(__('Roles'))->render(fn (User $user): string => collect($user->meta->firstWhere('key', 'roles')?->value)
                 ->map(fn (string $role): string => __(Role::get($role)['name'] ?? $role))

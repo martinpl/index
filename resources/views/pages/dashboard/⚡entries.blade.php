@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -68,10 +67,8 @@ new class extends Component
                 ->sortable()
                 ->searchable()
                 ->hideable(false)
-                ->render(fn (Entry $entry): HtmlString => new HtmlString(
-                    '<a href="'.e(route('dashboard.entries.edit', [$this->type, $entry])).'" wire:navigate class="font-medium hover:underline">'.e($entry->name).'</a>'
-                    .($entry->status === EntryStatus::Draft->value && $this->tab !== 'draft' ? ' <span class="text-muted-foreground">— '.e(__('Draft')).'</span>' : '')
-                )),
+                ->url(fn (Entry $entry): string => route('dashboard.entries.edit', [$this->type, $entry]))
+                ->states(fn (Entry $entry): array => [when($entry->status === EntryStatus::Draft->value && $this->tab !== 'draft', __('Draft'))]),
             Column::make('user')->label(__('Author'))->render(fn (Entry $entry): ?string => $entry->user?->name),
             Column::make('date')->label(__('Date'))->sortable()->dateTime(),
             Column::make('modified')->label(__('Modified'))->sortable()->hidden()->dateTime(),

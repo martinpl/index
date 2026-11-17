@@ -9,7 +9,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\HtmlString;
 use Livewire\Component;
 
 new class extends Component
@@ -38,11 +37,9 @@ new class extends Component
             Column::make('name')
                 ->label(__('Name'))
                 ->hideable(false)
-                ->render(fn (Site $site): HtmlString => new HtmlString(
-                    '<a href="'.e(route('dashboard.sites.edit', $site)).'" wire:navigate class="font-medium hover:underline">'
-                    .e($site->setting('site_name', $site->domain)).'</a>'
-                    .($site->isMain() ? ' <span class="text-muted-foreground">— '.e(__('Main site')).'</span>' : '')
-                )),
+                ->render(fn (Site $site): string => $site->setting('site_name', $site->domain))
+                ->url(fn (Site $site): string => route('dashboard.sites.edit', $site))
+                ->states(fn (Site $site): array => [when($site->isMain(), __('Main site'))]),
             Column::make('domain')->label(__('Domain'))->sortable()->searchable(),
             Column::make('path')->label(__('Path'))->sortable()->searchable(),
             Column::make('id')->label(__('ID'))->sortable()->hidden(),

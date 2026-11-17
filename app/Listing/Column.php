@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
@@ -41,6 +42,16 @@ class Column
      * @var (Closure(mixed): (Htmlable|string|null))|null
      */
     protected ?Closure $render = null;
+
+    /**
+     * @var (Closure(mixed): ?string)|null
+     */
+    protected ?Closure $url = null;
+
+    /**
+     * @var (Closure(mixed): array<array-key, string|null>)|null
+     */
+    protected ?Closure $states = null;
 
     /**
      * The date macro, like `toDateFormat`, that shows the value.
@@ -185,6 +196,30 @@ class Column
     }
 
     /**
+     * Link the content of the cell to the URL the callback returns for the record.
+     *
+     * @param  Closure(mixed): ?string  $url
+     */
+    public function url(Closure $url): static
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * Show the states the callback returns for the record after the content of the cell, like `Draft`, leaving out empty ones.
+     *
+     * @param  Closure(mixed): array<array-key, string|null>  $states
+     */
+    public function states(Closure $states): static
+    {
+        $this->states = $states;
+
+        return $this;
+    }
+
+    /**
      * Show the value as a date in the timezone and date format of the site, while it is kept in UTC.
      */
     public function date(): static
@@ -205,9 +240,28 @@ class Column
     }
 
     /**
-     * The content of the column's cell for the given record.
+     * The content of the column's cell for the given record, linked to its URL and followed by its states.
      */
     public function getContent(mixed $record): Htmlable|string|null
+    {
+        $content = $this->getValue($record);
+        $url = $this->url ? ($this->url)($record) : null;
+        $states = $this->states ? array_filter(($this->states)($record)) : [];
+
+        if (! $url && ! $states) {
+            return $content;
+        }
+
+        return new HtmlString(
+            ($url ? '<a href="'.e($url).'" wire:navigate class="hover:underline">'.e($content).'</a>' : e($content))
+            .($states ? ' <span class="text-muted-foreground">— '.e(implode(', ', $states)).'</span>' : '')
+        );
+    }
+
+    /**
+     * The rendered or formatted value of the column for the given record.
+     */
+    protected function getValue(mixed $record): Htmlable|string|null
     {
         if ($this->render) {
             return ($this->render)($record);

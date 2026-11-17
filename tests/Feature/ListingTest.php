@@ -111,3 +111,13 @@ test('date columns use the date and time formats of the site', function () {
     expect(Column::make('date')->date()->getContent($record))->toBe('07.11.2026')
         ->and(Column::make('date')->dateTime()->getContent($record))->toBe('07.11.2026 1:05 PM');
 });
+
+test('columns link their content and follow it by the non-empty states', function () {
+    $column = Column::make('name')
+        ->url(fn (array $record): string => "/plugins/{$record['key']}")
+        ->states(fn (array $record): array => [when($record['active'], 'Active'), null, 'Plugin']);
+
+    expect((string) $column->getContent(['key' => 'seo', 'name' => '<b>SEO</b>', 'active' => false]))
+        ->toBe('<a href="/plugins/seo" wire:navigate class="hover:underline">&lt;b&gt;SEO&lt;/b&gt;</a> <span class="text-muted-foreground">— Plugin</span>')
+        ->and(Column::make('name')->getContent(['name' => 'Blog']))->toBe('Blog');
+});
