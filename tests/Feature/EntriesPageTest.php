@@ -3,6 +3,7 @@
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
 use App\Models\Entry;
+use App\Models\Setting;
 use App\Models\User;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
@@ -61,6 +62,16 @@ test('lists the entries of the type except trashed ones', function () {
         ->set('tab', 'draft')
         ->assertSee('Draft page')
         ->assertDontSeeText('Draft page — Draft');
+});
+
+test('labels the pages assigned to a page role', function () {
+    $home = Entry::factory()->published()->create(['type' => 'page', 'name' => 'Welcome']);
+    Entry::factory()->create(['type' => 'page', 'name' => 'About us']);
+    Setting::set('page_roles', ['home' => $home->id], 'core');
+
+    entriesPage()
+        ->assertSeeText(['Welcome — Home page', 'About us — Draft'])
+        ->assertDontSeeText('About us — Draft, Home page');
 });
 
 test('searches and sorts the entries of the tab', function () {

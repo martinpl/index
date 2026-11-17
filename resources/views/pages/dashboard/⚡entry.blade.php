@@ -222,7 +222,6 @@ new class extends Component
                 ->required(),
             Text::make('slug')
                 ->label(__('Slug'))
-                ->description(__('The URL-friendly version of the title, generated from it when left empty.'))
                 ->rules('alpha_dash', 'lowercase', 'max:255', Rule::unique(Entry::class, 'slug')->where('type', $this->type)->ignore($this->record)),
         ];
     }

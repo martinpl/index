@@ -26,7 +26,9 @@ test('registers a metabox with defaults', function () {
         'key' => 'summary',
         'render' => $render,
         'fields' => null,
-        'with' => ['title' => 'Summary'],
+        'values' => null,
+        'save' => null,
+        'with' => ['title' => 'Summary', 'seamless' => false],
         'location' => 'entry',
         'can' => null,
         'position' => 10,
@@ -74,6 +76,15 @@ test('the editor shows the metaboxes of its entry type', function () {
         ->assertDontSee('Book only');
 });
 
+test('the editor shows seamless metaboxes in line, without their title', function () {
+    Metabox::register('inline', ['render' => summary('inline'), 'with' => ['title' => 'Inline box', 'seamless' => true]], 'core');
+    Metabox::register('boxed', ['render' => summary('boxed'), 'with' => ['title' => 'Boxed box']], 'core');
+
+    Livewire::test('pages::dashboard.entry', ['type' => 'page'])
+        ->assertSee(['Box inline: new', 'Boxed box', 'Box boxed: new'])
+        ->assertDontSee('Inline box');
+});
+
 test('the editor fills the fields of metaboxes from the meta of the entry, falling back to their defaults', function () {
     Metabox::register('seo', ['fields' => fn (): array => [
         Text::make('seo_title')->label('SEO title'),
@@ -83,7 +94,7 @@ test('the editor fills the fields of metaboxes from the meta of the entry, falli
     $entry->setMeta('seo_title', 'About us | Index', 'plugins/seo');
 
     Livewire::test('pages::dashboard.entry', ['type' => 'page', 'entry' => $entry->id])
-        ->assertSet('metaboxes', ['seo' => ['seo_title' => 'About us | Index', 'seo_index' => true]])
+        ->assertSet('metaboxes.seo', ['seo_title' => 'About us | Index', 'seo_index' => true])
         ->assertSeeInOrder(['Seo', 'SEO title', 'wire:model="metaboxes.seo.seo_title"'], false);
 });
 

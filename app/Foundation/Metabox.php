@@ -18,18 +18,21 @@ use Illuminate\Support\Str;
 class Metabox
 {
     /**
-     * @var array<string, array{key: string, render: Closure|null, fields: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @var array<string, array{key: string, render: Closure|null, fields: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
      */
     protected array $metaboxes = [];
 
     /**
      * Register a box shown at the given location, or any of a list of them, whose `with` data, like
-     * the `title` heading the box, describes it. The box shows its `fields`, stored as meta of the
-     * edited model named after each field, followed by whatever its `render` callback returns.
+     * the `title` heading the box, describes it, while a `seamless` box shows its content in line,
+     * with no collapsible heading. The box shows its `fields`, stored as meta of the edited model
+     * named after each field, followed by whatever its `render` callback returns. Fields stored
+     * elsewhere are read by the `values` callback, receiving the model, and stored by the `save`
+     * callback, receiving the model and the cast values.
      * The entry editor shows the boxes of the `entry` location and of `entry.{type}` for its entry type,
      * passing their callbacks the entry being edited, or null when adding one.
      *
-     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), fields?: Closure(): list<Field>, with?: array<string, mixed>, location?: string|list<string>, can?: string|null, position?: int}  $config
+     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), fields?: Closure(): list<Field>, values?: Closure(Model|null): array<string, mixed>, save?: Closure(Model, array<string, mixed>): void, with?: array<string, mixed>, location?: string|list<string>, can?: string|null, position?: int}  $config
      * @param  string  $owner  Same format as the data owner column, e.g. `core` or `plugins/blog`.
      */
     public function register(string $key, array $config, string $owner): void
@@ -42,7 +45,9 @@ class Metabox
             'key' => $key,
             'render' => $config['render'] ?? null,
             'fields' => $config['fields'] ?? null,
-            'with' => ['title' => Str::headline($key), ...$config['with'] ?? []],
+            'values' => $config['values'] ?? null,
+            'save' => $config['save'] ?? null,
+            'with' => ['title' => Str::headline($key), 'seamless' => false, ...$config['with'] ?? []],
             'location' => $config['location'] ?? 'entry',
             'can' => $config['can'] ?? null,
             'position' => $config['position'] ?? 10,
@@ -56,7 +61,7 @@ class Metabox
     }
 
     /**
-     * @return array{key: string, render: Closure|null, fields: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}|null
+     * @return array{key: string, render: Closure|null, fields: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}|null
      */
     public function get(string $key): ?array
     {
@@ -64,7 +69,7 @@ class Metabox
     }
 
     /**
-     * @return Collection<string, array{key: string, render: Closure|null, fields: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @return Collection<string, array{key: string, render: Closure|null, fields: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
      */
     public function list(): Collection
     {
@@ -75,7 +80,7 @@ class Metabox
      * The metaboxes of any of the locations the current user may see, sorted by position.
      *
      * @param  string|list<string>  $locations
-     * @return Collection<string, array{key: string, render: Closure|null, fields: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @return Collection<string, array{key: string, render: Closure|null, fields: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
      */
     public function for(string|array $locations): Collection
     {
@@ -108,27 +113,39 @@ class Metabox
     }
 
     /**
-     * The values of the metabox stored as meta of the model, keyed by field name, falling back to each field's default.
+     * The values of the metabox stored as meta of the model, or read by its `values` callback, keyed by field name,
+     * falling back to each field's default.
      *
      * @param  (Model&HasMeta)|null  $model  Null when the model is being added.
      * @return array<string, mixed>
      */
     public function values(string $key, ?Model $model): array
     {
-        return $this->form($key)->cast(collect($this->fields($key))
-            ->mapWithKeys(fn (Field $field): array => [$field->name => $model?->getMeta($field->name)])
-            ->all());
+        $values = $this->metaboxes[$key]['values']
+            ? ($this->metaboxes[$key]['values'])($model)
+            : collect($this->fields($key))->mapWithKeys(fn (Field $field): array => [$field->name => $model?->getMeta($field->name)])->all();
+
+        return $this->form($key)->cast($values);
     }
 
     /**
-     * Store the given values of the metabox as meta of the model, forgetting empty ones and ignoring any value the metabox has no field for.
+     * Store the given values of the metabox as meta of the model, forgetting empty ones, or pass them to its `save` callback,
+     * ignoring any value the metabox has no field for.
      *
      * @param  Model&HasMeta  $model
      * @param  array<string, mixed>  $values
      */
     public function save(string $key, Model $model, array $values): void
     {
-        foreach ($this->form($key)->cast($values) as $name => $value) {
+        $values = $this->form($key)->cast($values);
+
+        if ($this->metaboxes[$key]['save']) {
+            ($this->metaboxes[$key]['save'])($model, $values);
+
+            return;
+        }
+
+        foreach ($values as $name => $value) {
             $model->setMeta($name, $value, $this->metaboxes[$key]['owner']);
         }
     }

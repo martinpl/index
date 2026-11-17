@@ -2,6 +2,7 @@
 
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
+use App\Facades\Filter;
 use App\Listing\Action;
 use App\Listing\Column;
 use App\Listing\Listing;
@@ -68,7 +69,9 @@ new class extends Component
                 ->searchable()
                 ->hideable(false)
                 ->url(fn (Entry $entry): string => route('dashboard.entries.edit', [$this->type, $entry]))
-                ->states(fn (Entry $entry): array => [when($entry->status === EntryStatus::Draft->value && $this->tab !== 'draft', __('Draft'))]),
+                ->states(fn (Entry $entry): array => Filter::apply('entry.states', [
+                    'draft' => when($entry->status === EntryStatus::Draft->value && $this->tab !== 'draft', __('Draft')),
+                ], $entry)),
             Column::make('user')->label(__('Author'))->render(fn (Entry $entry): ?string => $entry->user?->name),
             Column::make('date')->label(__('Date'))->sortable()->dateTime(),
             Column::make('modified')->label(__('Modified'))->sortable()->hidden()->dateTime(),
