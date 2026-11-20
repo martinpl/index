@@ -74,6 +74,27 @@ trait WithBlocks
         array_splice($this->blocks, max(0, $position), 0, [$block]);
     }
 
+    /**
+     * Replace the block with copies of the blocks it is detached into, like the blocks of the section it shows,
+     * and select the first of them.
+     */
+    public function detachBlock(string $id): void
+    {
+        $index = $this->blockIndex($id);
+        $detached = BlockType::make($this->blocks[$index])->detach();
+
+        abort_if(is_null($detached), 404);
+
+        $copies = $detached->toBase()
+            ->map(fn (Block $block): array => BlockType::make([...$block->toArray(), 'id' => null])->toArray())
+            ->values()
+            ->all();
+
+        array_splice($this->blocks, $index, 1, $copies);
+
+        $this->selectedBlock = $copies[0]['id'] ?? null;
+    }
+
     public function removeBlock(string $id): void
     {
         array_splice($this->blocks, $this->blockIndex($id), 1);

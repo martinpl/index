@@ -106,7 +106,7 @@ new class extends Component
                 ->icon('lucide-undo-2')
                 ->bulk()
                 ->visible(fn (Entry $entry): bool => $entry->trashed())
-                ->handle(fn (Collection $entries) => $entries->each->update(['status' => EntryStatus::Draft->value]))
+                ->handle(fn (Collection $entries) => $entries->each->restore())
                 ->successMessage(fn (Collection $entries): string => trans_choice(':count entry restored.|:count entries restored.', $entries->count())),
             Action::make('delete')
                 ->label(__('Delete permanently'))

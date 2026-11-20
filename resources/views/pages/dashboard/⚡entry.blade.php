@@ -3,6 +3,7 @@
 use App\Blocks\WithBlocks;
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
+use App\Facades\Filter;
 use App\Facades\Metabox;
 use App\Facades\TermType;
 use App\Models\Entry;
@@ -76,7 +77,7 @@ new class extends Component
 
         try {
             $this->validate(
-                ['name' => ['required', 'string', 'max:255'], ...$form->getRules('values'), ...$this->blockRules(), ...$this->termRules(), ...$this->metaboxRules()],
+                Filter::apply('entry.rules', ['name' => ['required', 'string', 'max:255'], ...$form->getRules('values'), ...$this->blockRules(), ...$this->termRules(), ...$this->metaboxRules()], $this->record, $this->blocks),
                 [],
                 ['name' => __('title'), ...$form->getValidationAttributes('values'), ...$this->blockValidationAttributes(), ...$this->termValidationAttributes(), ...$this->metaboxValidationAttributes()],
             );
@@ -104,13 +105,23 @@ new class extends Component
             return;
         }
 
-        $entry = Entry::create([...$attributes, 'type' => $this->type, 'user_id' => Auth::id(), 'owner' => 'core']);
+        $entry = $this->model()::create([...$attributes, 'type' => $this->type, 'user_id' => Auth::id(), 'owner' => 'core']);
         $this->syncTerms($entry);
         $this->saveMetaboxes($entry);
 
         $this->dispatch('toast', type: 'success', title: __(':type added.', ['type' => $typeName]));
 
         $this->redirectRoute('dashboard.entries.edit', ['type' => $this->type, 'entry' => $entry], navigate: true);
+    }
+
+    /**
+     * The class of the entries of the type, which new entries are made as.
+     *
+     * @return class-string<Entry>
+     */
+    protected function model(): string
+    {
+        return EntryType::get($this->type)['model'];
     }
 
     /**
@@ -219,7 +230,8 @@ new class extends Component
                 ->label(__('Status'))
                 ->options([EntryStatus::Draft->value => __('Draft'), EntryStatus::Publish->value => __('Published')])
                 ->default(EntryStatus::Draft->value)
-                ->required(),
+                ->required()
+                ->visible(fn (): bool => (new ($this->model()))->status !== EntryStatus::Internal->value),
             Text::make('slug')
                 ->label(__('Slug'))
                 ->rules('alpha_dash', 'lowercase', 'max:255', Rule::unique(Entry::class, 'slug')->where('type', $this->type)->ignore($this->record)),

@@ -63,6 +63,18 @@
                     <x-lucide-copy />
                 </x-ui.button>
             @endif
+            @if ($blockType && BlockType::make($block)->detach() !== null)
+                <x-ui.button
+                    variant="outline"
+                    size="icon"
+                    class="size-8"
+                    wire:click="detachBlock({{ Js::from($block['id']) }})"
+                    :aria-label="__('Detach')"
+                    :title="__('Detach')"
+                >
+                    <x-lucide-unlink />
+                </x-ui.button>
+            @endif
             <x-ui.button
                 variant="outline"
                 size="icon"

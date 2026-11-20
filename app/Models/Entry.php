@@ -179,6 +179,14 @@ class Entry extends Model
         return $this->status === EntryStatus::Trash->value;
     }
 
+    /**
+     * Restore the trashed entry to the status the entries of its type start with, like draft.
+     */
+    public function restore(): bool
+    {
+        return $this->update(['status' => $this->newInstance()->status]);
+    }
+
     public function forceDelete(): ?bool
     {
         $this->forceDeleting = true;

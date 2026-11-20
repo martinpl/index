@@ -12,6 +12,7 @@ test('lists registered entry types', function () {
             ['media', 'Media', 'media', 'core'],
             ['page', 'Page', '', 'core'],
             ['product', 'Product', 'products', 'core'],
+            ['section', 'Section', 'sections', 'core'],
         ])
         ->assertSuccessful();
 });

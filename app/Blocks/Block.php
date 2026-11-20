@@ -90,6 +90,15 @@ abstract class Block implements Arrayable, Htmlable, JsonSerializable
     }
 
     /**
+     * The blocks that replace the block when it is detached in the block editor, like the blocks of the section
+     * a section block shows, or null when it cannot be detached.
+     */
+    public function detach(): ?BlockCollection
+    {
+        return null;
+    }
+
+    /**
      * @return array{id: string, type: string, data: array<string, mixed>, attributes: array<string, mixed>}
      */
     public function toArray(): array
