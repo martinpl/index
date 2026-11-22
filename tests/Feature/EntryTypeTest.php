@@ -35,6 +35,7 @@ test('registers an entry type from a class', function () {
         'can' => 'entries.manage',
         'listing' => 'pages::dashboard.entries',
         'editor' => 'pages::dashboard.entry',
+        'menu_parent' => null,
         'model' => Product::class,
         'owner' => 'core',
     ]);

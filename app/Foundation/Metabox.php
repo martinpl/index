@@ -19,12 +19,13 @@ use Illuminate\Support\Str;
 class Metabox
 {
     /**
-     * @var array<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @var array<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>|Closure, can: string|null, position: int, owner: string}>
      */
     protected array $metaboxes = [];
 
     /**
-     * Register a box shown at the given location, or any of a list of them, whose `with` data, like
+     * Register a box shown at the given location, or any of a list of them, or of the ones a closure returns when the editor
+     * shows, like the editors of the entry types registered after the box, whose `with` data, like
      * the `title` heading the box, describes it, while a `seamless` box shows its content in line,
      * with no collapsible heading. The box shows its `schema`, whose fields are stored as meta of the edited
      * model named after each field, followed by whatever its `render` callback returns. Fields stored
@@ -33,7 +34,7 @@ class Metabox
      * The entry editor shows the boxes of the `entry` location and of `entry.{type}` for its entry type,
      * passing their callbacks the entry being edited, or null when adding one.
      *
-     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), schema?: Closure(): list<Component>, values?: Closure(Model|null): array<string, mixed>, save?: Closure(Model, array<string, mixed>): void, with?: array<string, mixed>, location?: string|list<string>, can?: string|null, position?: int}  $config
+     * @param  array{render?: Closure(mixed...): (View|Htmlable|string), schema?: Closure(): list<Component>, values?: Closure(Model|null): array<string, mixed>, save?: Closure(Model, array<string, mixed>): void, with?: array<string, mixed>, location?: string|list<string>|Closure(): list<string>, can?: string|null, position?: int}  $config
      * @param  string  $owner  Same format as the data owner column, e.g. `core` or `plugins/blog`.
      */
     public function register(string $key, array $config, string $owner): void
@@ -62,7 +63,7 @@ class Metabox
     }
 
     /**
-     * @return array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}|null
+     * @return array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>|Closure, can: string|null, position: int, owner: string}|null
      */
     public function get(string $key): ?array
     {
@@ -70,7 +71,7 @@ class Metabox
     }
 
     /**
-     * @return Collection<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @return Collection<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>|Closure, can: string|null, position: int, owner: string}>
      */
     public function list(): Collection
     {
@@ -81,11 +82,11 @@ class Metabox
      * The metaboxes of any of the locations the current user may see, sorted by position.
      *
      * @param  string|list<string>  $locations
-     * @return Collection<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>, can: string|null, position: int, owner: string}>
+     * @return Collection<string, array{key: string, render: Closure|null, schema: Closure|null, values: Closure|null, save: Closure|null, with: array<string, mixed>, location: string|list<string>|Closure, can: string|null, position: int, owner: string}>
      */
     public function for(string|array $locations): Collection
     {
-        return $this->list()->filter(fn (array $metabox): bool => array_intersect((array) $metabox['location'], (array) $locations)
+        return $this->list()->filter(fn (array $metabox): bool => array_intersect((array) value($metabox['location']), (array) $locations)
             && (is_null($metabox['can']) || Gate::allows($metabox['can'])));
     }
 

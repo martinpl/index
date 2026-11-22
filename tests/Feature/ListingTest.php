@@ -2,6 +2,7 @@
 
 use App\Listing\Action;
 use App\Listing\Column;
+use App\Listing\Listing;
 use App\Listing\Tab;
 use App\Listing\WithListing;
 use App\Models\Setting;
@@ -56,6 +57,14 @@ class PluginListing extends Component
     }
 }
 
+class ReorderablePluginListing extends PluginListing
+{
+    protected function configure(Listing $listing): void
+    {
+        $listing->defaultSort('order')->reorderable();
+    }
+}
+
 test('lists a collection with tabs, search and sorting', function () {
     Livewire::test(PluginListing::class)
         ->assertSeeInOrder(['All', '3', 'Active', '1'])
@@ -71,6 +80,14 @@ test('lists a collection with tabs, search and sorting', function () {
         ->set('tab', 'active')
         ->assertSee('Blog')
         ->assertDontSee(['Forms', 'SEO']);
+});
+
+test('does not reorder the records of a collection, which have no column storing their position', function () {
+    Livewire::test(ReorderablePluginListing::class)
+        ->assertDontSeeHtml('wire:sort="reorder"')
+        ->call('reorder', 'seo', 0)
+        ->assertOk()
+        ->assertSeeInOrder(['Blog', 'SEO', 'Forms']);
 });
 
 test('sorts by a column in the given direction', function () {

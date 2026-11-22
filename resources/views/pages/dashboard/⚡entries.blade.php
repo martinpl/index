@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\EntryStatus;
+use App\Facades\Action as ActionHook;
 use App\Facades\EntryType;
 use App\Facades\Filter;
 use App\Listing\Action;
@@ -11,7 +12,7 @@ use App\Listing\WithListing;
 use App\Models\Entry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -26,8 +27,12 @@ new class extends Component
     public function mount(string $type): void
     {
         abort_unless(EntryType::has($type), 404);
+        // Authorized before `booted()` too, which runs after mounting, so the hook only runs for users who may list the entries.
+        abort_unless(Gate::allows(EntryType::get($type)['can']), 403);
 
         $this->type = $type;
+
+        ActionHook::run(['entries.listing', "entries.$type.listing"], $type);
     }
 
     public function booted(): void
@@ -36,11 +41,15 @@ new class extends Component
     }
 
     /**
-     * @return Builder<Entry>
+     * The entries of the type, which plugins may change through the `entries.records` filter, receiving the entry type,
+     * and then the `entries.{type}.records` filter of the type, like listing the layouts added by the theme along with
+     * the saved ones, as a collection keyed by record key.
+     *
+     * @return Builder<Entry>|Collection<array-key, Entry>
      */
-    protected function records(): Builder
+    protected function records(): Builder|Collection
     {
-        return Entry::withAnyStatus()->with('user')->where('type', $this->type);
+        return Filter::apply(['entries.records', "entries.{$this->type}.records"], Entry::withAnyStatus()->with('user')->where('type', $this->type), $this->type);
     }
 
     /**
@@ -49,11 +58,11 @@ new class extends Component
     protected function tabs(): array
     {
         return [
-            Tab::make('all')->label(__('All'))->query(fn (Builder $query) => $query->where('status', '!=', EntryStatus::Trash)),
-            Tab::make('mine')->label(__('Mine'))->query(fn (Builder $query) => $query->where('status', '!=', EntryStatus::Trash)->where('user_id', Auth::id())),
-            Tab::make('publish')->label(__('Published'))->query(fn (Builder $query) => $query->where('status', EntryStatus::Publish)),
-            Tab::make('draft')->label(__('Drafts'))->query(fn (Builder $query) => $query->where('status', EntryStatus::Draft)),
-            Tab::make('trash')->label(__('Trash'))->query(fn (Builder $query) => $query->where('status', EntryStatus::Trash)),
+            Tab::make('all')->label(__('All'))->query(fn (Builder|Collection $entries) => $entries->where('status', '!=', EntryStatus::Trash->value)),
+            Tab::make('mine')->label(__('Mine'))->query(fn (Builder|Collection $entries) => $entries->where('status', '!=', EntryStatus::Trash->value)->where('user_id', Auth::id())),
+            Tab::make('publish')->label(__('Published'))->query(fn (Builder|Collection $entries) => $entries->where('status', EntryStatus::Publish->value)),
+            Tab::make('draft')->label(__('Drafts'))->query(fn (Builder|Collection $entries) => $entries->where('status', EntryStatus::Draft->value)),
+            Tab::make('trash')->label(__('Trash'))->query(fn (Builder|Collection $entries) => $entries->where('status', EntryStatus::Trash->value)),
         ];
     }
 
@@ -68,8 +77,8 @@ new class extends Component
                 ->sortable()
                 ->searchable()
                 ->hideable(false)
-                ->url(fn (Entry $entry): string => route('dashboard.entries.edit', [$this->type, $entry]))
-                ->states(fn (Entry $entry): array => Filter::apply('entry.states', [
+                ->url(fn (Entry $entry): string => $entry->editUrl())
+                ->states(fn (Entry $entry): array => Filter::apply(['entry.states', "entries.{$this->type}.states"], [
                     'draft' => when($entry->status === EntryStatus::Draft->value && $this->tab !== 'draft', __('Draft')),
                 ], $entry)),
             Column::make('user')->label(__('Author'))->render(fn (Entry $entry): ?string => $entry->user?->name),
@@ -79,16 +88,19 @@ new class extends Component
     }
 
     /**
+     * The actions on the entries, which plugins may change through the `entries.actions` filter, receiving the entry type,
+     * and then the `entries.{type}.actions` filter of the type.
+     *
      * @return list<Action>
      */
     protected function actions(): array
     {
-        return [
+        return Filter::apply(['entries.actions', "entries.{$this->type}.actions"], [
             Action::make('edit')
                 ->label(__('Edit'))
                 ->icon('lucide-pencil')
                 ->visible(fn (Entry $entry): bool => ! $entry->trashed())
-                ->url(fn (Entry $entry): string => route('dashboard.entries.edit', [$this->type, $entry])),
+                ->url(fn (Entry $entry): string => $entry->editUrl()),
             Action::make('view')
                 ->label(__('View'))
                 ->icon('lucide-external-link')
@@ -98,7 +110,7 @@ new class extends Component
                 ->label(__('Move to trash'))
                 ->icon('lucide-trash')
                 ->bulk()
-                ->visible(fn (Entry $entry): bool => ! $entry->trashed())
+                ->visible(fn (Entry $entry): bool => $entry->trashable())
                 ->handle(fn (Collection $entries) => $entries->each->delete())
                 ->successMessage(fn (Collection $entries): string => trans_choice(':count entry moved to the trash.|:count entries moved to the trash.', $entries->count())),
             Action::make('restore')
@@ -117,7 +129,7 @@ new class extends Component
                 ->visible(fn (Entry $entry): bool => $entry->trashed())
                 ->handle(fn (Collection $entries) => $entries->each->forceDelete())
                 ->successMessage(fn (Collection $entries): string => trans_choice(':count entry permanently deleted.|:count entries permanently deleted.', $entries->count())),
-        ];
+        ], $this->type);
     }
 
     protected function configure(Listing $listing): void

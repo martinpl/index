@@ -15,13 +15,16 @@ use Illuminate\Support\Str;
 class BlockType
 {
     /**
-     * @var array<string, array{key: string, name: string, icon: string, description: string|null, class: class-string<Block>, owner: string}>
+     * @var array<string, array{key: string, name: string, icon: string, description: string|null, entry_types: list<string>|null, class: class-string<Block>, owner: string}>
      */
     protected array $types = [];
 
     /**
+     * Register the block type, which the editors of every entry type offer, unless its `entry_types` limit it to the editors
+     * of the given ones, like the content block to layouts.
+     *
      * @param  class-string<Block>  $class
-     * @param  array{name?: string, icon?: string, description?: string}  $config
+     * @param  array{name?: string, icon?: string, description?: string, entry_types?: list<string>}  $config
      * @param  string  $owner  Same format as the data owner column, e.g. `core` or `plugins/blog`.
      */
     public function register(string $class, array $config, string $owner): void
@@ -38,6 +41,7 @@ class BlockType
             'name' => $config['name'] ?? Str::headline($key),
             'icon' => $config['icon'] ?? 'lucide-square',
             'description' => $config['description'] ?? null,
+            'entry_types' => $config['entry_types'] ?? null,
             'class' => $class,
             'owner' => $owner,
         ];
@@ -49,7 +53,7 @@ class BlockType
     }
 
     /**
-     * @return array{key: string, name: string, icon: string, description: string|null, class: class-string<Block>, owner: string}|null
+     * @return array{key: string, name: string, icon: string, description: string|null, entry_types: list<string>|null, class: class-string<Block>, owner: string}|null
      */
     public function get(string $key): ?array
     {
@@ -59,11 +63,21 @@ class BlockType
     /**
      * The block types in the order they were registered, which is the order the block editor offers them in.
      *
-     * @return Collection<string, array{key: string, name: string, icon: string, description: string|null, class: class-string<Block>, owner: string}>
+     * @return Collection<string, array{key: string, name: string, icon: string, description: string|null, entry_types: list<string>|null, class: class-string<Block>, owner: string}>
      */
     public function list(): Collection
     {
         return collect($this->types);
+    }
+
+    /**
+     * The block types the editor of the given entry type offers, in the order they were registered.
+     *
+     * @return Collection<string, array{key: string, name: string, icon: string, description: string|null, entry_types: list<string>|null, class: class-string<Block>, owner: string}>
+     */
+    public function for(string $entryType): Collection
+    {
+        return $this->list()->filter(fn (array $type): bool => in_array($entryType, $type['entry_types'] ?? [$entryType], true));
     }
 
     /**

@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Blocks\Content;
 use App\Blocks\Heading;
 use App\Blocks\Image;
 use App\Blocks\Paragraph;
 use App\Blocks\Section as SectionBlock;
+use App\Entries\Layout;
 use App\Entries\Media;
 use App\Entries\Page;
 use App\Entries\Section;
@@ -20,6 +22,7 @@ use App\Foundation\BlockType;
 use App\Foundation\DashboardMenu;
 use App\Foundation\EntryType;
 use App\Foundation\Filter;
+use App\Foundation\Layouts;
 use App\Foundation\Metabox;
 use App\Foundation\Plugin;
 use App\Foundation\Role;
@@ -66,6 +69,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Settings::class);
         $this->app->singleton(Metabox::class);
         $this->app->singleton(Assets::class);
+        $this->app->singleton(Layouts::class);
     }
 
     /**
@@ -89,8 +93,9 @@ class AppServiceProvider extends ServiceProvider
         EntryTypeFacade::register(Media::class, [], 'core');
         EntryTypeFacade::register(Page::class, [], 'core');
         EntryTypeFacade::register(Section::class, [], 'core');
+        EntryTypeFacade::register(Layout::class, [], 'core');
 
-        foreach ([Paragraph::class, Heading::class, Image::class, SectionBlock::class] as $block) {
+        foreach ([Paragraph::class, Heading::class, Image::class, SectionBlock::class, Content::class] as $block) {
             BlockTypeFacade::register($block, [], 'core');
         }
 

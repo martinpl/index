@@ -12,6 +12,7 @@ use App\Facades\Assets;
 use App\Facades\BlockType;
 use App\Facades\EntryType;
 use App\Facades\Filter;
+use App\Facades\Layouts;
 use App\Facades\Metabox;
 use App\Facades\Settings;
 use App\Facades\TermType;
@@ -66,6 +67,19 @@ abstract class PackageServiceProvider extends ServiceProvider
         foreach ($classes as $class) {
             BlockType::register($class, [], static::owner());
         }
+    }
+
+    /**
+     * Add a layout the site starts with, like a default one with a navbar and a footer or a blank one, keyed by its slug
+     * and made of blocks placing the content of its entries in its content block. Users edit it among the layouts of
+     * the site, which keeps the one it has when another package adds the same, and the `default` one shows the entries
+     * that choose no other.
+     *
+     * @param  array{name?: string, content?: list<array{type: string, data?: array<string, mixed>, attributes?: array<string, mixed>}>|Closure(): list<array{type: string, data?: array<string, mixed>, attributes?: array<string, mixed>}>}  $config
+     */
+    protected function addLayout(string $key, array $config): void
+    {
+        Layouts::register($key, $config, static::owner());
     }
 
     /**

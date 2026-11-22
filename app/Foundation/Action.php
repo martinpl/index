@@ -11,12 +11,19 @@ class Action extends HookRegistry
      */
     protected array $runs = [];
 
-    public function run(string $hook, mixed ...$payload): void
+    /**
+     * Run the action, or each of a list of them in order, like the one of every entry type and then the one of a single type.
+     *
+     * @param  string|list<string>  $hook
+     */
+    public function run(string|array $hook, mixed ...$payload): void
     {
-        $this->runs[$hook] = $this->fired($hook) + 1;
+        foreach ((array) $hook as $name) {
+            $this->runs[$name] = $this->fired($name) + 1;
 
-        foreach ($this->callbacks($hook) as $callback) {
-            $callback(...$payload);
+            foreach ($this->callbacks($name) as $callback) {
+                $callback(...$payload);
+            }
         }
     }
 

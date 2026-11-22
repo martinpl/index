@@ -8,14 +8,17 @@ use App\Facades\Filter;
 
 class Document
 {
+    /**
+     * Print the title of the page, escaped, as its parts come from the site name, the entry and plugins.
+     */
     #[Action('head')]
-    public function title()
+    public function title(): void
     {
         $separator = Filter::apply('title.separator', ' - ');
         $parts = Filter::apply('title.parts', [setting('site_name')]);
         $title = Filter::apply('title', implode($separator, $parts));
 
-        echo "<title>{$title}</title>";
+        echo '<title>'.e($title).'</title>';
     }
 
     #[Action('head')]
@@ -30,8 +33,7 @@ class Document
         echo Assets::render('dashboard');
     }
 
-    #[Action('body.open')]
-    #[Action('dashboard.body.open')]
+    #[Action(['body.open', 'dashboard.body.open'])]
     public function adminBar()
     {
         echo view('partials.admin-bar.admin-bar')->render();

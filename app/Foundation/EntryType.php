@@ -13,9 +13,10 @@ class EntryType extends TypeRegistry
 
     /**
      * The `can` ability allows managing the entries of the type, which the dashboard lists and edits with the
-     * `listing` and `editor` Livewire page components, like the media library.
+     * `listing` and `editor` Livewire page components, like the media library. The dashboard menu links to the listing
+     * at its top level, or under the item keyed by `menu_parent`, like `appearance` for layouts.
      *
-     * @param  array{name?: string, slug?: string, icon?: string, can?: string, listing?: string, editor?: string, model?: class-string<Entry>}  $config
+     * @param  array{name?: string, slug?: string, icon?: string, can?: string, listing?: string, editor?: string, menu_parent?: string, model?: class-string<Entry>}  $config
      */
     protected function attributes(string $key, array $config): array
     {
@@ -26,6 +27,7 @@ class EntryType extends TypeRegistry
             'can' => $config['can'] ?? 'entries.manage',
             'listing' => $config['listing'] ?? 'pages::dashboard.entries',
             'editor' => $config['editor'] ?? 'pages::dashboard.entry',
+            'menu_parent' => $config['menu_parent'] ?? null,
         ];
     }
 }

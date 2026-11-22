@@ -1,10 +1,14 @@
 <?php
 
 use App\Enums\EntryStatus;
+use App\Facades\Action;
 use App\Facades\EntryType;
+use App\Facades\Filter;
+use App\Listing\Action as ListingAction;
 use App\Models\Entry;
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
@@ -72,6 +76,40 @@ test('labels the pages assigned to a page role', function () {
     entriesPage()
         ->assertSeeText(['Welcome — Home page', 'About us — Draft'])
         ->assertDontSeeText('About us — Draft, Home page');
+});
+
+test('plugins hook into listing the entries of every type, and then of a single type', function () {
+    $listed = [];
+    Action::add('entries.listing', function (string $type) use (&$listed): void {
+        $listed[] = "every $type";
+    });
+    Action::add('entries.page.listing', function () use (&$listed): void {
+        $listed[] = 'page';
+    });
+    Filter::add('entry.states', fn (array $states, Entry $entry): array => [...$states, 'type' => $entry->type]);
+    Filter::add('entries.page.states', fn (array $states): array => [...$states, 'page' => 'Only pages']);
+    Filter::add('entries.actions', fn (array $actions, string $type): array => [...$actions, ListingAction::make('export')->label("Export {$type}s")->url(fn (): string => '/export')]);
+    Filter::add('entries.page.actions', fn (array $actions): array => [...$actions, ListingAction::make('print')->label('Print page')->url(fn (): string => '/print')]);
+    Filter::add('entries.records', fn (Builder $entries, string $type): Builder => $entries->where('name', '!=', "Hidden $type"));
+    Entry::factory()->create(['type' => 'page', 'name' => 'About us']);
+    Entry::factory()->create(['type' => 'page', 'name' => 'Hidden page']);
+
+    $page = entriesPage();
+
+    expect($listed)->toBe(['every page', 'page']);
+    $page->assertSeeText(['About us — Draft, page, Only pages', 'Export pages', 'Print page'])->assertDontSeeText('Hidden page');
+});
+
+test('does not run the listing hooks for users who may not list the entries', function () {
+    $ran = false;
+    Action::add('entries.listing', function () use (&$ran): void {
+        $ran = true;
+    });
+    actingAs(User::factory()->create());
+
+    get(route('dashboard.entries', 'page'))->assertForbidden();
+
+    expect($ran)->toBeFalse();
 });
 
 test('searches and sorts the entries of the tab', function () {

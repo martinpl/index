@@ -53,6 +53,61 @@ test('applies filters with extra arguments and class callbacks', function () {
         ->and(Filter::apply('missing', 'Home'))->toBe('Home');
 });
 
+class ShareHooks
+{
+    #[App\Attributes\Filter(['share.page', 'share.post'])]
+    public function share(array $actions): array
+    {
+        return [...$actions, 'share'];
+    }
+}
+
+test('adds a callback to several hooks at once, and forgets it from them', function () {
+    $calls = [];
+    $record = function (string $type) use (&$calls): void {
+        $calls[] = $type;
+    };
+
+    Action::add(['ping.page', 'ping.post'], $record);
+    Action::run('ping.page', 'page');
+    Action::run('ping.post', 'post');
+    Action::run('ping.media', 'media');
+
+    expect($calls)->toBe(['page', 'post']);
+
+    Action::forget(['ping.page', 'ping.post'], $record);
+
+    expect(Action::has('ping.page'))->toBeFalse()
+        ->and(Action::has('ping.post'))->toBeFalse();
+});
+
+test('applies a list of filters and runs a list of actions in order, counting each run', function () {
+    $calls = [];
+    Filter::add('greeting', fn (string $value, string $name): string => "$value, $name");
+    Filter::add('greeting.formal', fn (string $value): string => "$value.");
+    Action::add('ping', function (string $type) use (&$calls): void {
+        $calls[] = "every $type";
+    });
+    Action::add('ping.page', function () use (&$calls): void {
+        $calls[] = 'page';
+    });
+
+    $greeting = Filter::apply(['greeting', 'greeting.formal'], 'Hello', 'Ada');
+    Action::run(['ping', 'ping.page'], 'page');
+
+    expect($greeting)->toBe('Hello, Ada.')
+        ->and($calls)->toBe(['every page', 'page'])
+        ->and([Action::fired('ping'), Action::fired('ping.page')])->toBe([1, 1]);
+});
+
+test('subscribes attributed methods to several hooks at once', function () {
+    Filter::subscribe(ShareHooks::class);
+
+    expect(Filter::apply('share.page', ['edit']))->toBe(['edit', 'share'])
+        ->and(Filter::apply('share.post', ['edit']))->toBe(['edit', 'share'])
+        ->and(Filter::apply('share.media', ['edit']))->toBe(['edit']);
+});
+
 test('keeps actions and filters apart', function () {
     Action::add('title', fn () => null);
 

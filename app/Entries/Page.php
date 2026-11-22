@@ -40,9 +40,9 @@ class Page extends Entry
             'position' => 0,
         ], 'core');
 
-        Filter::add('entry.states', fn (array $states, Entry $entry): array => [
+        Filter::add('entries.'.static::$type.'.states', fn (array $states, Page $page): array => [
             ...$states,
-            'page_role' => $entry instanceof Page && ($name = static::roles()[$entry->role()] ?? null) ? __($name) : null,
+            'page_role' => ($name = static::roles()[$page->role()] ?? null) ? __($name) : null,
         ]);
     }
 

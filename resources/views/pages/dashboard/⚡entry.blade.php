@@ -2,6 +2,7 @@
 
 use App\Blocks\WithBlocks;
 use App\Enums\EntryStatus;
+use App\Facades\BlockType;
 use App\Facades\EntryType;
 use App\Facades\Filter;
 use App\Facades\Metabox;
@@ -52,13 +53,17 @@ new class extends Component
     public function mount(string $type, ?string $entry = null): void
     {
         abort_unless(EntryType::has($type), 404);
+        // Authorized before `booted()` too, which runs after mounting, so the hooks only run for users who may edit the entry.
+        abort_unless(Gate::allows(EntryType::get($type)['can']), 403);
 
         $this->type = $type;
         $this->record = $entry ? Entry::withAnyStatus()->where('type', $type)->findOrFail($entry) : null;
-        $this->name = $this->record->name ?? '';
 
-        $this->fillValues($this->record?->only(['slug', 'status']) ?? []);
-        $this->fillBlocks($this->record->content ?? []);
+        $filled = $this->record ?? Filter::apply(['entry.new', "entry.$type.new"], new ($this->model()), request()->query());
+
+        $this->name = $filled->name ?? '';
+        $this->fillValues($filled->only(['slug', 'status']));
+        $this->fillBlocks($filled->content ?? []);
         $this->fillTerms();
         $this->fillMetaboxes();
     }
@@ -77,7 +82,7 @@ new class extends Component
 
         try {
             $this->validate(
-                Filter::apply('entry.rules', ['name' => ['required', 'string', 'max:255'], ...$form->getRules('values'), ...$this->blockRules(), ...$this->termRules(), ...$this->metaboxRules()], $this->record, $this->blocks),
+                Filter::apply(['entry.rules', "entry.{$this->type}.rules"], ['name' => ['required', 'string', 'max:255'], ...$form->getRules('values'), ...$this->blockRules(), ...$this->termRules(), ...$this->metaboxRules()], $this->record, $this->blocks),
                 [],
                 ['name' => __('title'), ...$form->getValidationAttributes('values'), ...$this->blockValidationAttributes(), ...$this->termValidationAttributes(), ...$this->metaboxValidationAttributes()],
             );
@@ -122,6 +127,22 @@ new class extends Component
     protected function model(): string
     {
         return EntryType::get($this->type)['model'];
+    }
+
+    /**
+     * Determine if the entries of the type are internal, used by the site without being its content, like sections.
+     */
+    protected function isInternal(): bool
+    {
+        return (new ($this->model()))->isInternal();
+    }
+
+    /**
+     * The block types the editor of the entry type offers, like the content block in the editor of layouts.
+     */
+    protected function blockTypes(): Collection
+    {
+        return BlockType::for($this->type);
     }
 
     /**
@@ -231,7 +252,7 @@ new class extends Component
                 ->options([EntryStatus::Draft->value => __('Draft'), EntryStatus::Publish->value => __('Published')])
                 ->default(EntryStatus::Draft->value)
                 ->required()
-                ->visible(fn (): bool => (new ($this->model()))->status !== EntryStatus::Internal->value),
+                ->visible(fn (): bool => ! $this->isInternal()),
             Text::make('slug')
                 ->label(__('Slug'))
                 ->rules('alpha_dash', 'lowercase', 'max:255', Rule::unique(Entry::class, 'slug')->where('type', $this->type)->ignore($this->record)),
@@ -282,7 +303,7 @@ new class extends Component
         </div>
     </aside>
 
-    <x-block-editor.preview :$blocks :$blockTypes :$selectedBlock class="mx-auto w-full" />
+    <x-block-editor.preview :$blocks :$blockTypes :$selectedBlock :$metaboxes class="mx-auto w-full" />
 
     <aside class="border-l">
         <div class="flex flex-col gap-4 p-4 xl:sticky xl:top-26 xl:max-h-[calc(100svh-4rem)] xl:overflow-y-auto">

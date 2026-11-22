@@ -130,6 +130,7 @@ class Menus
                 'title' => __(Str::plural($entryType['name'])),
                 'url' => route('dashboard.entries', $entryType['key']),
                 'icon' => $entryType['icon'],
+                'parent' => $entryType['menu_parent'],
                 'can' => $entryType['can'],
             ]);
 
@@ -154,6 +155,7 @@ class Menus
             'title' => __('Themes'),
             'url' => route('dashboard.themes'),
             'parent' => 'appearance',
+            'position' => 0,
             'can' => 'themes.manage',
         ]);
 

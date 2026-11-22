@@ -164,7 +164,8 @@ class Listing
     }
 
     /**
-     * Allow reordering the records by dragging them while sorted by the given database column, which stores their position.
+     * Allow reordering the records by dragging them while sorted by the given database column, which stores their position,
+     * when they come from a query, as the records of a collection have no column to store it in.
      *
      * @param  array<string, 'asc'|'desc'>  $thenBy  The database columns sorting the records sharing a position, like new records.
      */
@@ -182,13 +183,14 @@ class Listing
     }
 
     /**
-     * Whether the records may be dragged into a new order with the given resolved state.
+     * Whether the records may be dragged into a new order with the given resolved state, which only records of a query may.
      *
      * @param  array{sort: string|null, direction: 'asc'|'desc'}  $state
      */
     public function isReorderable(array $state): bool
     {
-        return $this->reorderColumn !== null && $state['sort'] === $this->reorderColumn && $state['direction'] === 'asc';
+        return $this->reorderColumn !== null && $state['sort'] === $this->reorderColumn && $state['direction'] === 'asc'
+            && ($this->data)() instanceof Builder;
     }
 
     public function isSortableBy(string $name): bool

@@ -23,7 +23,7 @@
                     variant="ghost"
                     size="sm"
                     type="button"
-                    x-on:click="$wire.$set(@js($path), $wire.$get(@js($path)).filter((row, index) => index !== {{ $index }}))"
+                    x-on:click="$wire.$set({{ Js::from($path) }}, $wire.$get({{ Js::from($path) }}).filter((row, index) => index !== {{ $index }}))"
                 >
                     <x-lucide-trash-2 />
                     {{ __('Remove') }}
@@ -36,7 +36,7 @@
             variant="outline"
             size="sm"
             type="button"
-            x-on:click="$wire.$set(@js($path), [...($wire.$get(@js($path)) ?? []), @js($field->getRowDefault())])"
+            x-on:click="$wire.$set({{ Js::from($path) }}, [...($wire.$get({{ Js::from($path) }}) ?? []), {{ Js::from($field->getRowDefault()) }}])"
         >
             <x-lucide-plus />
             {{ __('Add') }}

@@ -4,9 +4,10 @@ namespace App\Blocks;
 
 use App\Facades\BlockType;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 
 /**
- * Holds the blocks edited in the component and the selected one, passing the registered block types to its view
+ * Holds the blocks edited in the component and the selected one, passing the block types it offers to its view
  * as `$blockTypes`, ready for the `<x-block-editor.structure />`, `<x-block-editor.preview />` and
  * `<x-block-editor.settings />` components, each given `:$blocks :$blockTypes :$selectedBlock`.
  */
@@ -49,7 +50,7 @@ trait WithBlocks
      */
     public function addBlock(string $type, ?int $position = null): void
     {
-        abort_unless(BlockType::has($type), 404);
+        abort_unless($this->blockTypes()->has($type), 404);
 
         $this->insertBlock(BlockType::make(['type' => $type]), $position ?? count($this->blocks));
     }
@@ -166,9 +167,19 @@ trait WithBlocks
         return new BlockCollection(array_map(BlockType::make(...), $this->blocks));
     }
 
+    /**
+     * The block types the editor offers, every registered one unless the component offers fewer.
+     *
+     * @return Collection<string, array{key: string, name: string, icon: string, description: string|null, entry_types: list<string>|null, class: class-string<Block>, owner: string}>
+     */
+    protected function blockTypes(): Collection
+    {
+        return BlockType::list();
+    }
+
     public function renderingWithBlocks(View $view): void
     {
-        $view->with('blockTypes', BlockType::list());
+        $view->with('blockTypes', $this->blockTypes());
     }
 
     protected function insertBlock(Block $block, int $position): void

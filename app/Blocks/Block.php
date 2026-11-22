@@ -35,7 +35,7 @@ abstract class Block implements Arrayable, Htmlable, JsonSerializable
     /**
      * The block type config when this class is registered as a block type.
      *
-     * @return array{name?: string, icon?: string, description?: string}
+     * @return array{name?: string, icon?: string, description?: string, entry_types?: list<string>}
      */
     public static function config(): array
     {
@@ -87,6 +87,14 @@ abstract class Block implements Arrayable, Htmlable, JsonSerializable
             $html instanceof Htmlable => $html->toHtml(),
             default => $html,
         }), $this);
+    }
+
+    /**
+     * What the block editor shows in place of the block when it renders nothing, or null to ask for setting it up.
+     */
+    public function placeholder(): ?string
+    {
+        return null;
     }
 
     /**

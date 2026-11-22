@@ -7,6 +7,7 @@ use App\Blocks\Paragraph;
 use App\Entries\Media;
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
+use App\Facades\Filter;
 use App\Facades\TermType;
 use App\Models\Entry;
 use App\Models\Term;
@@ -225,4 +226,29 @@ test('rejects terms of another term type', function () {
         ->assertHasErrors('terms.category.0');
 
     expect(Entry::withAnyStatus()->count())->toBe(0);
+});
+
+test('plugins add validation rules to the entries of every type, and then of a single type', function () {
+    Filter::add('entry.rules', fn (array $rules): array => [...$rules, 'name' => [...$rules['name'], 'min:3']]);
+    Filter::add('entry.page.rules', fn (array $rules): array => [...$rules, 'name' => [...$rules['name'], 'starts_with:Our']]);
+
+    entryEditor()->set('name', 'Us')->call('save')->assertHasErrors(['name' => ['min', 'starts_with']]);
+    entryEditor()->set('name', 'About us')->call('save')->assertHasErrors(['name' => 'starts_with']);
+    entryEditor()->set('name', 'Our team')->call('save')->assertHasNoErrors();
+
+    expect(Entry::withAnyStatus()->where('type', 'page')->pluck('name')->all())->toBe(['Our team']);
+});
+
+test('does not start a new entry for users who may not edit the entries', function () {
+    $started = false;
+    Filter::add('entry.new', function (Entry $entry) use (&$started): Entry {
+        $started = true;
+
+        return $entry;
+    });
+    actingAs(User::factory()->create());
+
+    get(route('dashboard.entries.create', 'page'))->assertForbidden();
+
+    expect($started)->toBeFalse();
 });

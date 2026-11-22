@@ -27,6 +27,17 @@ test('renders the home entry', function () {
     get('/')->assertOk()->assertViewIs('index')->assertSee('Home');
 });
 
+test('escapes the title of the page, made of the name of the entry and of the site', function () {
+    Setting::set('site_name', 'Acme & Co', 'core');
+    $entry = Entry::factory()->published()->create(['type' => 'page', 'name' => '</title><script>alert(1)</script>']);
+    Setting::set('page_roles', ['home' => $entry->id], 'core');
+
+    get('/')
+        ->assertOk()
+        ->assertSee('<title>&lt;/title&gt;&lt;script&gt;alert(1)&lt;/script&gt; - Acme &amp; Co</title>', false)
+        ->assertDontSee('<script>alert(1)</script>', false);
+});
+
 test('themes and plugins can change the attributes of the body', function () {
     $entry = Entry::factory()->published()->create(['type' => 'page', 'name' => 'Home']);
     Setting::set('page_roles', ['home' => $entry->id], 'core');

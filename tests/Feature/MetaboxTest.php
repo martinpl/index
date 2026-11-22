@@ -1,5 +1,6 @@
 <?php
 
+use App\Facades\EntryType;
 use App\Facades\Metabox;
 use App\Models\Entry;
 use App\Models\User;
@@ -74,6 +75,17 @@ test('the editor shows the metaboxes of its entry type', function () {
     Livewire::test('pages::dashboard.entry', ['type' => 'page'])
         ->assertSee(['Page only', 'Shared'])
         ->assertDontSee('Book only');
+});
+
+test('the editor shows the metaboxes of the locations a closure resolves when it shows', function () {
+    Metabox::register('later', [
+        'render' => summary('later'),
+        'with' => ['title' => 'Registered later'],
+        'location' => fn (): array => EntryType::list()->keys()->map(fn (string $type): string => "entry.$type")->all(),
+    ], 'core');
+    EntryType::register('book', [], 'core');
+
+    Livewire::test('pages::dashboard.entry', ['type' => 'book'])->assertSee('Registered later');
 });
 
 test('the editor shows seamless metaboxes in line, without their title', function () {

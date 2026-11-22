@@ -1,0 +1,1 @@
+<main {{ $attributes }}>{{ $content }}</main>

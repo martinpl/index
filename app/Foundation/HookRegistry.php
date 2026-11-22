@@ -24,11 +24,16 @@ abstract class HookRegistry
     public function __construct(protected Container $container) {}
 
     /**
+     * Add the callback to the hook, or to each of a list of them, like the actions of several entry types.
+     *
+     * @param  string|list<string>  $hook
      * @param  callable|string  $callback  A callable, or `Class` / `Class@method` resolved from the container.
      */
-    public function add(string $hook, callable|string $callback, int $priority = 10): void
+    public function add(string|array $hook, callable|string $callback, int $priority = 10): void
     {
-        $this->hooks[$hook][$priority][] = $callback;
+        foreach ((array) $hook as $name) {
+            $this->hooks[$name][$priority][] = $callback;
+        }
     }
 
     /**
@@ -53,23 +58,27 @@ abstract class HookRegistry
     }
 
     /**
-     * Remove the given callback from the hook, or all of its callbacks.
+     * Remove the given callback from the hook, or from each of a list of them, or all of their callbacks.
+     *
+     * @param  string|list<string>  $hook
      */
-    public function forget(string $hook, callable|string|null $callback = null): void
+    public function forget(string|array $hook, callable|string|null $callback = null): void
     {
-        if (is_null($callback)) {
-            unset($this->hooks[$hook]);
+        foreach ((array) $hook as $name) {
+            if (is_null($callback)) {
+                unset($this->hooks[$name]);
 
-            return;
+                continue;
+            }
+
+            foreach ($this->hooks[$name] ?? [] as $priority => $callbacks) {
+                $this->hooks[$name][$priority] = array_values(
+                    array_filter($callbacks, fn (callable|string $registered): bool => $registered !== $callback)
+                );
+            }
+
+            $this->hooks[$name] = array_filter($this->hooks[$name] ?? []);
         }
-
-        foreach ($this->hooks[$hook] ?? [] as $priority => $callbacks) {
-            $this->hooks[$hook][$priority] = array_values(
-                array_filter($callbacks, fn (callable|string $registered): bool => $registered !== $callback)
-            );
-        }
-
-        $this->hooks[$hook] = array_filter($this->hooks[$hook] ?? []);
     }
 
     /**

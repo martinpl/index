@@ -43,8 +43,8 @@ class Section extends Entry
      */
     public static function registered(): void
     {
-        Filter::add('entry.rules', function (array $rules, ?Entry $entry, array $blocks): array {
-            if (! $entry instanceof Section) {
+        Filter::add('entry.'.static::$type.'.rules', function (array $rules, ?Section $entry, array $blocks): array {
+            if (! $entry) {
                 return $rules;
             }
 

@@ -2,12 +2,14 @@
 
 use App\Schema\Component;
 use App\Schema\Group;
+use App\Schema\Links;
 use App\Schema\Number;
 use App\Schema\Radio;
 use App\Schema\Repeater;
 use App\Schema\Select;
 use App\Schema\Text;
 use App\Schema\Toggle;
+use App\Schema\Url;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Validator;
 
@@ -46,6 +48,39 @@ test('fields validate nested values and name them by their labels', function () 
         'values.seo.description' => ['The description field must not be greater than 5 characters.'],
         'values.faq.0.question' => ['The question field is required.'],
     ])->and(validateSchema($schema, ['title' => 'Home', 'count' => '2', 'layout' => 'wide', 'faq' => []]))->toBe([]);
+});
+
+test('url fields accept paths on the site, anchors, queries and web, email and phone addresses', function (string $url) {
+    expect(validateSchema([Url::make('link')], ['link' => $url]))->toBe([]);
+})->with(['/about', '#team', '?page=2', 'https://example.com', 'HTTP://EXAMPLE.COM', 'mailto:hello@example.com', 'tel:+420123456789']);
+
+test('url fields reject addresses running scripts and others the site cannot link to', function (string $url) {
+    expect(validateSchema([Url::make('link')], ['link' => $url]))->toBe([
+        'values.link' => ['The link field must be a path on the site, like /about, or a web, email or phone address.'],
+    ]);
+})->with(['javascript:alert(1)', 'JavaScript:alert(1)', ' javascript:alert(1)', 'data:text/html,hello', 'about', 'ftp://example.com']);
+
+test('links fields require a label and a URL the site may link to', function () {
+    expect(validateSchema([Links::make('links')], ['links' => [
+        ['label' => '', 'url' => 'javascript:alert(1)'],
+        ['label' => 'About', 'url' => '/about'],
+    ]]))->toBe([
+        'values.links.0.label' => ['The label field is required.'],
+        'values.links.0.url' => ['The url field must be a path on the site, like /about, or a web, email or phone address.'],
+    ]);
+});
+
+test('links fields leave out the links missing a label or leading to a URL the site may not link to', function () {
+    expect(Links::make('links')->cast([
+        ['label' => 'About', 'url' => '/about'],
+        ['label' => '', 'url' => '/team'],
+        ['label' => 'Script', 'url' => 'javascript:alert(1)'],
+        ['label' => 'Draft', 'url' => null],
+        ['label' => 'Docs', 'url' => 'https://docs.example.com', 'extra' => 'dropped'],
+    ]))->toBe([
+        ['label' => 'About', 'url' => '/about'],
+        ['label' => 'Docs', 'url' => 'https://docs.example.com'],
+    ]);
 });
 
 test('fields cast values and fill in defaults', function () {
@@ -111,6 +146,20 @@ test('radio fields render a radio for each option', function () {
 
     expect(Blade::render('<x-dynamic-component :component="$field->view" :$field path="values.layout" />', ['field' => $field]))
         ->toContain('role="radiogroup"', 'data-value="wide"', 'Wide', 'data-value="narrow"', 'Narrow');
+});
+
+test('repeater fields add and remove the rows of their path', function () {
+    $this->withViewErrors([]);
+    $field = Repeater::make('links')->schema([Text::make('url')]);
+
+    $html = html_entity_decode(Blade::render('<x-dynamic-component :component="$field->view" :$field path="values.links" :$value />', [
+        'field' => $field,
+        'value' => [['url' => '/about']],
+    ]));
+
+    expect($html)->not->toContain('@js(')
+        ->toContain("\$wire.\$set('values.links', \$wire.\$get('values.links').filter((row, index) => index !== 0))")
+        ->toContain("\$wire.\$set('values.links', [...(\$wire.\$get('values.links') ?? []), JSON.parse('{\\u0022url\\u0022:null}')])");
 });
 
 test('fields can be rendered with another component', function () {

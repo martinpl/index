@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Blocks\BlockCollection;
 use App\Casts\AsBlocks;
+use App\Entries\Layout;
 use App\Enums\EntryStatus;
 use App\Facades\EntryType;
 use App\Models\Concerns\BelongsToSite;
@@ -18,8 +20,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\HtmlString;
 
 /**
+ * @property BlockCollection $content
+ *
  * @method static Builder<static> withAnyStatus()
  */
 #[Fillable(['type', 'status', 'slug', 'name', 'content', 'user_id', 'parent_id', 'order', 'owner'])]
@@ -177,6 +182,46 @@ class Entry extends Model
     public function trashed(): bool
     {
         return $this->status === EntryStatus::Trash->value;
+    }
+
+    /**
+     * The URL editing the entry in the dashboard.
+     */
+    public function editUrl(): string
+    {
+        return route('dashboard.entries.edit', [$this->type, $this]);
+    }
+
+    /**
+     * Determine if the entry may be moved to the trash, which only saved entries that are not trashed yet may.
+     */
+    public function trashable(): bool
+    {
+        return $this->exists && ! $this->trashed();
+    }
+
+    /**
+     * Determine if the entries of the type are internal, used by the site without being its content, like layouts.
+     */
+    public function isInternal(): bool
+    {
+        return $this->newInstance()->status === EntryStatus::Internal->value;
+    }
+
+    /**
+     * The layout the entry is shown in: the one chosen for it, or the default one, while internal entries have none.
+     */
+    public function layout(): ?Layout
+    {
+        return $this->isInternal() ? null : Layout::namedOrDefault($this->getMeta('layout'));
+    }
+
+    /**
+     * The HTML showing the entry on the site: its content in its layout, or alone when it has none.
+     */
+    public function render(): HtmlString
+    {
+        return $this->layout()?->wrap($this->content) ?? new HtmlString($this->content->toHtml());
     }
 
     /**

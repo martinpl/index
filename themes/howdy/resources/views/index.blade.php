@@ -1,1 +1,1 @@
-<x-canvas>{{ $entry->content }}</x-canvas>
+<x-canvas>{{ $entry->render() }}</x-canvas>
