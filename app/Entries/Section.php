@@ -31,11 +31,11 @@ class Section extends Entry
     ];
 
     /**
-     * @return array{name?: string, slug?: string, icon?: string, can?: string, listing?: string, editor?: string}
+     * @return array{name?: string, slug?: string, icon?: string, can?: string, listing?: string, editor?: string, menu_position?: int}
      */
     public static function config(): array
     {
-        return ['icon' => 'lucide-component'];
+        return ['icon' => 'lucide-component', 'menu_position' => 30];
     }
 
     /**

@@ -19,57 +19,80 @@
                             @if ($menu['label']) aria-label="{{ $menu['label'] }}" @endif
                             class="hover:bg-accent hover:text-accent-foreground [&_svg]:size-4 flex items-center gap-2 rounded-sm px-2 py-1 text-sm font-medium"
                         >
-                            @if ($menu['icon'])
-                                <x-dynamic-component :component="$menu['icon']" />
-                            @endif
-                            {{ $menu['title'] }}
+                            <x-admin-bar.menu-title :icon="$menu['icon']">{{ $menu['title'] }}</x-admin-bar.menu-title>
                         </a>
                     @else
-                        <x-ui.menubar-menu>
-                            <x-ui.menubar-trigger class="[&_svg]:size-4 gap-2" :aria-label="$menu['label']">
-                                @if ($menu['icon'])
-                                    <x-dynamic-component :component="$menu['icon']" />
-                                @endif
-                                {{ $menu['title'] }}
-                            </x-ui.menubar-trigger>
-                            <x-ui.menubar-content
-                                data-admin-bar
-                                :align="$align"
-                                @class(['min-w-56' => $align === 'end'])
-                            >
-                                @foreach ($menu['children'] as $item)
-                                    @if ($item['title'] instanceof \Illuminate\Contracts\Support\Htmlable)
-                                        {{ $item['title'] }}
-                                    @elseif ($item['children']->isNotEmpty())
-                                        <x-ui.menubar-sub>
-                                            <x-ui.menubar-sub-trigger>
+                        {{-- With a mouse, the menu opens on hover, so a click follows the link of the trigger. --}}
+                        <div
+                            x-data="{
+                                closeTimer: null,
+                                hoverOpen(id, event) {
+                                    if (event.pointerType !== 'mouse') return;
+                                    clearTimeout(this.closeTimer);
+                                    this.openMenu(id, false);
+                                },
+                                hoverClose(id, event) {
+                                    if (event.pointerType !== 'mouse') return;
+                                    this.closeTimer = setTimeout(
+                                        () => this.active === id && this.closeMenu(false),
+                                        200,
+                                    );
+                                },
+                            }"
+                            class="contents"
+                        >
+                            <x-ui.menubar-menu>
+                                <x-admin-bar.menu-trigger
+                                    class="[&_svg]:size-4 gap-2"
+                                    :href="$menu['url']"
+                                    :aria-label="$menu['label']"
+                                    x-on:pointerenter="hoverOpen(id, $event)"
+                                    x-on:pointerleave="hoverClose(id, $event)"
+                                >
+                                    <x-admin-bar.menu-title :icon="$menu['icon']">
+                                        {{ $menu['title'] }}</x-admin-bar.menu-title>
+                                </x-admin-bar.menu-trigger>
+                                <x-ui.menubar-content
+                                    data-admin-bar
+                                    :align="$align"
+                                    @class(['min-w-56' => $align === 'end'])
+                                    x-on:pointerenter="hoverOpen(id, $event)"
+                                    x-on:pointerleave="hoverClose(id, $event)"
+                                >
+                                    @foreach ($menu['children'] as $item)
+                                        @if ($item['title'] instanceof \Illuminate\Contracts\Support\Htmlable)
+                                            {{ $item['title'] }}
+                                        @elseif ($item['children']->isNotEmpty())
+                                            <x-ui.menubar-sub>
+                                                <x-ui.menubar-sub-trigger>
+                                                    @if ($item['icon'])
+                                                        <x-dynamic-component :component="$item['icon']" />
+                                                    @endif
+                                                    {{ $item['title'] }}
+                                                </x-ui.menubar-sub-trigger>
+                                                <x-ui.menubar-sub-content data-admin-bar>
+                                                    @foreach ($item['children'] as $child)
+                                                        <x-ui.menubar-item :href="$child['url']">
+                                                            @if ($child['icon'])
+                                                                <x-dynamic-component :component="$child['icon']" />
+                                                            @endif
+                                                            {{ $child['title'] }}
+                                                        </x-ui.menubar-item>
+                                                    @endforeach
+                                                </x-ui.menubar-sub-content>
+                                            </x-ui.menubar-sub>
+                                        @else
+                                            <x-ui.menubar-item :href="$item['url']">
                                                 @if ($item['icon'])
                                                     <x-dynamic-component :component="$item['icon']" />
                                                 @endif
                                                 {{ $item['title'] }}
-                                            </x-ui.menubar-sub-trigger>
-                                            <x-ui.menubar-sub-content data-admin-bar>
-                                                @foreach ($item['children'] as $child)
-                                                    <x-ui.menubar-item :href="$child['url']">
-                                                        @if ($child['icon'])
-                                                            <x-dynamic-component :component="$child['icon']" />
-                                                        @endif
-                                                        {{ $child['title'] }}
-                                                    </x-ui.menubar-item>
-                                                @endforeach
-                                            </x-ui.menubar-sub-content>
-                                        </x-ui.menubar-sub>
-                                    @else
-                                        <x-ui.menubar-item :href="$item['url']">
-                                            @if ($item['icon'])
-                                                <x-dynamic-component :component="$item['icon']" />
-                                            @endif
-                                            {{ $item['title'] }}
-                                        </x-ui.menubar-item>
-                                    @endif
-                                @endforeach
-                            </x-ui.menubar-content>
-                        </x-ui.menubar-menu>
+                                            </x-ui.menubar-item>
+                                        @endif
+                                    @endforeach
+                                </x-ui.menubar-content>
+                            </x-ui.menubar-menu>
+                        </div>
                     @endif
                 @endforeach
             </div>

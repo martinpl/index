@@ -25,7 +25,8 @@ abstract class MenuRegistry
     /**
      * Add an item; `icon` is a Blade component name, `can` an ability or a closure receiving the user,
      * and `align` places a top-level item at the `start` or `end`. An item whose title is Htmlable, such as
-     * a view, renders its own markup and needs no `url`. An item without a title shows only its icon,
+     * a view, renders its own markup and needs no `url`. An item without a `url` links to its first visible child, so a
+     * menu links to its first page whichever pages the user may see. An item without a title shows only its icon,
      * so it needs a `label` naming it for assistive technologies.
      *
      * @param  array{title?: string|Htmlable|Closure|null, url?: string|Closure|null, label?: string|null, icon?: string|null, parent?: string|null, position?: int, can?: string|Closure|null, align?: 'start'|'end'}  $item
@@ -79,16 +80,21 @@ abstract class MenuRegistry
             ->where('parent', $parent)
             ->filter($this->visible(...))
             ->sortBy('position')
-            ->map(fn (array $item): array => [
-                'key' => $item['key'],
-                'title' => value($item['title']),
-                'url' => $url = value($item['url']),
-                'label' => $item['label'],
-                'icon' => $item['icon'],
-                'align' => $item['align'],
-                'active' => $url === request()->url(),
-                'children' => $this->tree($item['key']),
-            ])
+            ->map(function (array $item): array {
+                $children = $this->tree($item['key']);
+                $url = value($item['url']) ?? $children->first()['url'] ?? null;
+
+                return [
+                    'key' => $item['key'],
+                    'title' => value($item['title']),
+                    'url' => $url,
+                    'label' => $item['label'],
+                    'icon' => $item['icon'],
+                    'align' => $item['align'],
+                    'active' => $url === request()->url(),
+                    'children' => $children,
+                ];
+            })
             ->values();
     }
 

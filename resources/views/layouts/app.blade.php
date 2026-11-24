@@ -29,26 +29,45 @@
                     <x-ui.sidebar-group-content class="flex flex-col gap-2">
                         <x-ui.sidebar-menu>
                             @foreach (\App\Facades\DashboardMenu::tree() as $item)
-                                <x-ui.sidebar-menu-item>
-                                    <x-ui.sidebar-menu-button :href="$item['url']" :is-active="$item['active']">
+                                {{-- A single child linking to the page of its parent, like the only settings page, adds nothing. --}}
+                                @php($children = $item['children']->count() === 1 && $item['children']->first()['url'] === $item['url'] ? collect() : $item['children'])
+                                {{-- The current item shows its children, the others only while focused or hovered for a moment, or once tapped on mobile, sliding them open. --}}
+                                @php($isCollapsed = $children->isNotEmpty() && ! ($item['active'] || $children->contains('active', true)))
+                                <x-ui.sidebar-menu-item
+                                    x-data="{ expanded: false }"
+                                    x-bind:data-expanded="expanded ? '' : null"
+                                >
+                                    {{-- With no hover on mobile, a first tap opens the children of a collapsed item and a second follows its link. --}}
+                                    <x-ui.sidebar-menu-button
+                                        :href="$item['url']"
+                                        :is-active="$item['active']"
+                                        x-on:click="if ({{ Js::from($isCollapsed) }} && isMobile && ! expanded) { $event.preventDefault(); expanded = true; }"
+                                    >
                                         @if ($item['icon'])
                                             <x-dynamic-component :component="$item['icon']" />
                                         @endif
                                         <span>{{ $item['title'] }}</span>
                                     </x-ui.sidebar-menu-button>
-                                    @if ($item['children']->isNotEmpty())
-                                        <x-ui.sidebar-menu-sub>
-                                            @foreach ($item['children'] as $child)
-                                                <x-ui.sidebar-menu-sub-item>
-                                                    <x-ui.sidebar-menu-sub-button
-                                                        :href="$child['url']"
-                                                        :is-active="$child['active']"
-                                                    >
-                                                        <span>{{ $child['title'] }}</span>
-                                                    </x-ui.sidebar-menu-sub-button>
-                                                </x-ui.sidebar-menu-sub-item>
-                                            @endforeach
-                                        </x-ui.sidebar-menu-sub>
+                                    @if ($children->isNotEmpty())
+                                        <div @class([
+                                            'grid',
+                                            'invisible grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity,visibility] duration-200 ease-out group-focus-within/menu-item:visible group-focus-within/menu-item:grid-rows-[1fr] group-focus-within/menu-item:opacity-100 group-hover/menu-item:visible group-hover/menu-item:grid-rows-[1fr] group-hover/menu-item:opacity-100 group-hover/menu-item:delay-250 group-data-expanded/menu-item:visible group-data-expanded/menu-item:grid-rows-[1fr] group-data-expanded/menu-item:opacity-100 motion-reduce:transition-none' => $isCollapsed,
+                                        ])>
+                                            <div class="min-h-0 overflow-hidden">
+                                                <x-ui.sidebar-menu-sub>
+                                                    @foreach ($children as $child)
+                                                        <x-ui.sidebar-menu-sub-item>
+                                                            <x-ui.sidebar-menu-sub-button
+                                                                :href="$child['url']"
+                                                                :is-active="$child['active']"
+                                                            >
+                                                                <span>{{ $child['title'] }}</span>
+                                                            </x-ui.sidebar-menu-sub-button>
+                                                        </x-ui.sidebar-menu-sub-item>
+                                                    @endforeach
+                                                </x-ui.sidebar-menu-sub>
+                                            </div>
+                                        </div>
                                     @endif
                                 </x-ui.sidebar-menu-item>
                             @endforeach
@@ -61,7 +80,7 @@
             <header class="bg-background sticky top-10 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4">
                 <x-ui.sidebar-trigger class="-ml-1" />
                 <h1 class="text-base font-medium">{{ $title }}</h1>
-                <div id="actions" class="flex flex-1 items-center gap-2">{{ $actions ?? '' }}</div>
+                <div id="actions" class="flex flex-1 items-center justify-end gap-2">{{ $actions ?? '' }}</div>
             </header>
             <div class="flex flex-1 flex-col gap-4 p-4">{{ $slot }}</div>
         </x-ui.sidebar-inset>

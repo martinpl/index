@@ -164,6 +164,14 @@ class Entry extends Model
         return $this->hasMany(EntryMeta::class);
     }
 
+    /**
+     * The entry the site is showing, or null when it shows none, like on the dashboard.
+     */
+    public static function current(): ?Entry
+    {
+        return app()->bound(self::class) ? app(self::class) : null;
+    }
+
     public function url(): string
     {
         return url($this->path());

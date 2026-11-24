@@ -50,7 +50,7 @@ class Media extends Entry
     }
 
     /**
-     * @return array{name?: string, slug?: string, icon?: string, can?: string, listing?: string, editor?: string}
+     * @return array{name?: string, slug?: string, icon?: string, can?: string, listing?: string, editor?: string, menu_position?: int}
      */
     public static function config(): array
     {
@@ -60,6 +60,7 @@ class Media extends Entry
             'can' => 'entries.media.manage',
             'listing' => 'pages::dashboard.media',
             'editor' => 'pages::dashboard.media',
+            'menu_position' => 20,
         ];
     }
 

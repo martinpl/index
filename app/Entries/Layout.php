@@ -48,7 +48,7 @@ class Layout extends Entry
     /**
      * Listed under the appearance of the site, by those who may manage its themes.
      *
-     * @return array{name?: string, slug?: string, icon?: string, can?: string, listing?: string, editor?: string, menu_parent?: string}
+     * @return array{name?: string, slug?: string, icon?: string, can?: string, listing?: string, editor?: string, menu_parent?: string, menu_position?: int}
      */
     public static function config(): array
     {

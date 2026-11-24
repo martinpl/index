@@ -20,6 +20,8 @@ class IndexController extends Controller
 
         abort_unless($entry, 404);
 
+        app()->instance(Entry::class, $entry);
+
         Filter::add('title.parts', fn ($parts) => [$entry->name, ...$parts]);
 
         return view('index', ['entry' => $entry]);

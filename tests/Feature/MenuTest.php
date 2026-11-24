@@ -45,3 +45,21 @@ test('registering a duplicate menu item throws', function () {
     DashboardMenu::add('tools', ['title' => 'Tools']);
     DashboardMenu::add('tools', ['title' => 'Tools']);
 })->throws(DomainException::class, 'Menu item [tools] is already registered.');
+
+test('an item without a url links to its first visible child', function () {
+    actingAs(User::factory()->create());
+    DashboardMenu::add('tools', ['title' => 'Tools']);
+    DashboardMenu::add('secret', [
+        'title' => 'Secret',
+        'url' => '/secret',
+        'parent' => 'tools',
+        'position' => 0,
+        'can' => fn (User $user) => false,
+    ]);
+    DashboardMenu::add('import', ['title' => 'Import', 'url' => '/import', 'parent' => 'tools', 'position' => 20]);
+    DashboardMenu::add('export', ['title' => 'Export', 'url' => '/export', 'parent' => 'tools', 'position' => 5]);
+
+    $tools = DashboardMenu::tree()->firstWhere('key', 'tools');
+
+    expect($tools['url'])->toBe('/export');
+});
