@@ -41,6 +41,7 @@ test('registers posts with categories and tags', function () {
 test('registers the posts page role', function () {
     expect(Page::roles())->toBe([
         'home' => 'Home page',
+        'not_found' => 'Page not found',
         'posts' => 'Posts page',
     ]);
 });

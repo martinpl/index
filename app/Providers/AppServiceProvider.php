@@ -24,6 +24,7 @@ use App\Foundation\EntryType;
 use App\Foundation\Filter;
 use App\Foundation\Layouts;
 use App\Foundation\Metabox;
+use App\Foundation\PageTemplates;
 use App\Foundation\Plugin;
 use App\Foundation\Role;
 use App\Foundation\Settings;
@@ -70,6 +71,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Metabox::class);
         $this->app->singleton(Assets::class);
         $this->app->singleton(Layouts::class);
+        $this->app->singleton(PageTemplates::class);
     }
 
     /**

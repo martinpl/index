@@ -183,14 +183,15 @@ class Listing
     }
 
     /**
-     * Whether the records may be dragged into a new order with the given resolved state, which only records of a query may.
+     * Whether the records may be dragged into a new order with the given resolved state, which only records of a query may,
+     * so not those of a tab listing a collection.
      *
-     * @param  array{sort: string|null, direction: 'asc'|'desc'}  $state
+     * @param  array{tab?: string|null, sort: string|null, direction: 'asc'|'desc'}  $state
      */
     public function isReorderable(array $state): bool
     {
         return $this->reorderColumn !== null && $state['sort'] === $this->reorderColumn && $state['direction'] === 'asc'
-            && ($this->data)() instanceof Builder;
+            && $this->newData([], $state['tab'] ?? null) instanceof Builder;
     }
 
     public function isSortableBy(string $name): bool

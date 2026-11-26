@@ -65,7 +65,7 @@ new class extends Component
         $this->fillValues($filled->only(['slug', 'status']));
         $this->fillBlocks($filled->content ?? []);
         $this->fillTerms();
-        $this->fillMetaboxes();
+        $this->fillMetaboxes($this->record ?? $filled);
     }
 
     public function booted(): void
@@ -103,7 +103,7 @@ new class extends Component
             $this->fillValues($this->record->only(['slug', 'status']));
             $this->fillBlocks($this->record->content);
             $this->fillTerms();
-            $this->fillMetaboxes();
+            $this->fillMetaboxes($this->record);
 
             $this->dispatch('toast', type: 'success', title: __(':type updated.', ['type' => $typeName]));
 
@@ -208,10 +208,14 @@ new class extends Component
             ->keys();
     }
 
-    protected function fillMetaboxes(): void
+    /**
+     * Fill the values of the metaboxes from the entry being edited, or from the new one being added, unsaved,
+     * as the `entry.new` filters fill it, like a page started from one the theme added for a role.
+     */
+    protected function fillMetaboxes(Entry $entry): void
     {
         $this->metaboxes = $this->metaboxKeys()
-            ->mapWithKeys(fn (string $key): array => [$key => Metabox::values($key, $this->record)])
+            ->mapWithKeys(fn (string $key): array => [$key => Metabox::values($key, $entry)])
             ->all();
     }
 

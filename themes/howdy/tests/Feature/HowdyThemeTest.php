@@ -39,3 +39,9 @@ test('adds a default layout with a navbar and a footer around the content, and a
         ->and(Layout::withAnyStatus()->count())->toBe(0);
     get($page->url())->assertOk()->assertSee('<main class="block-content">', false)->assertDontSee(['block-navbar', 'block-footer']);
 });
+
+test('adds the page shown when a page is not found, in the default layout', function () {
+    get('/missing')
+        ->assertNotFound()
+        ->assertSeeInOrder(['<header class="block-navbar">', '<h1 class="block-heading">Page not found</h1>', 'The page you are looking for does not exist or was moved.', '<footer class="block-footer">'], false);
+});

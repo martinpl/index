@@ -32,7 +32,8 @@ class Metabox
      * elsewhere are read by the `values` callback, receiving the model, and stored by the `save`
      * callback, receiving the model and the cast values.
      * The entry editor shows the boxes of the `entry` location and of `entry.{type}` for its entry type,
-     * passing their callbacks the entry being edited, or null when adding one.
+     * passing their callbacks the entry being edited, or null when adding one, while the `values` callback receives the new
+     * entry being added, unsaved, as the `entry.new` filters fill it, like a page started from one the theme added for a role.
      *
      * @param  array{render?: Closure(mixed...): (View|Htmlable|string), schema?: Closure(): list<Component>, values?: Closure(Model|null): array<string, mixed>, save?: Closure(Model, array<string, mixed>): void, with?: array<string, mixed>, location?: string|list<string>|Closure(): list<string>, can?: string|null, position?: int}  $config
      * @param  string  $owner  Same format as the data owner column, e.g. `core` or `plugins/blog`.
@@ -118,14 +119,14 @@ class Metabox
      * The values of the metabox stored as meta of the model, or read by its `values` callback, keyed by field name,
      * falling back to each field's default.
      *
-     * @param  (Model&HasMeta)|null  $model  Null when the model is being added.
+     * @param  (Model&HasMeta)|null  $model  Unsaved, or null, when the model is being added.
      * @return array<string, mixed>
      */
     public function values(string $key, ?Model $model): array
     {
         $values = $this->metaboxes[$key]['values']
             ? ($this->metaboxes[$key]['values'])($model)
-            : collect($this->form($key)->getChildFields())->mapWithKeys(fn (Field $field): array => [$field->name => $model?->getMeta($field->name)])->all();
+            : collect($this->form($key)->getChildFields())->mapWithKeys(fn (Field $field): array => [$field->name => $model?->exists ? $model->getMeta($field->name) : null])->all();
 
         return $this->form($key)->cast($values);
     }

@@ -53,17 +53,20 @@ new class extends Component
     }
 
     /**
+     * The tabs of the entries, which plugins may change through the `entries.tabs` filter, receiving the entry type,
+     * and then the `entries.{type}.tabs` filter of the type, like listing the pages added by the theme.
+     *
      * @return list<Tab>
      */
     protected function tabs(): array
     {
-        return [
+        return Filter::apply(['entries.tabs', "entries.{$this->type}.tabs"], [
             Tab::make('all')->label(__('All'))->query(fn (Builder|Collection $entries) => $entries->where('status', '!=', EntryStatus::Trash->value)),
             Tab::make('mine')->label(__('Mine'))->query(fn (Builder|Collection $entries) => $entries->where('status', '!=', EntryStatus::Trash->value)->where('user_id', Auth::id())),
             Tab::make('publish')->label(__('Published'))->query(fn (Builder|Collection $entries) => $entries->where('status', EntryStatus::Publish->value)),
             Tab::make('draft')->label(__('Drafts'))->query(fn (Builder|Collection $entries) => $entries->where('status', EntryStatus::Draft->value)),
             Tab::make('trash')->label(__('Trash'))->query(fn (Builder|Collection $entries) => $entries->where('status', EntryStatus::Trash->value)),
-        ];
+        ], $this->type);
     }
 
     /**
@@ -104,7 +107,7 @@ new class extends Component
             Action::make('view')
                 ->label(__('View'))
                 ->icon('lucide-external-link')
-                ->visible(fn (Entry $entry): bool => $entry->status === EntryStatus::Publish->value)
+                ->visible(fn (Entry $entry): bool => $entry->exists && $entry->status === EntryStatus::Publish->value)
                 ->url(fn (Entry $entry): string => $entry->url()),
             Action::make('trash')
                 ->label(__('Move to trash'))

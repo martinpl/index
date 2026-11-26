@@ -2,6 +2,7 @@
 
 namespace Howdy;
 
+use App\Entries\Page;
 use App\Support\PackageServiceProvider;
 use Howdy\Blocks\Footer;
 use Howdy\Blocks\Navbar;
@@ -26,6 +27,14 @@ class HowdyServiceProvider extends PackageServiceProvider
         $this->addLayout('blank', [
             'name' => 'Blank',
             'content' => [['type' => 'content']],
+        ]);
+
+        $this->addPageTemplate(Page::NOT_FOUND, [
+            'name' => 'Page not found',
+            'content' => fn (): array => [
+                ['type' => 'heading', 'data' => ['text' => __('Page not found'), 'level' => 'h1']],
+                ['type' => 'paragraph', 'data' => ['text' => __('The page you are looking for does not exist or was moved.')]],
+            ],
         ]);
     }
 }

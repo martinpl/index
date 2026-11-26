@@ -14,6 +14,7 @@ test('registers page roles', function () {
 
     expect(Page::roles())->toBe([
         'home' => 'Home page',
+        'not_found' => 'Page not found',
         'shop' => 'Shop page',
         'cart' => 'Cart',
     ]);

@@ -14,6 +14,7 @@ use App\Facades\EntryType;
 use App\Facades\Filter;
 use App\Facades\Layouts;
 use App\Facades\Metabox;
+use App\Facades\PageTemplates;
 use App\Facades\Settings;
 use App\Facades\TermType;
 use App\Models\Entry;
@@ -80,6 +81,18 @@ abstract class PackageServiceProvider extends ServiceProvider
     protected function addLayout(string $key, array $config): void
     {
         Layouts::register($key, $config, static::owner());
+    }
+
+    /**
+     * Add the template of the page shown for a page role, like `not_found` for the page shown when a page is not found,
+     * until a published page is assigned to it. Users edit it in the templates tab of the pages in the dashboard, saving it as a page assigned
+     * to the role, and get it back by resetting that page.
+     *
+     * @param  array{name?: string, slug?: string, content?: list<array{type: string, data?: array<string, mixed>, attributes?: array<string, mixed>}>|Closure(): list<array{type: string, data?: array<string, mixed>, attributes?: array<string, mixed>}>}  $config
+     */
+    protected function addPageTemplate(string $role, array $config): void
+    {
+        PageTemplates::register($role, $config, static::owner());
     }
 
     /**

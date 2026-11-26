@@ -296,6 +296,20 @@ class Menus
             'position' => 90,
             'can' => 'users.manage',
         ]);
+        $menu->add('users.all', [
+            'title' => __('All Users'),
+            'url' => route('dashboard.users'),
+            'parent' => 'users',
+            'position' => 0,
+            'can' => 'users.manage',
+        ]);
+        $menu->add('users.create', [
+            'title' => __('Add User'),
+            'url' => route('dashboard.users.create'),
+            'parent' => 'users',
+            'position' => 1,
+            'can' => 'users.manage',
+        ]);
 
         $pages = $this->settingsPages();
 

@@ -15,6 +15,7 @@ test('manages page roles', function () {
     artisan('page-role:list')
         ->expectsTable(['key', 'name', 'page'], [
             ['home', 'Home page', $page->id],
+            ['not_found', 'Page not found', ''],
         ])
         ->assertSuccessful();
 
