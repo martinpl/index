@@ -74,6 +74,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Assets::class);
         $this->app->singleton(Layouts::class);
         $this->app->singleton(PageTemplates::class);
+
+        if ($this->app->runningInConsole()) {
+            $this->skipPackages();
+        }
+
+        $this->app->make(Plugin::class)->bootstrap();
     }
 
     /**
@@ -173,8 +179,22 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Make the site given by the "--site" option, or the main site, current,
-     * without booting plugins or the theme when "--skip-plugins" or "--skip-themes" is given.
+     * Don't boot plugins or the theme when "--skip-plugins" or "--skip-themes" is given, from
+     * as early as the plugins' `bootstrap()` methods, which run while services are registered.
+     */
+    protected function skipPackages(): void
+    {
+        $input = new ArgvInput;
+        if ($input->hasParameterOption('--skip-plugins')) {
+            $this->app->make(Plugin::class)->skip();
+        }
+        if ($input->hasParameterOption('--skip-themes')) {
+            $this->app->make(Theme::class)->skip();
+        }
+    }
+
+    /**
+     * Make the site given by the "--site" option, or the main site, current.
      */
     protected function bootConsoleSite(): void
     {
@@ -187,13 +207,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $input = new ArgvInput;
-        if ($input->hasParameterOption('--skip-plugins')) {
-            $this->app->make(Plugin::class)->skip();
-        }
-        if ($input->hasParameterOption('--skip-themes')) {
-            $this->app->make(Theme::class)->skip();
-        }
-
         if ($site = $input->getParameterOption('--site')) {
             Site::findOrFail($site)->makeCurrent();
         } elseif (rescue(fn () => Schema::hasTable('sites'), false, false)) {
