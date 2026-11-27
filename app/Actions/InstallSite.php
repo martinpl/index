@@ -14,7 +14,7 @@ use App\Models\User;
 class InstallSite
 {
     /**
-     * Set up the site with its name, default roles, verified administrator, home page, theme and plugins.
+     * Set up the site with its name, language, default roles, verified administrator, home page, theme and plugins.
      *
      * @param  array{name: string, email: string, password: string}  $admin
      */
@@ -22,6 +22,7 @@ class InstallSite
     {
         return $site->execute(function (Site $site) use ($name, $admin): User {
             Setting::set('site_name', $name, 'core', autoload: true);
+            Setting::set('locale', config('app.locale'), 'core', autoload: true);
 
             $this->createDefaultRoles($site);
             $user = $this->createAdmin($admin);

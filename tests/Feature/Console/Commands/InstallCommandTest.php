@@ -28,8 +28,9 @@ test('runs migrations and installs a site on an empty database', function () {
 
     assertDatabaseHas('sites', ['domain' => 'example.com', 'path' => '/']);
     assertDatabaseCount('sites', 1);
-    assertDatabaseCount('settings', 6);
+    assertDatabaseCount('settings', 7);
     assertDatabaseHas('settings', ['key' => 'site_name', 'value' => json_encode('My site')]);
+    assertDatabaseHas('settings', ['key' => 'locale', 'value' => json_encode('en')]);
     assertDatabaseHas('settings', ['key' => 'active_theme', 'value' => json_encode('howdy')]);
     assertDatabaseHas('settings', ['key' => 'active_plugins', 'value' => json_encode(['blog'])]);
     expect(Setting::query()->where('autoload', false)->pluck('key')->all())->toBe(['default_role']);

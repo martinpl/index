@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Entry;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\assertDatabaseMissing;
@@ -69,4 +70,36 @@ test('keeps meta of trashed entries', function () {
     $entry->forceDelete();
 
     assertDatabaseMissing('entry_meta', ['entry_id' => $entry->id]);
+});
+
+test('loads all meta of a model with a single query and reads the changes made through it', function () {
+    $entry = Entry::factory()->create();
+    $entry->setMeta('views', 10, 'core');
+    $entry->setMeta('title', 'Title', 'core');
+    $entry = $entry->fresh();
+
+    DB::enableQueryLog();
+    $values = [$entry->getMeta('views'), $entry->getMeta('title'), $entry->hasMeta('missing')];
+    $queries = count(DB::getQueryLog());
+
+    expect($values)->toBe([10, 'Title', false])
+        ->and($queries)->toBe(1);
+
+    $entry->setMeta('views', 11, 'core');
+    $entry->forgetMeta('title');
+
+    expect($entry->getMeta('views'))->toBe(11)
+        ->and($entry->hasMeta('title'))->toBeFalse();
+});
+
+test('reads eager loaded meta without querying', function () {
+    $entry = Entry::factory()->create();
+    $entry->setMeta('views', 10, 'core');
+    $entry->load('meta');
+
+    DB::enableQueryLog();
+    $views = $entry->getMeta('views');
+
+    expect($views)->toBe(10)
+        ->and(DB::getQueryLog())->toBeEmpty();
 });

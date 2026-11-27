@@ -55,6 +55,14 @@ describe('on the site', function () {
         Setting::set('active_theme', 'howdy', 'core');
     });
 
+    test('is not shown to guests', function () {
+        $page = Entry::factory()->published()->create(['type' => 'page']);
+
+        get($page->url())
+            ->assertOk()
+            ->assertDontSee('id="admin-bar"', false);
+    });
+
     test('links to editing the shown entry and its layout for users who may manage them', function () {
         $layout = Layout::factory()->default()->create();
         $page = Entry::factory()->published()->create(['type' => 'page']);

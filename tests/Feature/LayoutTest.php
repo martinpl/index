@@ -7,6 +7,7 @@ use App\Facades\Layouts;
 use App\Models\Entry;
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
@@ -107,6 +108,22 @@ test('entries are rendered in their layout, or alone without a default one, whil
         ->and(pageInLayout()->render()->toHtml())->toBe('<p class="block-paragraph">Page text</p>')
         ->and(pageInLayout('landing')->render()->toHtml())->toBe(implode("\n", ['<h2 class="block-heading">Landing</h2>', '<main class="block-content"><p class="block-paragraph">Page text</p></main>']))
         ->and(Section::factory()->create()->layout())->toBeNull();
+});
+
+test('the layout of an entry is looked up once until another one is chosen', function () {
+    Layout::factory()->default()->create();
+    Layout::factory()->create(['slug' => 'landing']);
+    $page = pageInLayout()->load('meta');
+
+    DB::enableQueryLog();
+    $default = [$page->layout()->slug, $page->layout()->slug];
+    $queries = count(DB::getQueryLog());
+
+    $page->setMeta('layout', 'landing', 'core');
+
+    expect($default)->toBe(['default', 'default'])
+        ->and($queries)->toBe(1)
+        ->and($page->layout()->slug)->toBe('landing');
 });
 
 test('the layouts of the site are the ones added by packages, unless saved with edits, followed by the ones of users', function () {

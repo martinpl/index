@@ -44,7 +44,7 @@ test('gives and revokes roles', function () {
         ->expectsOutput("Gave role [editor] to user [$user->id].")
         ->assertSuccessful();
 
-    expect($user->hasRole('editor'))->toBeTrue();
+    expect($user->fresh()->hasRole('editor'))->toBeTrue();
 
     artisan('role:give', ['user' => $user->id, 'role' => 'missing'])
         ->expectsOutput('Role [missing] does not exist.')
@@ -54,7 +54,7 @@ test('gives and revokes roles', function () {
         ->expectsOutput("Revoked role [editor] from user [$user->id].")
         ->assertSuccessful();
 
-    expect($user->hasRole('editor'))->toBeFalse();
+    expect($user->fresh()->hasRole('editor'))->toBeFalse();
 
     artisan('role:revoke', ['user' => $user->id, 'role' => 'editor'])
         ->expectsOutput("User [$user->id] does not have role [editor].")
@@ -103,14 +103,14 @@ test('grants abilities to a user directly and through roles', function () {
         ->expectsTable(['ability'], [['edit-entries'], ['settings.manage']])
         ->assertSuccessful();
 
-    expect(Gate::forUser($user)->allows('edit-entries'))->toBeTrue()
-        ->and(Gate::forUser($user)->allows('settings.manage'))->toBeTrue()
-        ->and(Gate::forUser($user)->allows('delete-users'))->toBeFalse();
+    expect(Gate::forUser($user->fresh())->allows('edit-entries'))->toBeTrue()
+        ->and(Gate::forUser($user->fresh())->allows('settings.manage'))->toBeTrue()
+        ->and(Gate::forUser($user->fresh())->allows('delete-users'))->toBeFalse();
 
     artisan('ability:revoke', ['abilities' => ['settings.manage'], '--user' => $user->id])
         ->assertSuccessful();
 
-    expect(Gate::forUser($user)->allows('settings.manage'))->toBeFalse();
+    expect(Gate::forUser($user->fresh())->allows('settings.manage'))->toBeFalse();
 });
 
 test('requires either a role or a user to manage abilities', function (array $options) {

@@ -218,10 +218,17 @@ class Entry extends Model
 
     /**
      * The layout the entry is shown in: the one chosen for it, or the default one, while internal entries have none.
+     * Remembered for the entry until another one is chosen.
      */
     public function layout(): ?Layout
     {
-        return $this->isInternal() ? null : Layout::namedOrDefault($this->getMeta('layout'));
+        if ($this->isInternal()) {
+            return null;
+        }
+
+        $slug = $this->getMeta('layout');
+
+        return once(fn (): ?Layout => Layout::namedOrDefault($slug));
     }
 
     /**

@@ -14,14 +14,17 @@ trait HasMeta
      */
     abstract public function meta(): HasMany;
 
+    /**
+     * Get the value of the meta, loading all meta of the model on first use, unless eager loaded.
+     */
     public function getMeta(string $key, mixed $default = null): mixed
     {
-        return $this->meta()->where('key', $key)->value('value') ?? $default;
+        return $this->meta->firstWhere('key', $key)?->value ?? $default;
     }
 
     public function hasMeta(string $key): bool
     {
-        return $this->meta()->where('key', $key)->exists();
+        return $this->meta->contains('key', $key);
     }
 
     public function setMeta(string $key, mixed $value, string $owner): void
@@ -33,10 +36,13 @@ trait HasMeta
         }
 
         $this->meta()->updateOrCreate(['key' => $key], ['value' => $value, 'owner' => $owner]);
+        $this->unsetRelation('meta');
     }
 
     public function forgetMeta(string $key): int
     {
+        $this->unsetRelation('meta');
+
         return $this->meta()->where('key', $key)->delete();
     }
 

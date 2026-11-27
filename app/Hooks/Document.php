@@ -34,8 +34,12 @@ class Document
     }
 
     #[Action(['body.open', 'dashboard.body.open'])]
-    public function adminBar()
+    public function adminBar(): void
     {
+        if (auth()->guest()) {
+            return;
+        }
+
         echo view('partials.admin-bar.admin-bar')->render();
     }
 }
