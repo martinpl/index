@@ -38,6 +38,7 @@ use App\Models\Term;
 use App\Models\User;
 use App\Settings\General;
 use Carbon\CarbonImmutable;
+use Cn\TailwindMerge;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
@@ -47,6 +48,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\View\ComponentAttributeBag;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -84,6 +86,8 @@ class AppServiceProvider extends ServiceProvider
         CarbonImmutable::macro('toTimeFormat', fn (): string => $this->inTimezone()->translatedFormat(General::timeFormat()));
         CarbonImmutable::macro('toDateTimeFormat', fn (): string => $this->inTimezone()->translatedFormat(General::dateFormat().' '.General::timeFormat()));
 
+        $this->registerTwMergeMacro();
+
         $this->configureDefaults();
 
         Relation::enforceMorphMap([
@@ -117,6 +121,21 @@ class AppServiceProvider extends ServiceProvider
         } else {
             $this->bootRequestSite();
         }
+    }
+
+    /**
+     * Let components merge their default classes with the consumer's `class` attribute, resolving
+     * Tailwind conflicts in favour of the consumer. Mutates the bag and returns it, like the
+     * `twMerge()` macro of gehrisandro/tailwind-merge-laravel it replaces.
+     */
+    protected function registerTwMergeMacro(): void
+    {
+        ComponentAttributeBag::macro('twMerge', function (mixed ...$classes): ComponentAttributeBag {
+            /** @var ComponentAttributeBag $this */
+            $this->offsetSet('class', TailwindMerge::instance()->merge($classes, (string) $this->get('class', '')));
+
+            return $this;
+        });
     }
 
     /**

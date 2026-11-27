@@ -11,7 +11,7 @@
     "require": {
         "php": "^8.3",
         "anousss007/blatui": "^1.35",
-        "gehrisandro/tailwind-merge-laravel": "^1.4",
+        "imliam/php-cn": "dev-main",
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",
@@ -115,5 +115,10 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [{
+        "name": "php-cn",
+        "type": "vcs",
+        "url": "https://github.com/imliam/php-cn"
+    }]
 }
