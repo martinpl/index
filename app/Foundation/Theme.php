@@ -4,8 +4,6 @@ namespace App\Foundation;
 
 use App\Models\Setting;
 use DomainException;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -16,8 +14,7 @@ class Theme extends Package
 
     public function boot(): void
     {
-        $hasDb = rescue(fn () => DB::connection()->getPdo(), false);
-        if ($this->skipped || ! $hasDb || ! Schema::hasTable('settings')) {
+        if ($this->skipped) {
             return;
         }
 
@@ -49,7 +46,7 @@ class Theme extends Package
 
     public function activate(string $name): void
     {
-        Setting::set(self::activeTheme, $name, 'core');
+        Setting::set(self::activeTheme, $name, 'core', autoload: true);
     }
 
     public function deactivate(string $name): void

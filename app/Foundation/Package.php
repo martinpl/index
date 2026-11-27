@@ -9,6 +9,7 @@ use App\Models\Site;
 use App\Models\Term;
 use App\Models\TermMeta;
 use App\Models\UserMeta;
+use App\Support\SettingCache;
 use Composer\Autoload\ClassLoader;
 use DomainException;
 use Illuminate\Support\Collection;
@@ -134,6 +135,8 @@ abstract class Package
                 EntryMeta::query()->ownedBy($owner)->delete();
                 TermMeta::query()->ownedBy($owner)->delete();
                 UserMeta::query()->ownedBy($owner)->delete();
+
+                app(SettingCache::class)->flush();
             });
         }
     }

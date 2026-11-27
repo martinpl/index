@@ -21,7 +21,7 @@ class InstallSite
     public function __invoke(Site $site, string $name, array $admin): User
     {
         return $site->execute(function (Site $site) use ($name, $admin): User {
-            Setting::set('site_name', $name, 'core');
+            Setting::set('site_name', $name, 'core', autoload: true);
 
             $this->createDefaultRoles($site);
             $user = $this->createAdmin($admin);
@@ -84,6 +84,6 @@ class InstallSite
             'owner' => 'core',
         ]);
 
-        Setting::set('page_roles', ['home' => $page->id], 'core');
+        Setting::set('page_roles', ['home' => $page->id], 'core', autoload: true);
     }
 }

@@ -37,6 +37,7 @@ use App\Models\Site;
 use App\Models\Term;
 use App\Models\User;
 use App\Settings\General;
+use App\Support\SettingCache;
 use Carbon\CarbonImmutable;
 use Cn\TailwindMerge;
 use Illuminate\Console\Application as Artisan;
@@ -74,6 +75,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(Assets::class);
         $this->app->singleton(Layouts::class);
         $this->app->singleton(PageTemplates::class);
+        $this->app->scoped(SettingCache::class);
 
         if ($this->app->runningInConsole()) {
             $this->skipPackages();

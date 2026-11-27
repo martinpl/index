@@ -120,7 +120,7 @@ abstract class PackageServiceProvider extends ServiceProvider
     }
 
     /**
-     * @param  array<string, array{title?: string, schema: Closure(): list<Component>, can?: string|null, position?: int}>  $pages
+     * @param  array<string, array{title?: string, schema: Closure(): list<Component>, can?: string|null, position?: int, autoload?: bool}>  $pages
      */
     protected function addSettings(array $pages): void
     {

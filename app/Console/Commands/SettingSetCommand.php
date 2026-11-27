@@ -8,7 +8,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 
-#[Signature('setting:set {key?} {value?} {--owner=core : The owner of the setting, e.g. core or plugins/seo}')]
+#[Signature('setting:set {key?} {value?} {--owner=core : The owner of the setting, e.g. core or plugins/seo} {--autoload : Load the setting with the others on every request instead of only when read}')]
 #[Description('Sets a setting value')]
 class SettingSetCommand extends Command
 {
@@ -38,7 +38,7 @@ class SettingSetCommand extends Command
             return self::FAILURE;
         }
 
-        Setting::set($key, $value, $this->option('owner'));
+        Setting::set($key, $value, $this->option('owner'), $this->option('autoload') ?: null);
         $this->info("Set setting [$key].");
 
         return self::SUCCESS;

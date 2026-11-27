@@ -4,9 +4,7 @@ namespace App\Foundation;
 
 use App\Models\Setting;
 use DomainException;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -18,8 +16,7 @@ class Plugin extends Package
 
     public function boot(): void
     {
-        $hasDb = rescue(fn () => DB::connection()->getPdo(), false);
-        if ($this->skipped || ! $hasDb || ! Schema::hasTable('settings')) {
+        if ($this->skipped) {
             return;
         }
 
@@ -64,12 +61,12 @@ class Plugin extends Package
 
     public function activate(string $name): void
     {
-        Setting::set(self::activePlugins, array_unique([...$this->active(), $name]), 'core');
+        Setting::set(self::activePlugins, array_unique([...$this->active(), $name]), 'core', autoload: true);
     }
 
     public function deactivate(string $name): void
     {
-        Setting::set(self::activePlugins, array_diff($this->active(), [$name]), 'core');
+        Setting::set(self::activePlugins, array_diff($this->active(), [$name]), 'core', autoload: true);
     }
 
     protected function directory(): string

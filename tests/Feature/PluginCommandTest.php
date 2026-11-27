@@ -104,6 +104,7 @@ test('deletes a plugin with its data', function () {
     Setting::set('seo_settings', ['robots' => true], $owner);
     Setting::set('site_name', 'Index', 'core');
     Site::create(['domain' => 'blog.example.com'])->execute(fn () => Setting::set('seo_settings', ['robots' => true], $owner));
+    expect(Setting::get('seo_settings'))->toBe(['robots' => true]);
 
     artisan('plugin:delete', ['plugin' => 'seo', '--purge' => true])
         ->expectsOutput('Deleted plugin [seo].')
@@ -118,6 +119,7 @@ test('deletes a plugin with its data', function () {
     assertDatabaseHas('entries', ['id' => $entry->id]);
     assertDatabaseHas('entry_meta', ['entry_id' => $entry->id, 'key' => 'views']);
     assertDatabaseHas('settings', ['key' => 'site_name']);
+    expect(Setting::get('seo_settings'))->toBeNull();
 });
 
 test('deactivates a deleted plugin on every site', function () {

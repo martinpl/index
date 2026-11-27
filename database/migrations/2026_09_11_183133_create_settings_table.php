@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('key')->unique();
             $table->json('value');
             $table->string('owner');
+            $table->boolean('autoload')->default(false);
         });
     }
 

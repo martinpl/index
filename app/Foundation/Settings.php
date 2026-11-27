@@ -15,14 +15,14 @@ use Illuminate\Support\Str;
 class Settings
 {
     /**
-     * @var array<string, array{key: string, title: string, page_title: string, schema: Closure(): list<Component>, can: string|null, parent: string, position: int, owner: string}>
+     * @var array<string, array{key: string, title: string, page_title: string, schema: Closure(): list<Component>, can: string|null, parent: string, position: int, autoload: bool, owner: string}>
      */
     protected array $pages = [];
 
     /**
      * Register a settings page whose fields are stored as settings named after each field.
      *
-     * @param  array{title?: string, page_title?: string, schema: Closure(): list<Component>, can?: string|null, parent?: string, position?: int}  $config  The `title` labels the menu item, the `page_title` heads the page.
+     * @param  array{title?: string, page_title?: string, schema: Closure(): list<Component>, can?: string|null, parent?: string, position?: int, autoload?: bool}  $config  The `title` labels the menu item, the `page_title` heads the page, `autoload` turns on for settings read on most requests.
      * @param  string  $owner  Same format as the data owner column, e.g. `core` or `plugins/blog`.
      */
     public function register(string $key, array $config, string $owner): void
@@ -39,6 +39,7 @@ class Settings
             'can' => $config['can'] ?? null,
             'parent' => $config['parent'] ?? 'settings',
             'position' => $config['position'] ?? 10,
+            'autoload' => $config['autoload'] ?? false,
             'owner' => $owner,
         ];
     }
@@ -54,7 +55,7 @@ class Settings
     }
 
     /**
-     * @return Collection<string, array{key: string, title: string, page_title: string, schema: Closure(): list<Component>, can: string|null, parent: string, position: int, owner: string}>
+     * @return Collection<string, array{key: string, title: string, page_title: string, schema: Closure(): list<Component>, can: string|null, parent: string, position: int, autoload: bool, owner: string}>
      */
     public function list(): Collection
     {
@@ -112,7 +113,7 @@ class Settings
         foreach ($this->fields($key) as $field) {
             $value = $field->cast($values[$field->name] ?? null);
 
-            Setting::set($field->name, $value, $this->pages[$key]['owner']);
+            Setting::set($field->name, $value, $this->pages[$key]['owner'], $this->pages[$key]['autoload']);
         }
     }
 }

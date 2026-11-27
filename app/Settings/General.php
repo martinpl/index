@@ -15,7 +15,7 @@ use ResourceBundle;
 class General
 {
     /**
-     * @return array{title: string, page_title: string, can: string, position: int, schema: Closure(): list<Component>}
+     * @return array{title: string, page_title: string, can: string, position: int, autoload: bool, schema: Closure(): list<Component>}
      */
     public static function config(): array
     {
@@ -24,6 +24,7 @@ class General
             'page_title' => 'General Settings',
             'can' => 'settings.manage',
             'position' => 0,
+            'autoload' => true,
             'schema' => static::schema(...),
         ];
     }

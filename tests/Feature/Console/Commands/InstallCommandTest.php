@@ -32,6 +32,7 @@ test('runs migrations and installs a site on an empty database', function () {
     assertDatabaseHas('settings', ['key' => 'site_name', 'value' => json_encode('My site')]);
     assertDatabaseHas('settings', ['key' => 'active_theme', 'value' => json_encode('howdy')]);
     assertDatabaseHas('settings', ['key' => 'active_plugins', 'value' => json_encode(['blog'])]);
+    expect(Setting::query()->where('autoload', false)->pluck('key')->all())->toBe(['default_role']);
 
     $admin = User::sole();
 

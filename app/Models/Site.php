@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Entries\Media;
 use App\Facades\Plugin;
 use App\Facades\Theme;
+use App\Support\SettingCache;
 use Closure;
 use Database\Factories\SiteFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -132,11 +133,11 @@ class Site extends Model
     }
 
     /**
-     * Get the value of the site's setting.
+     * Get the value of the site's setting, without loading its other autoloaded settings like the site handling the request does.
      */
     public function setting(string $key, mixed $default = null): mixed
     {
-        return $this->execute(fn (): mixed => Setting::get($key, $default));
+        return $this->execute(fn (): mixed => app(SettingCache::class)->find($key)) ?? $default;
     }
 
     /**

@@ -11,6 +11,7 @@ use App\Schema\Toggle;
 use Livewire\Livewire;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\get;
 
 function settingsManager(): User
@@ -151,3 +152,18 @@ test('the general settings page previews only custom date formats', function () 
 test('registering a duplicate settings page throws', function () {
     Settings::register('general', ['schema' => fn (): array => []], 'plugins/blog');
 })->throws(DomainException::class, 'Settings page [general] is already registered by [core].');
+
+test('settings pages may autoload their settings', function () {
+    Settings::register('archive', [
+        'schema' => fn (): array => [Text::make('archive_title')],
+        'autoload' => true,
+    ], 'plugins/archive');
+    actingAs(User::factory()->create());
+
+    Livewire::test('pages::dashboard.settings', ['page' => 'archive'])
+        ->set('values.archive_title', 'Archive')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    assertDatabaseHas('settings', ['key' => 'archive_title', 'value' => json_encode('Archive'), 'autoload' => true]);
+});

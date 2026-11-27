@@ -163,7 +163,7 @@ class Page extends Entry
             ->reject(fn (int $id, string $key): bool => $id === $this->id && array_key_exists($key, static::roles()))
             ->when($role, fn (Collection $roles): Collection => $roles->put($role, $this->id));
 
-        Setting::set('page_roles', $roles->all(), 'core');
+        Setting::set('page_roles', $roles->all(), 'core', autoload: true);
     }
 
     /**

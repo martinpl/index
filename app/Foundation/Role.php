@@ -109,6 +109,6 @@ class Role
      */
     protected function save(array $roles): void
     {
-        Setting::set('roles', $roles, 'core');
+        Setting::set('roles', $roles, 'core', autoload: true);
     }
 }

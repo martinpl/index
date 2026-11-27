@@ -52,6 +52,6 @@ class ExampleContentSeeder extends Seeder
                 'user_id' => $author->id,
             ])]);
 
-        Setting::set('page_roles', [...Setting::get('page_roles', []), 'posts' => $pages['Blog']->id], 'core');
+        Setting::set('page_roles', [...Setting::get('page_roles', []), 'posts' => $pages['Blog']->id], 'core', autoload: true);
     }
 }
